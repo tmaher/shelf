@@ -90,9 +90,9 @@ if __name__ == "__main__":
     )
 
     for book in books["items"]:
-        asin = book["asin"]
-        print(asin)
-        print(book["merchandising_summary"])
+        print()
+        print(f"asin: {book["asin"]}, summary {book["merchandising_summary"]})
+
         dl_link = _get_download_link(client, asin)
 
         if dl_link:
