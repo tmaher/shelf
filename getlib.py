@@ -52,7 +52,7 @@ def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
             print(f"Error: {e}")
             return
 
-def download_file(url, asin):
+def download_file(url, asin, codec="LC_64_22050_stereo"):
     r = requests.get(url, stream=True)
 
     if not("Content-Disposition" in r.headers):
@@ -61,7 +61,7 @@ def download_file(url, asin):
 
     attachment = r.headers["Content-Disposition"].split("filename=")[1]
     title, ext = os.path.splitext(attachment)
-    filename = pathlib.Path.cwd() / "audiobooks" / f"{title}.{asin}{ext}"
+    filename = pathlib.Path.cwd() / "audiobooks" / f"{title}.{asin}.{codec}{ext}"
 
     try:
         s = os.stat(filename)
