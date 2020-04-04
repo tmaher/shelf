@@ -9,17 +9,16 @@ import pathlib
 import shutil
 import audible
 import requests
-
-sys.exit(0)
-
+import pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 def get_auth():
-    auth = audible.FileAuthenticator("audible-creds.json")
-    auth.to_file("audible-creds.json", encryption=False)
+    auth = audible.FileAuthenticator(".audible-creds.json")
+    auth.to_file(".audible-creds.json", encryption=False)
     return auth
 
 # get download link(s) for book
-def _get_download_link(client, asin, codec="LC_128_44100_stereo"):
+def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
     # need at least v0.2.1a4
     try:
         content_url = "https://cde-ta-g7g.amazon.com/FionaCDEServiceEngine/FSDownloadContent"
@@ -53,14 +52,31 @@ def _get_download_link(client, asin, codec="LC_128_44100_stereo"):
             print(f"Error: {e}")
             return
 
+def is_downloaded(headers):
+    title = r.headers["Content-Disposition"].split("filename=")[1]
+    filename = pathlib.Path.cwd() / "audiobooks" / title
+
 
 def download_file(url):
     r = requests.get(url, stream=True)
 
+    if not("Content-Disposition" in r.headers):
+        print(f"no content-disposition for {url}")
+        return ""
+
     title = r.headers["Content-Disposition"].split("filename=")[1]
     filename = pathlib.Path.cwd() / "audiobooks" / title
 
+    try:
+        s = os.stat(filename)
+        if s.st_size == int(r.headers["Content-Length"]):
+            print(f"SKIPPING {filename} (already exists and size matches)")
+            return filename
+    except OSError as e:
+        True
+
     return filename
+
     with open(filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
     return filename
@@ -81,6 +97,7 @@ if __name__ == "__main__":
 
     for book in books["items"]:
         asin = book["asin"]
+        pp.pprint(book)
         dl_link = _get_download_link(client, asin)
 
         if dl_link:
