@@ -1,5 +1,5 @@
 ```
-cd books/script
-. bin/activate
-./getlib.py
+cd shelf
+. script/bin/activate
+./script/getlib.py
 ```

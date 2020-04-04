@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 
+import os
+import sys
+appdir=os.path.dirname(os.path.abspath(__file__))
+os.chdir(appdir)
+
 import pathlib
 import shutil
-
 import audible
 import requests
+
+sys.exit(0)
+
 
 def get_auth():
     auth = audible.FileAuthenticator("audible-creds.json")
@@ -53,6 +60,7 @@ def download_file(url):
     title = r.headers["Content-Disposition"].split("filename=")[1]
     filename = pathlib.Path.cwd() / "audiobooks" / title
 
+    return filename
     with open(filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
     return filename
