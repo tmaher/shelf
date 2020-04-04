@@ -66,13 +66,14 @@ def download_file(url, asin, codec="LC_64_22050_stereo"):
     try:
         s = os.stat(filename)
         if s.st_size == int(r.headers["Content-Length"]):
-            print(f"SKIPPING {filename} (already exists and size matches)")
+            print(f"SKIPPING {title}.{asin} (already exists and size matches)")
             return filename
     except OSError as e:
         True
 
     with open(filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
+    print(f"DOWNLOADED => {filename}")
     return filename
 
 
@@ -90,12 +91,13 @@ if __name__ == "__main__":
     )
 
     for book in books["items"]:
+        asin = book["asin"]
         print()
-        print(f"asin: {book["asin"]}, summary {book["merchandising_summary"]})
+        print(f"asin: {asin}")
+        print(f"summary {book['merchandising_summary']}")
 
         dl_link = _get_download_link(client, asin)
 
         if dl_link:
             print(f"download link now: {dl_link}")
             status = download_file(dl_link, asin)
-            print(f"downloaded file: {status}")
