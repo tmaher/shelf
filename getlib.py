@@ -91,7 +91,8 @@ if __name__ == "__main__":
 
     for book in books["items"]:
         asin = book["asin"]
-        pp.pprint(book)
+        print(asin)
+        print(book["merchandising_summary"])
         dl_link = _get_download_link(client, asin)
 
         if dl_link:
