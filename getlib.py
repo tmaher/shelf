@@ -52,20 +52,16 @@ def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
             print(f"Error: {e}")
             return
 
-def is_downloaded(headers):
-    title = r.headers["Content-Disposition"].split("filename=")[1]
-    filename = pathlib.Path.cwd() / "audiobooks" / title
-
-
-def download_file(url):
+def download_file(url, asin):
     r = requests.get(url, stream=True)
 
     if not("Content-Disposition" in r.headers):
         print(f"no content-disposition for {url}")
         return ""
 
-    title = r.headers["Content-Disposition"].split("filename=")[1]
-    filename = pathlib.Path.cwd() / "audiobooks" / title
+    attachment = r.headers["Content-Disposition"].split("filename=")[1]
+    title, ext = os.path.splitext(attachment)
+    filename = pathlib.Path.cwd() / "audiobooks" / f"{title}.{asin}{ext}"
 
     try:
         s = os.stat(filename)
@@ -74,8 +70,6 @@ def download_file(url):
             return filename
     except OSError as e:
         True
-
-    return filename
 
     with open(filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
@@ -102,5 +96,5 @@ if __name__ == "__main__":
 
         if dl_link:
             print(f"download link now: {dl_link}")
-            status = download_file(dl_link)
+            status = download_file(dl_link, asin)
             print(f"downloaded file: {status}")
