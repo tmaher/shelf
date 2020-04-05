@@ -80,8 +80,8 @@ def download_file(url, asin, purchased='1970-01-01', codec="LC_64_22050_stereo")
     try:
         s = os.stat(dl_filename)
         if s.st_size == int(r.headers["Content-Length"]):
-            print(f"SKIPPING {title}.{asin} (already exists and size matches)")
-            return dl_filename
+            print(f"SKIPPING {dl_filename} (already exists and size matches)")
+            return
     except OSError as e:
         True
 
