@@ -10,12 +10,15 @@ import shutil
 import audible
 import requests
 import pprint
+import subprocess
+
 pp = pprint.PrettyPrinter(indent=4)
 
 def get_auth():
     auth = audible.FileAuthenticator(".audible-creds.json")
     auth.to_file(".audible-creds.json", encryption=False)
     return auth
+
 
 # get download link(s) for book
 def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
@@ -52,29 +55,50 @@ def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
             print(f"Error: {e}")
             return
 
-def download_file(url, asin, codec="LC_64_22050_stereo"):
+def get_dl_filename(asin, purchased, codec, disposition):
+    attachment = disposition.split("filename=")[1]
+    title, ext = os.path.splitext(attachment)
+
+    return pathlib.Path.cwd() / "audiobooks" / f"{purchased}-{title}.{asin}.{codec}{ext}"
+
+
+def get_clean_filename(dl_filename):
+    base_path, _ = os.path.splitext(dl_filename)
+    return f"{base_path}.m4a"
+
+
+def download_file(url, asin, purchased='1970-01-01', codec="LC_64_22050_stereo"):
     r = requests.get(url, stream=True)
 
     if not("Content-Disposition" in r.headers):
         print(f"no content-disposition for {url}")
-        return ""
+        return
 
-    attachment = r.headers["Content-Disposition"].split("filename=")[1]
-    title, ext = os.path.splitext(attachment)
-    filename = pathlib.Path.cwd() / "audiobooks" / f"{title}.{asin}.{codec}{ext}"
+    dl_filename = get_dl_filename(asin, purchased, codec,
+                                r.headers["Content-Disposition"])
 
     try:
-        s = os.stat(filename)
+        s = os.stat(dl_filename)
         if s.st_size == int(r.headers["Content-Length"]):
             print(f"SKIPPING {title}.{asin} (already exists and size matches)")
-            return filename
+            return dl_filename
     except OSError as e:
         True
 
-    with open(filename, 'wb') as f:
+    print(f"SKIPPING DL (just because) => {dl_filename}")
+    return
+
+    with open(dl_filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
-    print(f"DOWNLOADED => {filename}")
-    return filename
+    print(f"DOWNLOADED => {dl_filename}")
+    return dl_filename
+
+def convert_file(dl_filename):
+    clean_filename = get_clean_filename(dl_filename)
+    cmd = ["ffmpeg", "-activation_bytes", os.getenv('activation_bytes'),
+            "-i", dl_filename, "-c:a", "copy", clean_filename ]
+    subprocess.run(cmd, check=True)
+    return clean_filename
 
 
 if __name__ == "__main__":
@@ -92,12 +116,18 @@ if __name__ == "__main__":
 
     for book in books["items"]:
         asin = book["asin"]
+        purchased = book["purchase_date"].split("T")[0]
+
         print()
-        print(f"asin: {asin}")
+        print(f"asin: {asin}, purchased {purchased}")
         print(f"summary {book['merchandising_summary']}")
 
         dl_link = _get_download_link(client, asin)
 
         if dl_link:
             print(f"download link now: {dl_link}")
-            status = download_file(dl_link, asin)
+            status = download_file(dl_link, asin, purchased)
+            if status:
+                convert_file(status)
+            else:
+                print(f"SKIPPING CONVERSION (no filename) <= {dl_link}")
