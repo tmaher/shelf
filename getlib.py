@@ -110,7 +110,8 @@ if __name__ == "__main__":
         path="library",
         params={
             "response_groups": "product_attrs",
-            "num_results": "999"
+            "num_results": "999",
+            "sort_by": "PurchaseDate"
             }
     )
 
