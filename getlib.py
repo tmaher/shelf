@@ -85,8 +85,9 @@ def download_file(url, asin, purchased='1970-01-01', codec="LC_64_22050_stereo")
     except OSError as e:
         True
 
-    print(f"SKIPPING DL (just because) => {dl_filename}")
-    return
+    if os.getenv('dl_dryrun'):
+        print(f"SKIPPING DL (just because) => {dl_filename}")
+        return
 
     with open(dl_filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
