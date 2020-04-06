@@ -118,7 +118,7 @@ def get_codec(book):
     for pc in preferred_codecs:
         if pc in avail_codecs:
             return pc
-    raise RuntimeError(f"no acceptable codecs for {book['asin']}")
+    raise RuntimeError(f"no acceptable codecs for {book['title']} ({book['asin']})")
 
 if __name__ == "__main__":
 
@@ -128,8 +128,8 @@ if __name__ == "__main__":
     books, _ = client.get(
         path="library",
         params={
-            "response_groups": "product_attrs",
-            "num_results": "999",
+            "response_groups": "contributors,product_desc,product_attrs",
+            "num_results": "1000",
             "sort_by": "PurchaseDate"
             }
     )
@@ -139,9 +139,8 @@ if __name__ == "__main__":
         book['purchased'] = purchased
 
         print()
-        print(f"asin: {book['asin']}, purchased {book['purchased']}")
-        pp.pprint(book)
-        print(f"summary {book['merchandising_summary']}")
+        print(f"{book['purchased']}: {book['title']} ({book['asin']})")
+        print(book['merchandising_summary'])
 
         dl_link = _get_download_link(client, book)
 
