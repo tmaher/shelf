@@ -104,7 +104,7 @@ asset_files.sort.each do |file|
   item[:size] = File.size(file).to_s
   item[:category] = raw[:_genre] || "Podcasts"
 
-  fm = file.match(/^(\d+-\d+-\d+)-/) then
+  fm = file.match(/^(\d+-\d+-\d+)-/)
   item[:pub_date] = if fm then
                       Time.parse(fm[1]).rfc822
                     else
@@ -124,6 +124,7 @@ asset_files.sort.each do |file|
   item_content = <<-HTML
     <item>
       <title>#{item[:title].encode(:xml => :text)}</title>
+      <itunes:title>#{item[:title].encode(:xml => :text)}</itunes:title>
       <description>#{item[:desc_long].encode(:xml => :text)}</description>
       <itunes:subtitle>#{item[:desc_short].encode(:xml => :text)}</itunes:subtitle>
       <itunes:summary>#{item[:desc_short].encode(:xml => :text)}</itunes:summary>
