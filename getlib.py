@@ -21,7 +21,10 @@ def get_auth():
 
 
 # get download link(s) for book
-def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
+def _get_download_link(client, book):
+    asin = book['asin']
+    codec = get_codec(book)
+    book['codec'] = codec
     # need at least v0.2.1a4
     try:
         content_url = "https://cde-ta-g7g.amazon.com/FionaCDEServiceEngine/FSDownloadContent"
@@ -55,11 +58,11 @@ def _get_download_link(client, asin, codec="LC_64_22050_stereo"):
             print(f"Error: {e}")
             return
 
-def get_dl_filename(asin, purchased, codec, disposition):
+def get_dl_filename(book, disposition):
     attachment = disposition.split("filename=")[1]
     title, ext = os.path.splitext(attachment)
 
-    return pathlib.Path.cwd() / "audiobooks" / f"{purchased}-{title}.{asin}.{codec}{ext}"
+    return pathlib.Path.cwd() / "audiobooks" / f"{book['purchased']}-{title}.{book['asin']}.{book['codec']}{ext}"
 
 
 def get_clean_filename(dl_filename):
@@ -67,15 +70,16 @@ def get_clean_filename(dl_filename):
     return f"{base_path}.m4a"
 
 
-def download_file(url, asin, purchased='1970-01-01', codec="LC_64_22050_stereo"):
+def download_file(url, book):
+
+    #asin, purchased='1970-01-01', codec="LC_64_22050_stereo"):
     r = requests.get(url, stream=True)
 
     if not("Content-Disposition" in r.headers):
         print(f"no content-disposition for {url}")
         return
 
-    dl_filename = get_dl_filename(asin, purchased, codec,
-                                r.headers["Content-Disposition"])
+    dl_filename = get_dl_filename(book, r.headers["Content-Disposition"])
 
     try:
         s = os.stat(dl_filename)
@@ -101,6 +105,20 @@ def convert_file(dl_filename):
                     check=True)
     return clean_filename
 
+def get_codec(book):
+    preferred_codecs = [
+        "LC_128_44100_stereo",
+        "LC_64_44100_stereo",
+        "LC_64_22050_stereo",
+        "LC_32_22050_stereo"
+    ]
+    avail_codecs = {}
+    for c in book['available_codecs']:
+        avail_codecs[c['enhanced_codec']] = True
+    for pc in preferred_codecs:
+        if pc in avail_codecs:
+            return pc
+    raise RuntimeError(f"no acceptable codecs for {book['asin']}")
 
 if __name__ == "__main__":
 
@@ -117,18 +135,19 @@ if __name__ == "__main__":
     )
 
     for book in books["items"]:
-        asin = book["asin"]
         purchased = book["purchase_date"].split("T")[0]
+        book['purchased'] = purchased
 
         print()
-        print(f"asin: {asin}, purchased {purchased}")
+        print(f"asin: {book['asin']}, purchased {book['purchased']}")
+        pp.pprint(book)
         print(f"summary {book['merchandising_summary']}")
 
-        dl_link = _get_download_link(client, asin)
+        dl_link = _get_download_link(client, book)
 
         if dl_link:
             print(f"download link now: {dl_link}")
-            status = download_file(dl_link, asin, purchased)
+            status = download_file(dl_link, book)
             if status:
                 convert_file(status)
             else:
