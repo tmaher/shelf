@@ -88,6 +88,13 @@ asset_files.sort.each do |file|
   end
   raw[:_track] ||= "#{file_num}"
 
+  img_file = "#{file_short}.jpg"
+  item[:artwork] = if File.readable?(img_file) then
+                     "#{conf[:url_base]}/#{url_encode(img_file)}"
+                   else
+                     conf[:artwork]
+                   end
+
   item[:title] = "#{raw[:_track]}. #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
   item[:artist] = raw[:_artist] || raw[:_albumartist] || item[:title]
   item[:duration] = raw[:_duration_time] || raw[:duration].to_i
@@ -122,6 +129,7 @@ asset_files.sort.each do |file|
       <pubDate>#{item[:pub_date].encode(:xml => :text)}</pubDate>
       <guid isPermaLink="false">#{item[:guid].encode(:xml => :text)}</guid>
       <itunes:author>#{item[:artist].encode(:xml => :text)}</itunes:author>
+      <itunes:image href=#{item[:artwork].encode(:xml => :attr)} />
       <itunes:duration>#{item[:duration].to_s.encode(:xml => :text)}</itunes:duration>
     </item>
 HTML
@@ -135,11 +143,15 @@ content = <<-HTML
   <channel>
     <title>#{conf[:title].encode(:xml => :text)}</title>
     <link>#{conf[:url_homepage].encode(:xml => :text)}</link>
+    <language>en-us</language>
     <description>#{conf[:description].encode(:xml => :text)}</description>
     <pubDate>#{conf[:pub_date].encode(:xml => :text)}</pubDate>
+    <itunes:owner><itunes:email>postmaster@example.com</itunes:email></itunes:owner>
     <itunes:image href=#{conf[:artwork].encode(:xml => :attr)} />
+    <itunes:explicit>true</itunes:explicit>
     <itunes:subtitle>#{conf[:description].to_s[0,254].encode(:xml => :text)}</itunes:subtitle>
     <itunes:summary>#{conf[:description].to_s[0,3999].encode(:xml => :text)}</itunes:summary>
+    <itunes:category text="Arts"><itunes:category text="Books"/></itunes:category>
 #{items_content}
   </channel>
 </rss>

@@ -67,7 +67,7 @@ def get_dl_filename(book, disposition):
 
 def get_clean_filename(dl_filename):
     base_path, _ = os.path.splitext(dl_filename)
-    return f"{base_path}.m4a"
+    return base_path
 
 
 def download_file(url, book):
@@ -103,7 +103,12 @@ def convert_file(dl_filename):
     subprocess.run(["ffmpeg", "-y",
                         "-activation_bytes", os.getenv('activation_bytes'),
                         "-i", dl_filename,
-                        "-vn", "-c:a", "copy", clean_filename],
+                        "-vn", "-c:a", "copy", f"{clean_filename}.m4a"],
+                    check=True)
+    subprocess.run(["ffmpeg", "-y",
+                        "-activation_bytes", os.getenv('activation_bytes'),
+                        "-i", dl_filename,
+                        "-an", "-c:v", "copy", f"{clean_filename}.jpg"],
                     check=True)
     return clean_filename
 
