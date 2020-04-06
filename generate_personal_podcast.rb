@@ -75,7 +75,7 @@ asset_files.sort.each do |file|
   puts "adding file: #{file}"
   file_short = file.gsub(/\.(mp3|m4a|m4b)$/, '')
   item_iter += 1
-  fm = file.match(/^(\d+-\d+-\d+)-/)
+  fm = file.match(/^(\d+-\d+-\d+)/)
   ep_num = fm[1] ? fm : item_iter
 
   #file_num = file.match(/\A\d+-\d/) ? file.match(/\A(\d+-\d+-\d+)-/)[1] : item_iter
@@ -109,7 +109,7 @@ asset_files.sort.each do |file|
   item[:size] = File.size(file).to_s
   item[:category] = raw[:_genre] || "Podcasts"
 
-  fm = file.match(/^(\d+-\d+-\d+)-/)
+  fm = file.match(/^(\d+-\d+-\d+)/)
   item[:pub_date] = if fm then
                       Time.parse(fm[1]).rfc822
                     else
