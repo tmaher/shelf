@@ -76,7 +76,7 @@ asset_files.sort.each do |file|
   file_short = file.gsub(/\.(mp3|m4a|m4b)$/, '')
   item_iter += 1
   fm = file.match(/^(\d+-\d+-\d+)-/)
-  file_num = fm[1] ? fm : item_iter
+  ep_num = fm[1] ? fm : item_iter
 
   #file_num = file.match(/\A\d+-\d/) ? file.match(/\A(\d+-\d+-\d+)-/)[1] : item_iter
 
@@ -89,7 +89,7 @@ asset_files.sort.each do |file|
     key, val = tag.match(tag_regexp)[1,2]
     raw[key.gsub(/^TAG:/, '_').to_sym] = val.to_s
   end
-  raw[:_track] ||= "#{file_num}"
+  raw[:_track] ||= ep_num
 
   img_file = "#{file_short}.jpg"
   item[:artwork] = if File.readable?(img_file) then
@@ -98,7 +98,7 @@ asset_files.sort.each do |file|
                      conf[:artwork]
                    end
 
-  item[:title] = "#{raw[:_track]}. #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
+  item[:title] = "#{raw[:_track]} #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
   item[:artist] = raw[:_artist] || raw[:_albumartist] || item[:title]
   item[:duration] = raw[:_duration_time] || raw[:duration].to_i
   item[:url] = "#{conf[:url_base]}/#{url_encode(file)}"
