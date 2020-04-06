@@ -98,7 +98,7 @@ asset_files.sort.each do |file|
                      conf[:artwork]
                    end
 
-  item[:title] = "#{raw[:_track]} #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
+  item[:title] = "#{ep_num} #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
   item[:artist] = raw[:_artist] || raw[:_albumartist] || item[:title]
   item[:duration] = raw[:_duration_time] || raw[:duration].to_i
   item[:url] = "#{conf[:url_base]}/#{url_encode(file)}"
