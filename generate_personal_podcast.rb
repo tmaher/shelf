@@ -93,8 +93,10 @@ asset_files.sort.each do |file|
 
   img_file = "#{file_short}.jpg"
   item[:artwork] = if File.readable?(img_file) then
+                     puts "reading img file #{img_file}"
                      "#{conf[:url_base]}/#{url_encode(img_file)}"
                    else
+                     puts "not reading #{img_file}"
                      conf[:artwork]
                    end
 
