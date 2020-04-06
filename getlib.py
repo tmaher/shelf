@@ -14,6 +14,11 @@ import subprocess
 
 pp = pprint.PrettyPrinter(indent=4)
 
+def assert_env_vars():
+    for var in ['activation_bytes', 'target_dir']:
+        if not(os.getenv(var)):
+            raise RuntimeError(f"must set shell env var {var}")
+
 def get_auth():
     auth = audible.FileAuthenticator(".audible-creds.json")
     auth.to_file(".audible-creds.json", encryption=False)
@@ -62,7 +67,7 @@ def get_dl_filename(book, disposition):
     attachment = disposition.split("filename=")[1]
     title, ext = os.path.splitext(attachment)
 
-    return pathlib.Path.cwd() / "audiobooks" / f"{book['purchased']}-{title}.{book['asin']}.{book['codec']}{ext}"
+    return os.getenv("target_dir") / f"{book['purchased']}-{title}.{book['asin']}.{book['codec']}{ext}"
 
 
 def get_clean_filename(dl_filename):
@@ -137,6 +142,7 @@ def get_codec(book):
 
 if __name__ == "__main__":
 
+    assert_env_vars()
     auth = get_auth()
     client = audible.AudibleAPI(auth)
 
