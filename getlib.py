@@ -96,9 +96,9 @@ def download_file(url, asin, purchased='1970-01-01', codec="LC_64_22050_stereo")
 
 def convert_file(dl_filename):
     clean_filename = get_clean_filename(dl_filename)
-    cmd = ["ffmpeg", "-activation_bytes", os.getenv('activation_bytes'),
-            "-i", dl_filename, "-c:a", "copy", clean_filename ]
-    subprocess.run(cmd, check=True)
+    subprocess.run(["ffmpeg", "-activation_bytes", os.getenv('activation_bytes'),
+                        "-i", dl_filename, "-c:a", "copy", clean_filename ],
+                    check=True)
     return clean_filename
 
 
