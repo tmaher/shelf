@@ -100,8 +100,9 @@ def download_file(url, book):
 
 def convert_file(dl_filename):
     clean_filename = get_clean_filename(dl_filename)
-    subprocess.run(["ffmpeg", "-activation_bytes", os.getenv('activation_bytes'),
-                        "-i", dl_filename, "-c:a", "copy", clean_filename ],
+    subprocess.run(["ffmpeg", "-y",
+                        "-activation_bytes", os.getenv('activation_bytes'),
+                        "-i", dl_filename, "-c:a", "copy", clean_filename],
                     check=True)
     return clean_filename
 
