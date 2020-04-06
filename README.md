@@ -16,3 +16,5 @@ pipenv run ./getlib.py
 cd "${target_dir}"
 "${shelfdir}/generate_personal_podcast.rb"
 ```
+
+See also https://github.com/inAudible-NG/tables for activation_bytes
