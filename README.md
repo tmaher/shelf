@@ -13,7 +13,6 @@ export shelfdir=$PWD
 pipenv install
 pipenv run ./getlib.py
 
-rsync -avP audiobooks/*.{m4a,jpg} "${target_dir}/"
 cd "${target_dir}"
 "${shelfdir}/generate_personal_podcast.rb"
 ```
