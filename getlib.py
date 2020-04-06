@@ -100,17 +100,25 @@ def download_file(url, book):
 
 def convert_file(dl_filename):
     clean_filename = get_clean_filename(dl_filename)
+    m4a_file = f"{clean_filename}.m4a"
+
+    if (os.access(m4a_file, os.R_OK) and
+        (os.path.getmtime(m4a_file) > os.path.getmtime(dl_filename))):
+        print(f"SKIPPING CONVERT (m4a newer than aax) {dl_filename}")
+        return clean_filename
+
     subprocess.run(["ffmpeg", "-y",
-                        "-activation_bytes", os.getenv('activation_bytes'),
-                        "-i", dl_filename,
-                        "-vn", "-c:a", "copy", f"{clean_filename}.m4a"],
-                    check=True)
+                    "-activation_bytes", os.getenv('activation_bytes'),
+                    "-i", dl_filename,
+                    "-vn", "-c:a", "copy", m4a_file],
+                check=True)
     subprocess.run(["ffmpeg", "-y",
-                        "-activation_bytes", os.getenv('activation_bytes'),
-                        "-i", dl_filename,
-                        "-an", "-c:v", "copy", f"{clean_filename}.jpg"],
-                    check=True)
-    return clean_filename
+                    "-activation_bytes", os.getenv('activation_bytes'),
+                    "-i", dl_filename,
+                    "-an", "-c:v", "copy", f"{clean_filename}.jpg"],
+                check=True)
+
+    return m4a_file
 
 def get_codec(book):
     preferred_codecs = [
