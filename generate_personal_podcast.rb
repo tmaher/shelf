@@ -75,7 +75,10 @@ asset_files.sort.each do |file|
   puts "adding file: #{file}"
   file_short = file.gsub(/\.(mp3|m4a|m4b)$/, '')
   item_iter += 1
-  file_num = file.match(/\A\d+-/) ? file.match(/\A(\d+)-/)[1] : item_iter
+  fm = file.match(/^(\d+-\d+-\d+)-/)
+  file_num = fm[1] ? fm : item_iter
+
+  #file_num = file.match(/\A\d+-\d/) ? file.match(/\A(\d+-\d+-\d+)-/)[1] : item_iter
 
   probe = `ffprobe 2> /dev/null -show_format \"#{file}\"`
 
