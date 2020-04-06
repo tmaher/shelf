@@ -66,7 +66,7 @@ def _get_download_link(client, book):
 def get_dl_filename(book, disposition):
     attachment = disposition.split("filename=")[1]
     title, ext = os.path.splitext(attachment)
-    dl_filename = f"{os.getenv("target_dir")}/{book['purchased']}-{title}.{book['asin']}.{book['codec']}{ext}"
+    dl_filename = f"{os.getenv('target_dir')}/{book['purchased']}-{title}.{book['asin']}.{book['codec']}{ext}"
 
     return dl_filename
 
