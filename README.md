@@ -1,4 +1,9 @@
+# Shelf!
+
+## my audiobook shelf
+
 ```
+git clone ...
 cd shelf
 export shelfdir=$PWD
 
