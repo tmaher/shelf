@@ -104,14 +104,19 @@ asset_files.sort.each do |file|
   item[:size] = File.size(file).to_s
   item[:category] = raw[:_genre] || "Podcasts"
 
-  item[:pub_date] = begin
-    # Time.parse(raw[:_date]).rfc822
-    # use fake pub_date to get sort order right
-    (Time.at(0) + ((item_iter * 86400 * 365.24)/4)).rfc822
-  rescue Exception => e
-    puts "#{e}: faking the time"
-    Time.now.rfc822
-  end
+  fm = file.match(/^(\d+-\d+-\d+)-/) then
+  item[:pub_date] = if fm then
+                      Time.parse(fm[1]).rfc822
+                    else
+                      begin
+                        # Time.parse(raw[:_date]).rfc822
+                        # use fake pub_date to get sort order right
+                        (Time.at(0) + ((item_iter * 86400 * 365.24)/4)).rfc822
+                      rescue Exception => e
+                        puts "#{e}: faking the time"
+                        Time.now.rfc822
+                      end
+                    end
 
   item[:desc_short] = raw[:_description] || raw[:_synopsis] || item[:artist] || ""
   item[:desc_long] = raw[:_synopsis] || raw[:_comment] || raw[:_description] || item[:artist] || ""
