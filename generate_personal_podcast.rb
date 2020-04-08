@@ -84,7 +84,7 @@ asset_files.sort.each do |file|
 
   # Some minor Moijibake cleanup
   replchar = (0xfffd).chr(Encoding::UTF_8)
-  probe = probe.gsub(/O#{replchar}+Sullivan/, "O'Sullivan").gsub(/#{replchar}/, "")
+  probe = probe.gsub(/O#{replchar}+Sullivan/, "O'Sullivan").gsub(/#{replchar}/, "🐻")
 
   item = {}
   raw = {}
