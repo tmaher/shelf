@@ -149,10 +149,16 @@ HTML
   items_content << item_content
 end
 
+feed_url = "#{conf[:url_homepage]}/rss"
 # Build the whole file
 content = <<-HTML
-<rss xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" version="2.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+    xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+    xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
+    <atom:link rel="self" type="application/rss+xml"
+               href=#{feed_url.encode(:xml => :text)}  />
     <title>#{conf[:title].encode(:xml => :text)}</title>
     <link>#{conf[:url_homepage].encode(:xml => :text)}</link>
     <language>en-us</language>
@@ -160,7 +166,7 @@ content = <<-HTML
     <pubDate>#{conf[:pub_date].encode(:xml => :text)}</pubDate>
     <itunes:owner><itunes:email>postmaster@example.com</itunes:email></itunes:owner>
     <itunes:image href=#{conf[:artwork].encode(:xml => :attr)} />
-    <itunes:explicit>true</itunes:explicit>
+    <itunes:explicit>yes</itunes:explicit>
     <itunes:subtitle>#{conf[:description].to_s[0,254].encode(:xml => :text)}</itunes:subtitle>
     <itunes:summary>#{conf[:description].to_s[0,3999].encode(:xml => :text)}</itunes:summary>
     <itunes:category text="Arts"><itunes:category text="Books"/></itunes:category>
