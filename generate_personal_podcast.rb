@@ -82,6 +82,10 @@ asset_files.sort.each do |file|
 
   probe = `ffprobe 2> /dev/null -show_format \"#{file}\"`
 
+  # Some minor Moijibake cleanup
+  replchar = (0xfffd).chr(Encoding::UTF_8)
+  probe = probe.gsub(/O#{replchar}+Sullivan/, "O'Sullivan").gsub(/#{replchar}/, "")
+
   item = {}
   raw = {}
   tag_regexp = /^(\w[\w:]+)=(.*)$/
