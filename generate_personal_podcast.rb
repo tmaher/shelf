@@ -158,7 +158,7 @@ content = <<-HTML
     xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <atom:link rel="self" type="application/rss+xml"
-               href=#{feed_url.encode(:xml => :text)}  />
+               href=#{feed_url.encode(:xml => :attr)} />
     <title>#{conf[:title].encode(:xml => :text)}</title>
     <link>#{conf[:url_homepage].encode(:xml => :text)}</link>
     <language>en-us</language>
