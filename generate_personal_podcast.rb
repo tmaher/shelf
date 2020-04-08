@@ -100,7 +100,8 @@ asset_files.sort.each do |file|
                      conf[:artwork]
                    end
 
-  item[:title] = "#{ep_num} #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
+  item[:title] = "#{(raw[:_title] || file_short.gsub(/^\d+-\d+-\d+-/, ''))}".gsub(/^\. /, '')
+  # item[:title] = "#{ep_num} #{(raw[:_title] || file_short).gsub(/\A\d+-/, '')}".gsub(/^\. /, '')
   item[:artist] = raw[:_artist] || raw[:_albumartist] || item[:title]
   item[:duration] = raw[:_duration_time] || raw[:duration].to_i
   item[:url] = "#{conf[:url_base]}/#{url_encode(file)}"
@@ -111,7 +112,7 @@ asset_files.sort.each do |file|
 
   fm = file.match(/^(\d+-\d+-\d+)/)
   item[:pub_date] = if fm then
-                      Time.parse(fm[1]).rfc822
+                      (Time.parse(fm[1]) + (3600 * 12)).rfc822
                     else
                       begin
                         # Time.parse(raw[:_date]).rfc822
