@@ -11,6 +11,7 @@ import audible
 import requests
 import pprint
 import subprocess
+import json
 
 pp = pprint.PrettyPrinter(indent=4)
 
