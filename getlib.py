@@ -89,7 +89,7 @@ def download_file(url, book):
     clean_filename = get_clean_filename(dl_filename)
     apidata_filename = f"{clean_filename}.json"
     with open(apidata_filename, 'wb') as f:
-        f.write(json_dumps(book))
+        f.write(json.dumps(book))
 
     try:
         s = os.stat(dl_filename)
