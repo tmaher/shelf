@@ -103,7 +103,7 @@ def download_file(url, book):
         print(f"SKIPPING DL (just because) => {dl_filename}")
         return
 
-    with open(dl_filename, 'wb') as f:
+    with open(dl_filename, 'w') as f:
         shutil.copyfileobj(r.raw, f)
     print(f"DOWNLOADED => {dl_filename}")
     return dl_filename
