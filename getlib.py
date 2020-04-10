@@ -88,7 +88,7 @@ def download_file(url, book):
     dl_filename = get_dl_filename(book, r.headers["Content-Disposition"])
     clean_filename = get_clean_filename(dl_filename)
     apidata_filename = f"{clean_filename}.json"
-    with open(apidata_filename, 'wb') as f:
+    with open(apidata_filename, 'w') as f:
         f.write(json.dumps(book))
 
     try:
@@ -103,7 +103,7 @@ def download_file(url, book):
         print(f"SKIPPING DL (just because) => {dl_filename}")
         return
 
-    with open(dl_filename, 'w') as f:
+    with open(dl_filename, 'wb') as f:
         shutil.copyfileobj(r.raw, f)
     print(f"DOWNLOADED => {dl_filename}")
     return dl_filename
