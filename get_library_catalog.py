@@ -39,7 +39,7 @@ if __name__ == "__main__":
         with audible.Client(auth=account) as client:
             library = client.get(
                 "1.0/library",
-                num_results=5,
+                num_results=1000,
                 response_groups="contributors,product_desc,product_attrs",
                 sort_by="-PurchaseDate"
             )
