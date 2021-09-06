@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+appdir=os.path.dirname(os.path.abspath(__file__))
+os.chdir(appdir)
+
+import pathlib
+import shutil
+import audible
+import requests
+import pprint
+import subprocess
+import json
+import readline
+import glob
+
+pp = pprint.PrettyPrinter(indent=4)
+
+def assert_env_vars():
+    for var in ['target_dir']:
+        if not(os.getenv(var)):
+            raise RuntimeError(f"must set shell env var {var}")
+
+def get_auth_creds():
+    return map(audible.Authenticator.from_file, glob.glob('creds/*'))
+
+if __name__ == "__main__":
+
+    assert_env_vars()
+    target_dir = os.getenv('target_dir')
+
+    for account in get_auth_creds():
+        cc = account.locale.country_code
+        ab = account.activation_bytes
+        catalog_dir = f"{target_dir}/catalog/{cc}.{ab}"
+        print(f"using catalog {catalog_dir}")
+
+        with audible.Client(auth=account) as client:
+            for asin_file in glob.glob(f'{catalog_dir}/*.json'):
+                book = json.load(open(asin_file))
+                asin  = book['asin']
+                if '_DONE' in book and book['_DONE']:
+                    print(f"SKIPPING {asin} is already _DONE")
+                    continue
+
+                license = client.post(
+                    f"1.0/content/{asin}/licenserequest",
+                    {"consumption_type": "Download",
+                        "supported_drm_types": ["Mpeg", "Adrm"],
+                        "quality": "Extreme"
+                    }
+                )
+                decrypted_voucher = audible.aescipher.decrypt_voucher_from_licenserequest(account, license)
+                asset_url = license['content_license']['content_metadata']['content_url']['offline_url']
+
+                #print(f"** LICENSE REQ => '{license}'")
+                #print(f"** DECRYPTED   => '{decrypted_voucher}'")
+                print(f"** ASIN/Title  => '{asin} / {book['title']}'")
+                print(f"** TITLE => '{book['title']}'")
+                print(f"** ASSET URL => '{asset_url}'")
+
+                book['_DONE'] = False
+                with open(asin_file, 'w') as f:
+                    json.dump(book, f)
+                print(f"marked {asin} as done\n\n")
