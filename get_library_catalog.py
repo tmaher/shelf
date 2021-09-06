@@ -31,15 +31,15 @@ if __name__ == "__main__":
     target_dir = os.getenv('target_dir')
 
     for account in get_auth_creds():
-        ab = account.activation_bytes
         cc = account.locale.country_code
+        ab = account.activation_bytes
         os.makedirs(f'{target_dir}/catalog', 0o0700, exist_ok=True)
         os.makedirs(f'{target_dir}/catalog/{cc}.{ab}', 0o0700, exist_ok=True)
 
         with audible.Client(auth=account) as client:
             library = client.get(
                 "1.0/library",
-                num_results=1000,
+                num_results=2,
                 response_groups="contributors,product_desc,product_attrs",
                 sort_by="-PurchaseDate"
             )
