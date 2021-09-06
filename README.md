@@ -49,7 +49,7 @@ pipenv run ./register.py
 unset audible_locale
 ## end first time only section for credential registration
 
-pipenv run get_library_metadata.py
+pipenv run get_library_catalog.py
 
 ```
 
