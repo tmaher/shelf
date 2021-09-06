@@ -34,7 +34,7 @@ if __name__ == "__main__":
         ab = account.activation_bytes
         cc = account.locale.country_code
         os.makedirs(f'{target_dir}/catalog', 0o0700, exist_ok=True)
-        os.makedirs(f'{target_dir}/catalog/{ab}.{cc}', 0o0700, exist_ok=True)
+        os.makedirs(f'{target_dir}/catalog/{cc}.{ab}', 0o0700, exist_ok=True)
 
         with audible.Client(auth=account) as client:
             library = client.get(
@@ -46,6 +46,6 @@ if __name__ == "__main__":
             for book in library["items"]:
                 asin = book['asin']
 
-                meta_file = f"{target_dir}/catalog/{ab}.{cc}/{asin}.json"
-                with open(meta_file, 'w') as f:
+                catalog_file = f"{target_dir}/catalog/{cc}.{ab}/{asin}.json"
+                with open(catalog_file, 'w') as f:
                     f.write(json.dumps(book))
