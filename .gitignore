@@ -1,5 +1,6 @@
 tables/
 .audible-creds.json
 secrets.env.sh
-tmp/*
+tmp/
 creds/*
+!creds/.gitignore
