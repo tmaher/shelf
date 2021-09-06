@@ -39,12 +39,9 @@ if __name__ == "__main__":
         locale=my_locale,
         register=True
     )
-    ab = auth.get_activation_bytes()
-    print(f'activation bytes: {ab}')
-
-    auth.to_file(f'creds/{my_locale}.json', encryption=False)
-
-    #auth = audible.Authenticator.from_file(f'creds/{my_locale}.json')
+    ab = auth.get_activation_bytes().rjust(8, '0')
+    auth.activation_bytes = ab
+    auth.to_file(f'creds/{ab}.{my_locale}.json', encryption=False)
 
     with audible.Client(auth=auth) as client:
         library = client.get(
