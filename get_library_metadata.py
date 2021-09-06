@@ -31,7 +31,11 @@ if __name__ == "__main__":
     target_dir = os.getenv('target_dir')
 
     for account in get_auth_creds():
-        #pp.pprint(account)
+        ab = account.activation_bytes
+        cc = account.locale.country_code
+        os.makedirs(f'{target_dir}/meta', 0o0700, exist_ok=True)
+        os.makedirs(f'{target_dir}/meta/{ab}.{cc}', 0o0700, exist_ok=True)
+
         with audible.Client(auth=account) as client:
             library = client.get(
                 "1.0/library",
@@ -42,8 +46,6 @@ if __name__ == "__main__":
             for book in library["items"]:
                 asin = book['asin']
 
-                meta_file = f"{target_dir}/meta/{asin}.json"
+                meta_file = f"{target_dir}/meta/{ab}.{cc}/{asin}.json"
                 with open(meta_file, 'w') as f:
                     f.write(json.dumps(book))
-
-                sys.exit()
