@@ -18,7 +18,7 @@ import glob
 pp = pprint.PrettyPrinter(indent=4)
 
 def assert_env_vars():
-    for var in ['PATH']:
+    for var in ['target_dir']:
         if not(os.getenv(var)):
             raise RuntimeError(f"must set shell env var {var}")
 
@@ -26,7 +26,9 @@ def get_auth_creds():
     return map(audible.Authenticator.from_file, glob.glob('creds/*'))
 
 if __name__ == "__main__":
-    all_books = []
+
+    assert_env_vars()
+    target_dir = os.getenv('target_dir')
 
     for account in get_auth_creds():
         #pp.pprint(account)
@@ -38,19 +40,10 @@ if __name__ == "__main__":
                 sort_by="-PurchaseDate"
             )
             for book in library["items"]:
-                all_books.append(book)
                 asin = book['asin']
-                print(f'got asin {asin}')
-                license = client.post(
-                    f"1.0/content/{asin}/licenserequest",
-                    {"consumption_type": "Download",
-                        "supported_drm_types": ["Mpeg", "Adrm"],
-                        "quality": "Extreme"
-                    }
-                )
-                pp.pprint(license)
-                decrypted_voucher = audible.aescipher.decrypt_voucher_from_licenserequest(account, license)
-                print(f"decrypted => '{decrypted_voucher}'")
 
-    #for book in all_books:
-    #    pp.pprint(book)
+                meta_file = f"{target_dir}/meta/{asin}.json"
+                with open(meta_file, 'w') as f:
+                    f.write(json.dumps(book))
+
+                sys.exit()
