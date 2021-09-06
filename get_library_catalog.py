@@ -39,13 +39,13 @@ if __name__ == "__main__":
         with audible.Client(auth=account) as client:
             library = client.get(
                 "1.0/library",
-                num_results=3,
+                num_results=5,
                 response_groups="contributors,product_desc,product_attrs",
                 sort_by="-PurchaseDate"
             )
             for book in library["items"]:
                 asin = book['asin']
-
+                print(f"found '{book['title']}' by {book['authors'][0]['name']}")
                 catalog_file = f"{target_dir}/catalog/{cc}.{ab}/{asin}.json"
                 with open(catalog_file, 'w') as f:
                     f.write(json.dumps(book))
