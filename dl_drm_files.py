@@ -40,8 +40,8 @@ if __name__ == "__main__":
             for asin_file in glob.glob(f'{catalog_dir}/*.json'):
                 book = json.load(open(asin_file))
                 asin  = book['asin']
-                if '_DONE' in book and book['_DONE']:
-                    print(f"SKIPPING {asin} is already _DONE")
+                if book['_STATE']:
+                    printf(f"** SKIPPING {asin} - state exists")
                     continue
 
                 license = client.post(
@@ -79,8 +79,7 @@ if __name__ == "__main__":
 
                 print(f"DOWNLOADED => {dl_filename}")
 
-                book['_DRM'] = decrypted_voucher
-                book['_DONE'] = True
+                book['_STATE']['_DRM'] = decrypted_voucher
                 with open(asin_file, 'w') as f:
                     json.dump(book, f)
                 print(f"marked {asin} as done\n\n")
