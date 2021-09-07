@@ -55,12 +55,32 @@ if __name__ == "__main__":
                 asset_url = license['content_license']['content_metadata']['content_url']['offline_url']
 
                 #print(f"** LICENSE REQ => '{license}'")
-                #print(f"** DECRYPTED   => '{decrypted_voucher}'")
+                print(f"** DECRYPTED   => '{decrypted_voucher}'")
                 print(f"** ASIN/Title  => '{asin} / {book['title']}'")
                 print(f"** TITLE => '{book['title']}'")
                 print(f"** ASSET URL => '{asset_url}'")
 
-                book['_DONE'] = False
+                dl_filename = f"{catalog_dir}/{asin}.aax"
+
+                #r = requests.get(asset_url, stream=True)
+                #r = requests.get(asset_url)
+                #r, _ = client._request(
+                #    "GET",
+                #    url=asset_url,
+                #    allow_redirects=True
+                #)
+                #print(f"** ** I got headers\n{r.headers}")
+
+                subprocess.run(["curl", "-s", "-D", "-",
+                    "-H", "User-agent:your-mom",
+                    "-o", dl_filename,
+                    asset_url],
+                    check=True)
+
+                print(f"DOWNLOADED => {dl_filename}")
+
+                book['_DRM'] = decrypted_voucher
+                book['_DONE'] = True
                 with open(asin_file, 'w') as f:
                     json.dump(book, f)
                 print(f"marked {asin} as done\n\n")
