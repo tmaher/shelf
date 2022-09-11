@@ -49,7 +49,11 @@ pipenv run ./register.py
 unset audible_locale
 ## end first time only section for credential registration
 
-pipenv run get_library_catalog.py
+pipenv run ./get_library_catalog.py
+pipenv run ./dl_drm_files.py
+pipenv run ./strip_drm.py
+
+... FINISH THIS FIX generate_personal_podcast.rb !!!
 
 ```
 
