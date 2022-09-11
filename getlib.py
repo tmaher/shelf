@@ -120,12 +120,12 @@ def convert_file(dl_filename):
     subprocess.run(["ffmpeg", "-y",
                     "-activation_bytes", os.getenv('activation_bytes'),
                     "-i", dl_filename,
-                    "-vn", "-c:a", "copy", m4a_file],
+                    "-c", "copy", m4a_file],
                 check=True)
     subprocess.run(["ffmpeg", "-y",
                     "-activation_bytes", os.getenv('activation_bytes'),
                     "-i", dl_filename,
-                    "-an", "-c:v", "copy", f"{clean_filename}.jpg"],
+                    "-an", "-vf", "scale=2000:-1", f"{clean_filename}.png"],
                 check=True)
 
     return m4a_file

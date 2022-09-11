@@ -95,7 +95,8 @@ asset_files.sort.each do |file|
   end
   raw[:_track] ||= ep_num
 
-  img_file = "#{file_short}.jpg"
+  #img_file = "#{file_short}.jpg"
+  img_file = "#{file_short}.png"
   item[:artwork] = if File.readable?(img_file) then
                      puts "reading img file #{img_file}"
                      "#{conf[:url_base]}/#{url_encode(img_file)}"
