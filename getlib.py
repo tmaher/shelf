@@ -21,10 +21,9 @@ def assert_env_vars():
             raise RuntimeError(f"must set shell env var {var}")
 
 def get_auth():
-    auth = audible.FileAuthenticator(".audible-creds.json")
-    auth.to_file(".audible-creds.json", encryption=False)
+    auth = audible.FileAuthenticator("/creds/audible.json")
+    auth.to_file("/creds/audible.json", encryption=False)
     return auth
-
 
 # get download link(s) for book
 def _get_download_link(client, book):
