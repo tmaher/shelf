@@ -1,5 +1,7 @@
 # Shelf!
 
+# this is the legacy branch
+
 ## my audiobook shelf
 
 ```
