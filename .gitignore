@@ -2,3 +2,5 @@ tables/
 .audible-creds.json
 secrets.env.sh
 *.env
+tmp/
+creds/
