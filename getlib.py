@@ -125,6 +125,7 @@ def convert_file(dl_filename):
     subprocess.run(["ffmpeg", "-y",
                     "-activation_bytes", os.getenv('activation_bytes'),
                     "-i", dl_filename,
+                    "-update", "1", "-frames:v", "1",
                     "-an", "-vf", "scale=2000:-1", f"{clean_filename}.png"],
                 check=True)
 
