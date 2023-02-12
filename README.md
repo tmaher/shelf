@@ -3,18 +3,12 @@
 ## my audiobook shelf
 
 ```
-git clone ...
-cd shelf
-export shelfdir=$PWD
-
-# for activation_bytes, target_dir
-. secrets.env.sh
-
-pipenv install
-pipenv run ./getlib.py
-
-cd "${target_dir}"
-"${shelfdir}/generate_personal_podcast.rb"
+docker run ghcr.io/tmaher/shelf \
+    -v /path/to/rssdir:/shelf
+    -v /path/to/credsdir:/creds
+    --env-file secrets.env
 ```
+
+`secrets.env` needs to contain `activation_bytes`
 
 See also https://github.com/inAudible-NG/tables for activation_bytes

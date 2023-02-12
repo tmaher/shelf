@@ -21,10 +21,9 @@ def assert_env_vars():
             raise RuntimeError(f"must set shell env var {var}")
 
 def get_auth():
-    auth = audible.FileAuthenticator(".audible-creds.json")
-    auth.to_file(".audible-creds.json", encryption=False)
+    auth = audible.FileAuthenticator("/creds/audible.json")
+    auth.to_file("/creds/audible.json", encryption=False)
     return auth
-
 
 # get download link(s) for book
 def _get_download_link(client, book):
@@ -125,6 +124,7 @@ def convert_file(dl_filename):
     subprocess.run(["ffmpeg", "-y",
                     "-activation_bytes", os.getenv('activation_bytes'),
                     "-i", dl_filename,
+                    "-update", "1", "-frames:v", "1",
                     "-an", "-vf", "scale=2000:-1", f"{clean_filename}.png"],
                 check=True)
 
