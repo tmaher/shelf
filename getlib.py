@@ -138,12 +138,15 @@ def get_codec(book):
         "LC_32_22050_stereo"
     ]
     avail_codecs = {}
-    for c in book['available_codecs']:
-        avail_codecs[c['enhanced_codec']] = True
-    for pc in preferred_codecs:
-        if pc in avail_codecs:
-            return pc
-    raise RuntimeError(f"no acceptable codecs for {book['title']} ({book['asin']})")
+    try:
+        for c in book['available_codecs']:
+            avail_codecs[c['enhanced_codec']] = True
+        for pc in preferred_codecs:
+            if pc in avail_codecs:
+                return pc
+    except TypeError:
+        True
+    raise RuntimeError(f"no acceptable codecs for {book['title']} ({book['asin']})")        
 
 if __name__ == "__main__":
 
