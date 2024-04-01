@@ -202,6 +202,31 @@ files = [
 ]
 
 [[package]]
+name = "isbnlib"
+version = "3.10.14"
+description = "Extract, clean, transform, hyphenate and metadata for ISBNs (International Standard Book Number)."
+optional = false
+python-versions = "*"
+files = [
+    {file = "isbnlib-3.10.14-py2.py3-none-any.whl", hash = "sha256:f885b350fc8e600a919ed46e3b07253062cd604af69885455a25a299217b3fe2"},
+    {file = "isbnlib-3.10.14.tar.gz", hash = "sha256:96f90864c77b01f55fa11e5bfca9fd909501d9842f3bc710d4eab85195d90539"},
+]
+
+[[package]]
+name = "isbntools"
+version = "4.3.29"
+description = "app and framework for 'all things ISBN' (International Standard Book Number) including metadata, descriptions, covers... ."
+optional = false
+python-versions = "*"
+files = [
+    {file = "isbntools-4.3.29-py2.py3-none-any.whl", hash = "sha256:b7e92d1db3b940e0b64356306f4288ad1334b436ccb1c396070f6a9685d56a49"},
+    {file = "isbntools-4.3.29.tar.gz", hash = "sha256:59e7eb8ca063b2241864166dca774fcbfb97ddd6ce5303ee91362753d6a8b90f"},
+]
+
+[package.dependencies]
+isbnlib = ">=3.10.9,<3.11.0"
+
+[[package]]
 name = "packaging"
 version = "24.0"
 description = "Core utilities for Python packages"
@@ -451,4 +476,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.12"
-content-hash = "7558db449e2b1c872a7f5b2c70f05bf85b6b8d45ad896340926e46b7665f645c"
+content-hash = "347080902a9cc09a90c92648a6349bf4aa2b0c8b0f0492b030089b677a12a89d"
