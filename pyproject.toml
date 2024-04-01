@@ -10,8 +10,6 @@ package-mode = false
 python = ">=3.11,<3.12"
 audible = "^0.9.1"
 audible-cli = "^0.3.1"
-httpx = ">=0.25"
-
 
 [build-system]
 requires = ["poetry-core"]
