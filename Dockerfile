@@ -1,4 +1,4 @@
-FROM python:3.12-alpine3.19
+FROM python:3.11-alpine3.19
 
 RUN mkdir /app
 COPY "Pipfile*" "*.rb" "*.py" "restock_shelf.sh" /app/
