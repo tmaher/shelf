@@ -6,8 +6,10 @@ mkdir -p ${target_dir}/dl ${target_dir}/pt
 cd ${target_dir}/dl
 
 audible download --aaxc --pdf --cover --cover-size 500 --chapter \
-    --annotation -j 4 --ignore-podcasts --all
-#    --start-date 2024-01-01 --end-date 2024-03-01
+    --annotation -j 4 --quality best \
+    --resolve-podcasts \
+    --all --end-date 2021-12-31
+# --start-date 2024-01-01 --end-date 2099-12-31
 
 audible decrypt --all --dir ${target_dir}/pt \
     --rebuild-chapters --force-rebuild-chapters
