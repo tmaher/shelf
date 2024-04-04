@@ -418,7 +418,7 @@ class FfmpegFileDecrypter:
             self._is_rebuilded = True
 
     def run(self):
-        oname = self._source.with_suffix(".m4b").name
+        oname = self._source.with_suffix(".m4a").name
         outfile = self._target_dir / oname
 
         if outfile.exists():
