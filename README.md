@@ -25,3 +25,4 @@ docker run ghcr.io/.../shelf \
     -v /path/to/config:/config
     --env-file secrets.env
 ```
+
