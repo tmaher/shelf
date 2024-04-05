@@ -78,7 +78,7 @@ def _get_input_files(
 
     return filenames
 
-class RssFileCreator:
+class EpisodeCreator:
     def __init__(
         self,
         file: pathlib.Path,
@@ -134,6 +134,41 @@ class RssFileCreator:
 @click.command("rss")
 @click.argument("files", nargs=-1)
 @click.option(
+    "--name",
+    type=str,
+    required=True,
+    help="Name of podcast"
+)
+@click.option(
+    "--desc",
+    "--description",
+    type=str,
+    default="",
+    help="Description"
+)
+@click.option(
+    "--website",
+    type=str,
+    default="",
+    help="podcast homepage"
+)
+@click.option(
+    "--explicit",
+    is_flag=True,
+    default=False,
+    help="Listener discretion is advised"
+)
+@click.option(
+    "--image",
+    type=str,
+    help="URL for the artwork image, e.g. https://example.com/cast.jpg"
+)
+@click.option(
+    "--media-url-prefix",
+    required=True,
+    help="URL prefix for the media files. If you have file foo.mp3 and it will be fetched as https://example.com/cast/foo.mp3 then set this to https://example.com/cast/"
+)
+@click.option(
     "--dir",
     "-d",
     "directory",
@@ -153,10 +188,16 @@ class RssFileCreator:
 @pass_session
 def cli(
     session,
+    name: str,
+    desc: str,
+    website: str,
+    explicit: bool,
+    media_url_prefix: str,
+    image: str,
     files: str,
     directory: t.Union[pathlib.Path, str],
     all_: bool,
-    overwrite: bool
+    overwrite: bool,
 ):
     """Generate RSS File"""
 
@@ -166,19 +207,26 @@ def cli(
 
     if all_:
         if files:
-            raise click.BadOptionUsage(
+            raise click.BadOptionUsage("all",
                 "If using `--all`, no FILES arguments can be used."
             )
         files = [f"*{suffix}" for suffix in SupportedFiles.get_supported_list()]
 
+    cast = Podcast(
+        name=name,
+        description=desc,
+        website=website,
+        explicit=explicit,
+    )
+
     files = _get_input_files(files, recursive=True)
     with tempfile.TemporaryDirectory() as tempdir:
         for file in files:
-            rss_file_creator = RssFileCreator(
+            episode_creator = EpisodeCreator(
                 file=file,
                 target_dir=pathlib.Path(directory).resolve(),
                 tempdir=pathlib.Path(tempdir).resolve(),
                 overwrite=overwrite
             )
-            rss_file_creator.run()
+            episode_creator.run()
     True
