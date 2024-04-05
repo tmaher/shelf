@@ -31,10 +31,115 @@ from audible_cli.exceptions import AudibleCliException
 class ChapterError(AudibleCliException):
     """Base class for all chapter errors."""
 
+class SupportedFiles(Enum):
+    AAX = ".aax"
+    AAXC = ".aaxc"
+    M4A = ".m4b"
+    M4B = ".m4a"
+    MP3 = ".mp3"
+    MP4 = ".mp4"
+    MOV = ".mov"
+
+    @classmethod
+    def get_supported_list(cls):
+        return list(set(item.value for item in cls))
+
+    @classmethod
+    def is_supported_suffix(cls, value):
+        return value in cls.get_supported_list()
+
+    @classmethod
+    def is_supported_file(cls, value):
+        return pathlib.PurePath(value).suffix in cls.get_supported_list()
+
+def _get_input_files(
+    files: t.Union[t.Tuple[str], t.List[str]],
+    recursive: bool = True
+) -> t.List[pathlib.Path]:
+    filenames = []
+    for filename in files:
+        # if the shell does not do filename globbing
+        expanded = list(glob(filename, recursive=recursive))
+
+        if (
+            len(expanded) == 0
+            and '*' not in filename
+            and not SupportedFiles.is_supported_file(filename)
+        ):
+            raise(click.BadParameter("{filename}: file not found or supported."))
+
+        expanded_filter = filter(
+            lambda x: SupportedFiles.is_supported_file(x), expanded
+        )
+        expanded = list(map(lambda x: pathlib.Path(x).resolve(), expanded_filter))
+        filenames.extend(expanded)
+
+    return filenames
+
+class RssFileCreator:
+    def __init__(
+        self,
+        file: pathlib.Path,
+        target_dir: pathlib.Path,
+        tempdir: pathlib.Path,
+        overwrite: bool
+    ) -> None:
+        self._source = file
+        self._target_dir = target_dir
+        self._tempdir = tempdir
+        self._overwrite = overwrite
+
+    def run(self):
+        print(f"file => {self._source}")
+
 @click.command("rss")
+@click.argument("files", nargs=-1)
+@click.option(
+    "--dir",
+    "-d",
+    "directory",
+    type=click.Path(exists=True, dir_okay=True),
+    default=pathlib.Path.cwd(),
+    help="Folder where the decrypted files should be saved.",
+    show_default=True
+)
+@click.option("--overwrite", is_flag=True, help="Overwrite existing files.")
+@click.option(
+    "--all",
+    "-a",
+    "all_",
+    is_flag=True,
+    help="RSS-ify all eligible media files in current dir ({0})".format(",".join(SupportedFiles.get_supported_list()))
+)
 @pass_session
 def cli(
-    session
+    session,
+    files: str,
+    directory: t.Union[pathlib.Path, str],
+    all_: bool,
+    overwrite: bool
 ):
     """Generate RSS File"""
+
+    if not which("ffprobe"):
+        ctx = click.get_current_context()
+        ctx.fail("ffprobe not found")
+
+    if all_:
+        if files:
+            raise click.BadOptionUsage(
+                "If using `--all`, no FILES arguments can be used."
+            )
+        files = [f"*{suffix}" for suffix in SupportedFiles.get_supported_list()]
+
+    files = _get_input_files(files, recursive=True)
+    with tempfile.TemporaryDirectory() as tempdir:
+        for file in files:
+            rss_file_creator = RssFileCreator(
+                file=file,
+                target_dir=pathlib.Path(directory).resolve(),
+                tempdir=pathlib.Path(tempdir).resolve(),
+                overwrite=overwrite
+            )
+            rss_file_creator.run()
     True
