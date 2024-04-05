@@ -17,5 +17,6 @@ audible download --aaxc --pdf --cover --cover-size 500 --chapter \
 audible decrypt --all --dir "${target_dir}/pt" \
     --rebuild-chapters --force-rebuild-chapters
 
+cp library.json "${target_dir}/pt"
 cd "${target_dir}/pt" || exit 1
 /app/generate_personal_podcast.rb
