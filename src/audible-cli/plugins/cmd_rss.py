@@ -90,17 +90,7 @@ class RssFileCreator:
         self._tempdir = tempdir
         self._overwrite = overwrite
 
-    def run(self):
-        oname = self._source.with_suffix(".xml").name
-        outfile = self._target_dir / oname
-
-        if outfile.exists():
-            if self._overwrite:
-                secho(f"Overwrite {outfile}: already exists", fg="blue")
-            else:
-                secho(f"Skip {outfile}: already exists", fg="blue")
-                return
-
+    def do_probe(self):
         base_cmd = [
             "ffprobe",
             "-show_format",
@@ -118,8 +108,27 @@ class RssFileCreator:
             probe_dict = json.loads(child_result.stdout)
         except json.JSONDecodeError:
             secho("f skip {outfile} json parse error from ffprobe")
-            return
-        pprint(probe_dict["format"])
+
+        self._probe = probe_dict["format"]
+        return 
+
+    def do_xml(self):
+        True
+
+    def run(self):
+        oname = self._source.with_suffix(".xml").name
+        outfile = self._target_dir / oname
+
+        if outfile.exists():
+            if self._overwrite:
+                secho(f"Overwrite {outfile}: already exists", fg="blue")
+            else:
+                secho(f"Skip {outfile}: already exists", fg="blue")
+                return
+
+        self.do_probe()
+        pprint(self._probe, indent=4)
+        self.do_xml()
 
 @click.command("rss")
 @click.argument("files", nargs=-1)
