@@ -20,6 +20,7 @@ from functools import reduce
 from glob import glob
 from shlex import quote
 from shutil import which
+from pprint import pprint
 
 import click
 from click import echo, secho
@@ -90,7 +91,35 @@ class RssFileCreator:
         self._overwrite = overwrite
 
     def run(self):
-        print(f"file => {self._source}")
+        oname = self._source.with_suffix(".xml").name
+        outfile = self._target_dir / oname
+
+        if outfile.exists():
+            if self._overwrite:
+                secho(f"Overwrite {outfile}: already exists", fg="blue")
+            else:
+                secho(f"Skip {outfile}: already exists", fg="blue")
+                return
+
+        base_cmd = [
+            "ffprobe",
+            "-show_format",
+            "-output_format",
+            "json",
+            "-i",
+            str(self._source)
+        ]
+        child_result = subprocess.run(base_cmd, capture_output=True)
+        if child_result.returncode != 0:
+            secho("f Skip {outfile}: ffprobe failed")
+            return
+
+        try:
+            probe_dict = json.loads(child_result.stdout)
+        except json.JSONDecodeError:
+            secho("f skip {outfile} json parse error from ffprobe")
+            return
+        pprint(probe_dict["format"])
 
 @click.command("rss")
 @click.argument("files", nargs=-1)
