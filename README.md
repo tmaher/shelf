@@ -1,27 +1,27 @@
 # Shelf!
 
-## dev environment
-Setup
+## dev setup
 1. Install Docker
 2. Install Homebrew
 3. `brew install pyenv`
 4. add `source $(pyenv init -)` to bashrc/equiv & close/reopen terminal
-5. `pyenv install 
-4. `pyenv install 
+5. `pyenv install 3.11.8`
+6. `pyenv global 3.11.8`
+7. `pip install poetry==1.8.2`
+8. `pyenv global system`  # or whatever you were using previously
+9. `git clone https://github.com/.../shelf.git && cd shelf`
+10. `poetry install`
 
+## run in dev
 ```
-$ git clone https://github.com/.../shelf.git
-$ docker image build -t shelf:dev . && docker run -it -v ./tmp:/shelf -v ./config:/config -v .:/src --env-file ./secrets.env shelf:dev /bin/sh
-
-## my audiobook shelf
-
+$ docker image build -t shelf:dev .
+$ docker run -it -v ./tmp:/shelf -v ./config:/config -v .:/src --env-file ./secrets.env shelf:dev /bin/sh
 ```
-docker run ghcr.io/tmaher/shelf \
+
+## run in prod
+```
+docker run ghcr.io/.../shelf \
     -v /path/to/rssdir:/shelf
-    -v /path/to/credsdir:/creds
+    -v /path/to/config:/config
     --env-file secrets.env
 ```
-
-`secrets.env` needs to contain `activation_bytes`
-
-See also https://github.com/inAudible-NG/tables for activation_bytes
