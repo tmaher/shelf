@@ -13,15 +13,19 @@ import operator
 import pathlib
 import re
 import subprocess  # noqa: S404
-import tempfile
 import typing as t
 from enum import Enum
 from functools import reduce
 from glob import glob
 from shlex import quote
 from shutil import which
-from podgen import Podcast, Episode, Media
+import podgen
+from datetime import date, timedelta
+import dateutil
+from podgen import Podcast, Episode, Media, Person
 from pprint import pprint
+import xml.etree.ElementTree as ElementTree
+from xml.dom import minidom
 
 import click
 from click import echo, secho
@@ -81,14 +85,14 @@ def _get_input_files(
 class EpisodeCreator:
     def __init__(
         self,
+        cast: podgen.Podcast,
         file: pathlib.Path,
-        target_dir: pathlib.Path,
-        tempdir: pathlib.Path,
+        media_url_prefix: str,
         overwrite: bool
     ) -> None:
+        self._cast = cast
         self._source = file
-        self._target_dir = target_dir
-        self._tempdir = tempdir
+        self._media_url_prefix = media_url_prefix
         self._overwrite = overwrite
 
     def do_probe(self):
@@ -111,25 +115,36 @@ class EpisodeCreator:
             secho("f skip {outfile} json parse error from ffprobe")
 
         self._probe = probe_dict["format"]
-        return 
+        self._tags = self._probe["tags"]
 
-    def do_xml(self):
-        True
+        return
+
+    def do_ep(self):
+        pubdate = dateutil.parser.isoparse(self._tags["creation_time"])
+        file_name = pathlib.Path(self._source.name)
+        self._episode = Episode(
+            title=self._tags["title"],
+            summary=self._tags["comment"],
+            publication_date=pubdate,
+            authors=[Person(self._tags["artist"])],
+            withhold_from_itunes=True
+        )
+        self._episode.media = Media(
+            url=f"{self._media_url_prefix}{file_name}",
+            size=self._probe["size"],
+            duration=timedelta(seconds=float(self._probe["duration"]))
+        )
 
     def run(self):
-        oname = self._source.with_suffix(".xml").name
-        outfile = self._target_dir / oname
-
-        if outfile.exists():
-            if self._overwrite:
-                secho(f"Overwrite {outfile}: already exists", fg="blue")
-            else:
-                secho(f"Skip {outfile}: already exists", fg="blue")
-                return
-
         self.do_probe()
-        pprint(self._probe, indent=4)
-        self.do_xml()
+        #pprint(self._probe)
+        self.do_ep()
+        #xmlstr = minidom.parseString(
+        #    ElementTree.tostring(self._episode.rss_entry())
+        #).toprettyxml(indent="  ")
+        #print(xmlstr)
+        echo(f"adding {self._source}")
+        self._cast.add_episode(self._episode)
 
 @click.command("rss")
 @click.argument("files", nargs=-1)
@@ -143,13 +158,13 @@ class EpisodeCreator:
     "--desc",
     "--description",
     type=str,
-    default="",
+    required=True,
     help="Description"
 )
 @click.option(
     "--website",
     type=str,
-    default="",
+    required=True,
     help="podcast homepage"
 )
 @click.option(
@@ -161,6 +176,7 @@ class EpisodeCreator:
 @click.option(
     "--image",
     type=str,
+    default="",
     help="URL for the artwork image, e.g. https://example.com/cast.jpg"
 )
 @click.option(
@@ -169,11 +185,10 @@ class EpisodeCreator:
     help="URL prefix for the media files. If you have file foo.mp3 and it will be fetched as https://example.com/cast/foo.mp3 then set this to https://example.com/cast/"
 )
 @click.option(
-    "--dir",
-    "-d",
-    "directory",
-    type=click.Path(exists=True, dir_okay=True),
-    default=pathlib.Path.cwd(),
+    "--outfile",
+    "-o",
+    type=str,
+    default=pathlib.Path.cwd() / "rss",
     help="Folder where the decrypted files should be saved.",
     show_default=True
 )
@@ -183,6 +198,7 @@ class EpisodeCreator:
     "-a",
     "all_",
     is_flag=True,
+    default=False,
     help="RSS-ify all eligible media files in current dir ({0})".format(",".join(SupportedFiles.get_supported_list()))
 )
 @pass_session
@@ -195,7 +211,7 @@ def cli(
     media_url_prefix: str,
     image: str,
     files: str,
-    directory: t.Union[pathlib.Path, str],
+    outfile: str,
     all_: bool,
     overwrite: bool,
 ):
@@ -212,21 +228,28 @@ def cli(
             )
         files = [f"*{suffix}" for suffix in SupportedFiles.get_supported_list()]
 
+    if pathlib.Path(outfile).exists() and not(overwrite):
+        raise click.BadOptionUsage(
+            "outfile",
+            f"sorry --outfile {outfile} already exists"
+        )
+
     cast = Podcast(
         name=name,
         description=desc,
         website=website,
         explicit=explicit,
+        image=image
     )
 
     files = _get_input_files(files, recursive=True)
-    with tempfile.TemporaryDirectory() as tempdir:
-        for file in files:
-            episode_creator = EpisodeCreator(
-                file=file,
-                target_dir=pathlib.Path(directory).resolve(),
-                tempdir=pathlib.Path(tempdir).resolve(),
-                overwrite=overwrite
-            )
-            episode_creator.run()
+    for file in files:
+        EpisodeCreator(
+            cast=cast,
+            file=file,
+            media_url_prefix=media_url_prefix,
+            overwrite=overwrite
+        ).run()
+
+    cast.rss_file(outfile)
     True
