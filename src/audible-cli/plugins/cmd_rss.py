@@ -217,6 +217,7 @@ def cli(
 ):
     """Generate RSS File"""
 
+    raise RuntimeError("zoinks! add pubdate library support before merging")
     if not which("ffprobe"):
         ctx = click.get_current_context()
         ctx.fail("ffprobe not found")
@@ -252,4 +253,5 @@ def cli(
         ).run()
 
     cast.rss_file(outfile)
+    raise 
     True
