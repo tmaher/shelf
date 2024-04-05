@@ -20,6 +20,7 @@ from functools import reduce
 from glob import glob
 from shlex import quote
 from shutil import which
+from podgen import Podcast, Episode, Media
 from pprint import pprint
 
 import click
