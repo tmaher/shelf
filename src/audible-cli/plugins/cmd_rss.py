@@ -194,13 +194,7 @@ class EpisodeCreator:
         return
 
     def do_ep(self):
-        try:
-            pubdate = dateutil.parser.isoparse(self._tags["creation_time"])
-        except Exception as e:
-            secho(f"do_ep() - something in {self._tags['title']}")
-            secho(f"{self._tags}")
-            e
-            exit(1)
+        pubdate = dateutil.parser.isoparse(self._tags["creation_time"])
         file_name = pathlib.Path(self._source).name
         self._episode = Episode(
             title=self._tags["title"],
