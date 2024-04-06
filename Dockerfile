@@ -21,4 +21,4 @@ COPY "*.rb" "*.py" "restock_shelf.sh" /app/
 COPY "src/" /app/src/
 ENV PATH=/app/.venv/bin:${PATH}
 
-# CMD ["/app/restock_shelf.sh"]
+CMD ["/app/restock_shelf.sh"]
