@@ -22,7 +22,8 @@ from shutil import which
 import podgen
 from datetime import timedelta
 import dateutil
-from podgen import Podcast, Episode, Media, Person
+from podgen import Podcast, Episode, Media, Person, Category
+from rfc3986 import normalize_uri, is_valid_uri
 # from pprint import pprint
 # import xml.etree.ElementTree as ElementTree
 # from xml.dom import minidom
@@ -60,6 +61,71 @@ class SupportedFiles(Enum):
         return pathlib.PurePath(value).suffix in cls.get_supported_list()
 
 
+def _get_feed_url(
+    feed_url,
+    url_prefix: str,
+    outfile: str
+) -> str:
+    if feed_url:
+        return feed_url
+    outfile_base = pathlib.Path(outfile).name
+    return f"{url_prefix}{outfile_base}"
+
+
+def _get_website(
+    website,
+    url_prefix: str
+) -> str:
+    website = website if website else url_prefix
+    if not is_valid_uri(
+            website,
+            require_scheme=True,
+            require_authority=True,
+            require_path=True
+            ):
+        raise click.BadOptionUsage(
+                website,
+                f"homepage {website} is invalid - needs to be an URL"
+        )
+    return website
+
+
+def _get_image(
+    image: str,
+    url_prefix: str
+) -> str:
+    if is_valid_uri(
+            image,
+            require_scheme=True,
+            require_authority=True,
+            require_path=True
+            ):
+        return image
+
+    return f"{url_prefix}{image}"
+
+
+def _get_url_prefix(
+        prefix: str
+) -> str:
+    if not is_valid_uri(prefix, require_path=True) \
+            and is_valid_uri(prefix):
+        prefix += "/"
+
+    if not is_valid_uri(
+            prefix,
+            require_scheme=True,
+            require_authority=True,
+            require_path=True
+            ):
+        raise click.BadOptionUsage(
+                prefix,
+                f"url prefix {prefix} is invalid - needs to be an URL"
+        )
+
+    return normalize_uri(prefix)
+
+
 def _get_input_files(
     files: t.Union[t.Tuple[str], t.List[str]],
     recursive: bool = True
@@ -93,12 +159,12 @@ class EpisodeCreator:
         self,
         cast: podgen.Podcast,
         file: pathlib.Path,
-        media_url_prefix: str,
+        url_prefix: str,
         overwrite: bool
     ) -> None:
         self._cast = cast
         self._source = file
-        self._media_url_prefix = media_url_prefix
+        self._url_prefix = url_prefix
         self._overwrite = overwrite
 
     def do_probe(self):
@@ -127,7 +193,7 @@ class EpisodeCreator:
 
     def do_ep(self):
         pubdate = dateutil.parser.isoparse(self._tags["creation_time"])
-        file_name = pathlib.Path(self._source.name)
+        file_name = pathlib.Path(self._source).name
         self._episode = Episode(
             title=self._tags["title"],
             summary=self._tags["comment"],
@@ -135,8 +201,11 @@ class EpisodeCreator:
             authors=[Person(self._tags["artist"])],
             withhold_from_itunes=True
         )
+        # ep_url = f"{self._url_prefix}{file_name}"
+        # print(f"about to media-ify {ep_url}")
+
         self._episode.media = Media(
-            url=f"{self._media_url_prefix}{file_name}",
+            url=f"{self._url_prefix}{file_name}",
             size=self._probe["size"],
             duration=timedelta(seconds=float(self._probe["duration"]))
         )
@@ -170,28 +239,46 @@ class EpisodeCreator:
 @click.option(
     "--website",
     type=str,
-    required=True,
-    help="podcast homepage"
+    help="podcast homepage - if not specified, defaults to --url-prefix"
 )
 @click.option(
     "--explicit",
     is_flag=True,
-    default=False,
+    default=True,
+    show_default=True,
     help="Listener discretion is advised"
 )
 @click.option(
     "--image",
     type=str,
-    default="",
+    required=True,
     help="URL for the artwork image, e.g. https://example.com/cast.jpg"
 )
 @click.option(
-    "--media-url-prefix",
+    "--category",
+    type=str,
+    default="Arts",
+    show_default=True,
+    help="iTunes top level category, see "
+    "https://podcasters.apple.com/support/1691-apple-podcasts-categories"
+)
+@click.option(
+    "--subcategory",
+    type=str,
+    default="Books",
+    show_default=True,
+    help="iTunes sub category, see "
+    "https://podcasters.apple.com/support/1691-apple-podcasts-categories"
+)
+@click.option(
+    "--url-prefix",
     required=True,
     help="""
-    URL prefix for the media files. If you have file foo.mp3 and it will
-    be fetched as https://example.com/cast/foo.mp3 then set this to
+    URL prefix for the podcast. If you have file foo.mp3 and it will
+    be fetched as https://example.com/cast/foo.mp3 then set url-prefix to
     https://example.com/cast/
+
+    Note - don't forget to include the trailing "/"
     """
 )
 @click.option(
@@ -201,6 +288,16 @@ class EpisodeCreator:
     default=pathlib.Path.cwd() / "rss",
     help="Folder where the decrypted files should be saved.",
     show_default=True
+)
+@click.option(
+    "--feed-url",
+    type=str,
+    help="""
+    URL where rss will be served from, i.e. the URL you will add to podcast
+    clients. Default is url-prefix plus the outfile, e.g. if your
+    url-prefix is https://example.com/cast/ and outfile is rss,
+    default feed-url is https://example.com/cast/rss
+    """
 )
 @click.option("--overwrite", is_flag=True, help="Overwrite existing files.")
 @click.option(
@@ -220,8 +317,11 @@ def cli(
     desc: str,
     website: str,
     explicit: bool,
-    media_url_prefix: str,
+    url_prefix: str,
     image: str,
+    category: str,
+    subcategory: str,
+    feed_url: str,
     files: str,
     outfile: str,
     all_: bool,
@@ -250,12 +350,25 @@ def cli(
             f"sorry --outfile {outfile} already exists"
         )
 
+    url_prefix = _get_url_prefix(prefix=url_prefix)
+    website = _get_website(website=website, url_prefix=url_prefix)
+    image = _get_image(image=image, url_prefix=url_prefix)
+    feed_url = _get_feed_url(
+        feed_url=feed_url,
+        url_prefix=url_prefix,
+        outfile=outfile
+    )
+
+    print(f"creating podcast site {website}...")
+
     cast = Podcast(
         name=name,
         description=desc,
         website=website,
         explicit=explicit,
-        image=image
+        image=image,
+        feed_url=feed_url,
+        category=Category(category, subcategory),
     )
 
     files = _get_input_files(files, recursive=True)
@@ -263,9 +376,10 @@ def cli(
         EpisodeCreator(
             cast=cast,
             file=file,
-            media_url_prefix=media_url_prefix,
+            url_prefix=url_prefix,
             overwrite=overwrite
         ).run()
 
     cast.rss_file(outfile)
+    print(f"feed saved to {outfile}")
     True
