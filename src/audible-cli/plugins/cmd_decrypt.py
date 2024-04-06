@@ -110,6 +110,20 @@ def get_aaxc_credentials(voucher_file: pathlib.Path):
     return key, iv
 
 
+def get_aaxc_asin(voucher_file: pathlib.Path):
+    if not voucher_file.exists() or not voucher_file.is_file():
+        raise AudibleCliException(f"Voucher file {voucher_file} not found.")
+
+    voucher_dict = json.loads(voucher_file.read_text())
+    try:
+        asin = recursive_lookup_dict("asin", voucher_dict)
+    except KeyError:
+        raise AudibleCliException(
+            f"No ASIN found in file {voucher_file}."
+        ) from None
+    return asin
+
+
 class ApiChapterInfo:
     def __init__(self, content_metadata: t.Dict[str, t.Any]) -> None:
         chapter_info = self._parse(content_metadata)
@@ -339,11 +353,13 @@ class FfmpegFileDecrypter:
         rebuild_chapters: bool,
         force_rebuild_chapters: bool,
         skip_rebuild_chapters: bool,
-        separate_intro_outro: bool
+        separate_intro_outro: bool,
+        copy_asin_to_metadata: bool
     ) -> None:
         file_type = SupportedFiles(file.suffix)
 
         credentials = None
+        asin = None
         if file_type == SupportedFiles.AAX:
             if activation_bytes is None:
                 raise AudibleCliException(
@@ -354,6 +370,8 @@ class FfmpegFileDecrypter:
         elif file_type == SupportedFiles.AAXC:
             voucher_filename = _get_voucher_filename(file)
             credentials = get_aaxc_credentials(voucher_filename)
+            if copy_asin_to_metadata:
+                asin = get_aaxc_asin(voucher_filename)
 
         self._source = file
         self._credentials: t.Optional[t.Union[str, t.Tuple[str]]] = credentials
@@ -367,6 +385,8 @@ class FfmpegFileDecrypter:
         self._api_chapter: t.Optional[ApiChapterInfo] = None
         self._ffmeta: t.Optional[FFMeta] = None
         self._is_rebuilded: bool = False
+        self._asin = asin
+        self._copy_asin_to_metadata = copy_asin_to_metadata
 
     @property
     def api_chapter(self) -> ApiChapterInfo:
@@ -491,6 +511,16 @@ class FfmpegFileDecrypter:
                     ]
                 )
 
+        if self._copy_asin_to_metadata and self._asin:
+            base_cmd.extend(
+                [
+                    "-metadata:g",
+                    f"asin={self._asin}",
+                    "-movflags",
+                    "+use_metadata_tags"
+                ]
+            )
+
         base_cmd.extend(
             [
                 "-c",
@@ -556,6 +586,17 @@ class FfmpegFileDecrypter:
         "Only use with `--rebuild-chapters`."
     ),
 )
+@click.option(
+    "--copy-asin-to-metadata",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help=(
+        "Only works for aaxc files with vouchers. "
+        "The Amazon Standard Identification Number (ASIN) will be copied into "
+        "the decrypted file's metadata tags."
+    )
+)
 @pass_session
 def cli(
     session,
@@ -566,6 +607,7 @@ def cli(
     rebuild_chapters: bool,
     force_rebuild_chapters: bool,
     skip_rebuild_chapters: bool,
+    copy_asin_to_metadata: bool,
     separate_intro_outro: bool,
 ):
     """Decrypt audiobooks downloaded with audible-cli.
@@ -616,6 +658,7 @@ def cli(
                 rebuild_chapters=rebuild_chapters,
                 force_rebuild_chapters=force_rebuild_chapters,
                 skip_rebuild_chapters=skip_rebuild_chapters,
-                separate_intro_outro=separate_intro_outro
+                separate_intro_outro=separate_intro_outro,
+                copy_asin_to_metadata=copy_asin_to_metadata
             )
             decrypter.run()
