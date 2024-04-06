@@ -160,12 +160,14 @@ class EpisodeCreator:
         cast: podgen.Podcast,
         file: pathlib.Path,
         url_prefix: str,
-        overwrite: bool
+        overwrite: bool,
+        make_public: bool
     ) -> None:
         self._cast = cast
         self._source = file
         self._url_prefix = url_prefix
         self._overwrite = overwrite
+        self._make_public = make_public
 
     def do_probe(self):
         base_cmd = [
@@ -199,7 +201,7 @@ class EpisodeCreator:
             summary=self._tags["comment"],
             publication_date=pubdate,
             authors=[Person(self._tags["artist"])],
-            withhold_from_itunes=True
+            withhold_from_itunes=(not self._make_public)
         )
         # ep_url = f"{self._url_prefix}{file_name}"
         # print(f"about to media-ify {ep_url}")
@@ -227,19 +229,18 @@ class EpisodeCreator:
     "--name",
     type=str,
     required=True,
-    help="Name of podcast"
+    help="podcast name"
 )
 @click.option(
     "--desc",
-    "--description",
     type=str,
     required=True,
-    help="Description"
+    help="podcast description"
 )
 @click.option(
     "--website",
     type=str,
-    help="podcast homepage - if not specified, defaults to --url-prefix"
+    help="podcast homepage - if not specified, defaults to `--url-prefix`"
 )
 @click.option(
     "--explicit",
@@ -249,34 +250,64 @@ class EpisodeCreator:
     help="Listener discretion is advised"
 )
 @click.option(
+    "--make-public",
+    is_flag=True,
+    type=bool,
+    default=False,
+    show_default=True,
+    help="""
+    **DO YOU FEEL LUCKY, PUNK?**
+
+    By default, feed is set to private to avoid showing up in
+    public directories ("<itunes:block>" is set to Yes). If you
+    are *REALLY, REALLY SURE* that you are comfortable with publicly
+    listing *A PODCAST OF YOUR DRM-STRIPPED AUDIBLE BOOKS* and
+    aren't worried about DMCA takedowns to your ISP or losing your
+    Audible account, go right ahead and pass this flag.
+
+    n.B. - Spotify doesn't honor <itunes:block>, so even if you don't
+    use `--make-public` flag, you may still get listed there
+    """
+)
+@click.option(
     "--image",
     type=str,
     required=True,
-    help="URL for the artwork image, e.g. https://example.com/cast.jpg"
+    help="""
+    Podcast artwork image. If you give a URL, it will be used unmodified.
+    If you give a bare filename, `--url-prefix` will be used instead
+    (plus the filename). E.g. `--url prefix https://example.com/cast/`
+    and `--image art.jpg` will result in https://example.com/cast/art.jpg
+    """
 )
 @click.option(
     "--category",
     type=str,
     default="Arts",
     show_default=True,
-    help="iTunes top level category, see "
-    "https://podcasters.apple.com/support/1691-apple-podcasts-categories"
+    help="""
+    iTunes top level category, see
+    https://podcasters.apple.com/support/1691-apple-podcasts-categories
+    """
 )
 @click.option(
     "--subcategory",
     type=str,
     default="Books",
     show_default=True,
-    help="iTunes sub category, see "
-    "https://podcasters.apple.com/support/1691-apple-podcasts-categories"
+    help="""
+    iTunes sub category, see
+    https://podcasters.apple.com/support/1691-apple-podcasts-categories
+    """
 )
 @click.option(
     "--url-prefix",
     required=True,
     help="""
-    URL prefix for the podcast. If you have file foo.mp3 and it will
-    be fetched as https://example.com/cast/foo.mp3 then set url-prefix to
-    https://example.com/cast/
+    Base URL for media files and other details. If you have
+    `--files foo.mp3 --url-prefix https://example.com/cast/`,
+    the feed will fetch https://example.com/cast/foo.mp3 .
+    May influence `--website`, `--feed-url`, and `--image`
 
     Note - don't forget to include the trailing "/"
     """
@@ -286,7 +317,9 @@ class EpisodeCreator:
     "-o",
     type=str,
     default=pathlib.Path.cwd() / "rss",
-    help="Folder where the decrypted files should be saved.",
+    help="""
+    Output filename for the rss feed
+    """,
     show_default=True
 )
 @click.option(
@@ -299,7 +332,14 @@ class EpisodeCreator:
     default feed-url is https://example.com/cast/rss
     """
 )
-@click.option("--overwrite", is_flag=True, help="Overwrite existing files.")
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    default=False,
+    help="""
+    Overwrite an existing `--outfile`
+    """
+)
 @click.option(
     "--all",
     "-a",
@@ -317,6 +357,7 @@ def cli(
     desc: str,
     website: str,
     explicit: bool,
+    make_public: bool,
     url_prefix: str,
     image: str,
     category: str,
@@ -366,9 +407,10 @@ def cli(
         description=desc,
         website=website,
         explicit=explicit,
+        withhold_from_itunes=(not make_public),
         image=image,
         feed_url=feed_url,
-        category=Category(category, subcategory),
+        category=Category(category, subcategory)
     )
 
     files = _get_input_files(files, recursive=True)
@@ -377,7 +419,8 @@ def cli(
             cast=cast,
             file=file,
             url_prefix=url_prefix,
-            overwrite=overwrite
+            overwrite=overwrite,
+            make_public=make_public
         ).run()
 
     cast.rss_file(outfile)
