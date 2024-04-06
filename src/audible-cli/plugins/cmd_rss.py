@@ -9,23 +9,23 @@ Needs at least ffmpeg 4.4
 """
 
 import json
-import operator
+# import operator
 import pathlib
-import re
+# import re
 import subprocess  # noqa: S404
 import typing as t
 from enum import Enum
-from functools import reduce
+# from functools import reduce
 from glob import glob
-from shlex import quote
+# from shlex import quote
 from shutil import which
 import podgen
-from datetime import date, timedelta
+from datetime import timedelta
 import dateutil
 from podgen import Podcast, Episode, Media, Person
-from pprint import pprint
-import xml.etree.ElementTree as ElementTree
-from xml.dom import minidom
+# from pprint import pprint
+# import xml.etree.ElementTree as ElementTree
+# from xml.dom import minidom
 
 import click
 from click import echo, secho
@@ -36,6 +36,7 @@ from audible_cli.exceptions import AudibleCliException
 
 class ChapterError(AudibleCliException):
     """Base class for all chapter errors."""
+
 
 class SupportedFiles(Enum):
     AAX = ".aax"
@@ -58,6 +59,7 @@ class SupportedFiles(Enum):
     def is_supported_file(cls, value):
         return pathlib.PurePath(value).suffix in cls.get_supported_list()
 
+
 def _get_input_files(
     files: t.Union[t.Tuple[str], t.List[str]],
     recursive: bool = True
@@ -72,15 +74,19 @@ def _get_input_files(
             and '*' not in filename
             and not SupportedFiles.is_supported_file(filename)
         ):
-            raise(click.BadParameter("{filename}: file not found or supported."))
+            raise (click.BadParameter(
+                "{filename}: file not found or supported."))
 
         expanded_filter = filter(
             lambda x: SupportedFiles.is_supported_file(x), expanded
         )
-        expanded = list(map(lambda x: pathlib.Path(x).resolve(), expanded_filter))
+        expanded = list(
+            map(lambda x: pathlib.Path(x).resolve(), expanded_filter)
+        )
         filenames.extend(expanded)
 
     return filenames
+
 
 class EpisodeCreator:
     def __init__(
@@ -137,16 +143,16 @@ class EpisodeCreator:
 
     def run(self):
         self.do_probe()
-        #pprint(self._probe)
+        # pprint(self._probe)
         self.do_ep()
-        #xmlstr = minidom.parseString(
+        # xmlstr = minidom.parseString(
         #    ElementTree.tostring(self._episode.rss_entry())
-        #).toprettyxml(indent="  ")
-        #print(xmlstr)
+        # ).toprettyxml(indent="  ")
+        # print(xmlstr)
         echo(f"adding {self._source}")
         self._cast.add_episode(self._episode)
 
-@click.command("rss")
+@click.command("rss")  # noqa: E302
 @click.argument("files", nargs=-1)
 @click.option(
     "--name",
@@ -182,7 +188,11 @@ class EpisodeCreator:
 @click.option(
     "--media-url-prefix",
     required=True,
-    help="URL prefix for the media files. If you have file foo.mp3 and it will be fetched as https://example.com/cast/foo.mp3 then set this to https://example.com/cast/"
+    help="""
+    URL prefix for the media files. If you have file foo.mp3 and it will
+    be fetched as https://example.com/cast/foo.mp3 then set this to
+    https://example.com/cast/
+    """
 )
 @click.option(
     "--outfile",
@@ -199,7 +209,9 @@ class EpisodeCreator:
     "all_",
     is_flag=True,
     default=False,
-    help="RSS-ify all eligible media files in current dir ({0})".format(",".join(SupportedFiles.get_supported_list()))
+    help="RSS-ify all eligible media files in current dir ({0})".format(
+        ",".join(SupportedFiles.get_supported_list())
+    )
 )
 @pass_session
 def cli(
@@ -217,19 +229,22 @@ def cli(
 ):
     """Generate RSS File"""
 
-    raise RuntimeError("zoinks! add pubdate library support before merging")
+    # raise RuntimeError("zoinks! add pubdate library support before merging")
     if not which("ffprobe"):
         ctx = click.get_current_context()
         ctx.fail("ffprobe not found")
 
     if all_:
         if files:
-            raise click.BadOptionUsage("all",
+            raise click.BadOptionUsage(
+                "all",
                 "If using `--all`, no FILES arguments can be used."
             )
-        files = [f"*{suffix}" for suffix in SupportedFiles.get_supported_list()]
+        files = [
+            f"*{suffix}" for suffix in SupportedFiles.get_supported_list()
+        ]
 
-    if pathlib.Path(outfile).exists() and not(overwrite):
+    if pathlib.Path(outfile).exists() and not (overwrite):
         raise click.BadOptionUsage(
             "outfile",
             f"sorry --outfile {outfile} already exists"
@@ -253,5 +268,4 @@ def cli(
         ).run()
 
     cast.rss_file(outfile)
-    raise 
     True

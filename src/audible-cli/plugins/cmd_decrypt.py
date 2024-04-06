@@ -19,7 +19,7 @@ import typing as t
 from enum import Enum
 from functools import reduce
 from glob import glob
-from shlex import quote
+# from shlex import quote
 from shutil import which
 
 import click
@@ -64,12 +64,16 @@ def _get_input_files(
             and '*' not in filename
             and not SupportedFiles.is_supported_file(filename)
         ):
-            raise(click.BadParameter("{filename}: file not found or supported."))
+            raise (click.BadParameter(
+                "{filename}: file not found or supported."
+            ))
 
         expanded_filter = filter(
             lambda x: SupportedFiles.is_supported_file(x), expanded
         )
-        expanded = list(map(lambda x: pathlib.Path(x).resolve(), expanded_filter))
+        expanded = list(
+            map(lambda x: pathlib.Path(x).resolve(), expanded_filter)
+        )
         filenames.extend(expanded)
 
     return filenames
@@ -86,7 +90,7 @@ def recursive_lookup_dict(key: str, dictionary: t.Dict[str, t.Any]) -> t.Any:
                 continue
             else:
                 return item
-            
+
     raise KeyError
 
 
@@ -99,7 +103,9 @@ def get_aaxc_credentials(voucher_file: pathlib.Path):
         key = recursive_lookup_dict("key", voucher_dict)
         iv = recursive_lookup_dict("iv", voucher_dict)
     except KeyError:
-        raise AudibleCliException(f"No key/iv found in file {voucher_file}.") from None
+        raise AudibleCliException(
+            f"No key/iv found in file {voucher_file}."
+        ) from None
 
     return key, iv
 
@@ -166,17 +172,17 @@ class ApiChapterInfo:
     def _separate_intro_outro(self, chapters):
         echo("Separate Audible Brand Intro and Outro to own Chapter.")
         chapters.sort(key=operator.itemgetter("start_offset_ms"))
-    
+
         first = chapters[0]
         intro_dur_ms = self.get_intro_duration_ms()
         first["start_offset_ms"] = intro_dur_ms
         first["start_offset_sec"] = round(first["start_offset_ms"] / 1000)
         first["length_ms"] -= intro_dur_ms
-    
+
         last = chapters[-1]
         outro_dur_ms = self.get_outro_duration_ms()
         last["length_ms"] -= outro_dur_ms
-    
+
         chapters.append(
             {
                 "length_ms": intro_dur_ms,
@@ -196,7 +202,7 @@ class ApiChapterInfo:
             }
         )
         chapters.sort(key=operator.itemgetter("start_offset_ms"))
-    
+
         return chapters
 
 
@@ -254,7 +260,9 @@ class FFMeta:
                         fp, section, self._ffmeta_parsed[section][chapter], d
                     )
             else:
-                self._write_section(fp, section, self._ffmeta_parsed[section], d)
+                self._write_section(
+                    fp, section, self._ffmeta_parsed[section], d
+                )
 
     @staticmethod
     def _write_section(fp, section_name, section_items, delimiter):
@@ -312,7 +320,9 @@ def _get_chapter_filename(file: pathlib.Path) -> pathlib.Path:
     return file.with_name(base_filename + "-chapters.json")
 
 
-def _get_ffmeta_file(file: pathlib.Path, tempdir: pathlib.Path) -> pathlib.Path:
+def _get_ffmeta_file(file: pathlib.Path,
+                     tempdir: pathlib.Path
+                     ) -> pathlib.Path:
     metaname = file.with_suffix(".meta").name
     metafile = tempdir / metaname
     return metafile
@@ -393,7 +403,7 @@ class FfmpegFileDecrypter:
                 credentials_cmd = [
                     "-activation_bytes",
                     self._credentials,
-                ]    
+                ]
             base_cmd.extend(credentials_cmd)
 
             extract_cmd = [
@@ -413,7 +423,9 @@ class FfmpegFileDecrypter:
     def rebuild_chapters(self) -> None:
         if not self._is_rebuilded:
             self.ffmeta.update_chapters_from_chapter_info(
-                self.api_chapter, self._force_rebuild_chapters, self._separate_intro_outro
+                self.api_chapter,
+                self._force_rebuild_chapters,
+                self._separate_intro_outro
             )
             self._is_rebuilded = True
 
@@ -448,7 +460,7 @@ class FfmpegFileDecrypter:
             credentials_cmd = [
                 "-activation_bytes",
                 str(self._credentials),
-            ]    
+            ]
         base_cmd.extend(credentials_cmd)
         base_cmd.extend(
             [
@@ -491,7 +503,7 @@ class FfmpegFileDecrypter:
 
         echo(f"File decryption successful: {outfile}")
 
-@click.command("decrypt")
+@click.command("decrypt")  # noqa: E302
 @click.argument("files", nargs=-1)
 @click.option(
     "--dir",
@@ -561,16 +573,19 @@ def cli(
     FILES are the names of the file to decrypt.
     Wildcards `*` and recursive lookup with `**` are supported.
 
-    Only FILES with `aax` or `aaxc` suffix are processed. 
+    Only FILES with `aax` or `aaxc` suffix are processed.
     Other files are skipped silently.
     """
     if not which("ffmpeg"):
         ctx = click.get_current_context()
         ctx.fail("ffmpeg not found")
 
-    if (force_rebuild_chapters or skip_rebuild_chapters or separate_intro_outro) and not rebuild_chapters:
+    if (force_rebuild_chapters
+            or skip_rebuild_chapters or separate_intro_outro) \
+            and not rebuild_chapters:
         raise click.BadOptionUsage(
-            "`--force-rebuild-chapters`, `--skip-rebuild-chapters` and `--separate-intro-outro` can "
+            "`--force-rebuild-chapters`, `--skip-rebuild-chapters` and "
+            "`--separate-intro-outro` can "
             "only be used together with `--rebuild-chapters`"
         )
 
@@ -585,7 +600,9 @@ def cli(
             raise click.BadOptionUsage(
                 "If using `--all`, no FILES arguments can be used."
             )
-        files = [f"*{suffix}" for suffix in SupportedFiles.get_supported_list()]
+        files = [
+            f"*{suffix}" for suffix in SupportedFiles.get_supported_list()
+        ]
 
     files = _get_input_files(files, recursive=True)
     with tempfile.TemporaryDirectory() as tempdir:
