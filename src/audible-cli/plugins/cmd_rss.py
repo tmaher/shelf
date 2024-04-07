@@ -12,7 +12,7 @@ Needs at least ffmpeg 4.4
 import json
 # import operator
 import pathlib
-# import re
+import re
 import subprocess  # noqa: S404
 import typing as t
 from enum import Enum
@@ -208,12 +208,26 @@ class EpisodeCreator:
         self._url_prefix = url_prefix
         self._overwrite = overwrite
         self._make_public = make_public
+        self._asin = None
         self._do_probe()
         self._create_podgen_episode()
 
     @property
     def asin(self) -> str:
-        return self._tags['episode_id']
+        if (not self._asin):
+            try:
+                self._asin = self._tags['episode_id']
+            except KeyError:
+                file_name = pathlib.Path(self._source).name
+                match = re.search(r'\A([A-Z0-9]{10})_', file_name)
+                if (not match):
+                    raise RuntimeError("Unable to determine ASIN")
+                try:
+                    self._asin = match(1)
+                except IndexError:
+                    raise RuntimeError("Unable to determine ASIN")
+
+        return self._asin
 
     @property
     def title(self) -> str:
@@ -495,7 +509,7 @@ async def cli(
             overwrite=overwrite,
             make_public=make_public
         )
-        echo(f"adding {ep.title}")
+        echo(f"adding {ep.asin} => {ep.title}")
         cast.add_episode(ep.podgen_episode)
 
     echo("creating feed...")
