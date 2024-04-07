@@ -109,7 +109,7 @@ def _get_image(
 
 
 def _get_url_prefix(
-        prefix: str
+    prefix: str
 ) -> str:
     if not is_valid_uri(prefix, require_path=True) \
             and is_valid_uri(prefix):
@@ -157,10 +157,10 @@ def _get_input_files(
     return filenames
 
 
-async def _get_library(session, client):
+async def _get_library_date_contributors(session, client):
     bunch_size = session.params.get("bunch_size")
-    start_date = session.params.get("start_date")
-    end_date = session.params.get("end_date")
+    # start_date = session.params.get("start_date")
+    # end_date = session.params.get("end_date")
 
     library = await Library.from_api_full_sync(
         client,
@@ -170,11 +170,11 @@ async def _get_library(session, client):
             "product_desc",
         ]),
         bunch_size=bunch_size,
-        start_date=start_date,
-        end_date=end_date
+        # start_date=start_date,
+        # end_date=end_date
     )
 
-    await library.resolve_podcats(start_date=start_date, end_date=end_date)
+    # await library.resolve_podcats(start_date=start_date, end_date=end_date)
 
     return library
 
@@ -466,7 +466,7 @@ async def cli(
     cast.rss_file(outfile)
     print(f"feed saved to {outfile}")
 
-    library = await _get_library(session, client)
+    library = await _get_library_date_contributors(session, client)
     for book in library:
 
         # authors = ", ".join([i["name"] for i in (book.authors or [])])
