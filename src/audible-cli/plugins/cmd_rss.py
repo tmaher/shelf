@@ -175,6 +175,7 @@ async def _get_library_date_contributors(session, client):
     )
 
     # await library.resolve_podcats(start_date=start_date, end_date=end_date)
+    await library.resolve_podcats()
 
     return library
 
