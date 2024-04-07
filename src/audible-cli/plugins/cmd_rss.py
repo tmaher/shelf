@@ -18,10 +18,10 @@ import typing as t
 from enum import Enum
 from glob import glob
 from shutil import which
-import podgen
 from datetime import timedelta
 import dateutil
-from podgen import Podcast, Episode, Media, Person, Category
+# from podgen import Podcast, Episode, Media, Person, Category
+import podgen
 from rfc3986 import normalize_uri, is_valid_uri
 # from pprint import pprint
 # import xml.etree.ElementTree as ElementTree
@@ -208,10 +208,26 @@ class EpisodeCreator:
         self._url_prefix = url_prefix
         self._overwrite = overwrite
         self._make_public = make_public
-        self.do_probe()
-        self.do_ep()
+        self._do_probe()
+        self._create_podgen_episode()
 
-    def do_probe(self):
+    @property
+    def asin(self) -> str:
+        return self._tags['episode_id']
+
+    @property
+    def title(self) -> str:
+        return self._tags['title']
+
+    @property
+    def source(self) -> str:
+        return self._source
+
+    @property
+    def podgen_episode(self) -> podgen.Episode:
+        return self._podgen_episode
+
+    def _do_probe(self):
         base_cmd = [
             "ffprobe",
             "-show_format",
@@ -235,36 +251,25 @@ class EpisodeCreator:
 
         return
 
-    def do_ep(self):
+    def _create_podgen_episode(self) -> None:
         pubdate = dateutil.parser.isoparse(self._tags["creation_time"])
         file_name = pathlib.Path(self._source).name
-        self._episode = Episode(
+        # echo(f"tags => {self._tags}")
+        self._podgen_episode = podgen.Episode(
             title=self._tags["title"],
             summary=self._tags["comment"],
             publication_date=pubdate,
-            authors=[Person(self._tags["artist"])],
+            authors=[podgen.Person(self._tags["artist"])],
             withhold_from_itunes=(not self._make_public)
         )
         # ep_url = f"{self._url_prefix}{file_name}"
         # print(f"about to media-ify {ep_url}")
 
-        self._episode.media = Media(
+        self._podgen_episode.media = podgen.Media(
             url=f"{self._url_prefix}{file_name}",
             size=self._probe["size"],
             duration=timedelta(seconds=float(self._probe["duration"]))
         )
-
-    @property
-    def asin(self) -> str:
-        return self._tags['episode_id']
-
-    @property
-    def source(self) -> str:
-        return self._source
-
-    @property
-    def ep(self) -> Episode:
-        return self._episode
 
     def add_to_cast(self):
         # self.do_probe()
@@ -471,7 +476,7 @@ async def cli(
     print(f"creating podcast site {website}...")
     print(f"sort by purchase date => {sort_by_purchase_date}")
 
-    cast = Podcast(
+    cast = podgen.Podcast(
         name=name,
         description=desc,
         website=website,
@@ -479,7 +484,7 @@ async def cli(
         withhold_from_itunes=(not make_public),
         image=image,
         feed_url=feed_url,
-        category=Category(category, subcategory)
+        category=podgen.Category(category, subcategory)
     )
 
     files = _get_input_files(files, recursive=True)
@@ -490,8 +495,10 @@ async def cli(
             overwrite=overwrite,
             make_public=make_public
         )
-        cast.add_episode(ep.ep)
+        echo(f"adding {ep.title}")
+        cast.add_episode(ep.podgen_episode)
 
+    echo("creating feed...")
     cast.rss_file(outfile)
     print(f"feed saved to {outfile}")
 
