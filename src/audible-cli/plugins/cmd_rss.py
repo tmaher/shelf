@@ -16,9 +16,7 @@ import pathlib
 import subprocess  # noqa: S404
 import typing as t
 from enum import Enum
-# from functools import reduce
 from glob import glob
-# from shlex import quote
 from shutil import which
 import podgen
 from datetime import timedelta
@@ -166,15 +164,11 @@ async def _get_library(session, client):
 
     library = await Library.from_api_full_sync(
         client,
-        response_groups=(
-            "contributors, media, price, product_attrs, product_desc, "
-            "product_extended_attrs, product_plan_details, product_plans, "
-            "rating, sample, sku, series, reviews, ws4v, origin, "
-            "relationships, review_attrs, categories, badge_types, "
-            "category_ladders, claim_code_url, is_downloaded, "
-            "is_finished, is_returnable, origin_asin, pdf_url, "
-            "percent_complete, provided_review"
-        ),
+        response_groups=",".join([
+            "contributors",
+            "product_attrs",
+            "product_desc",
+        ]),
         bunch_size=bunch_size,
         start_date=start_date,
         end_date=end_date

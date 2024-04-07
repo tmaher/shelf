@@ -518,8 +518,6 @@ class FfmpegFileDecrypter:
             [
                 "-i",
                 str(self._source),
-                "-map_metadata",
-                "0"
             ]
         )
 
@@ -538,10 +536,14 @@ class FfmpegFileDecrypter:
                     [
                         "-i",
                         str(metafile),
+                        "-map_metadata",
+                        "0",
                         "-map_chapters",
                         "1",
                     ]
                 )
+        else:
+            base_cmd.extend(["-map_metadata", "0"])
 
         if self._copy_asin_to_metadata and self._asin:
             base_cmd.extend(
