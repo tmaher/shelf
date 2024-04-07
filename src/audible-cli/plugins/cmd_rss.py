@@ -289,6 +289,7 @@ class EpisodeCreator:
         file_name = pathlib.Path(self._source).name
         # echo(f"tags => {self._tags}")
         self._podgen_episode = podgen.Episode(
+            id=self.asin,
             title=self._tags["title"],
             summary=self._tags["comment"],
             publication_date=pubdate,
@@ -539,6 +540,11 @@ async def cli(
         )
         for ep in episode_array:
             ep.library_info = books[ep.asin]
+            ep.podgen_episode.publication_date = ep.library_info['date_added']
+            ep.podgen_episode.authors = [
+                podgen.Person(f"Written by {ep.library_info['authors']}"),
+                podgen.Person(f"Narrated by {ep.library_info['narrators']}"),
+            ]
         episode_array.sort(key=(lambda x: x.library_info['date_added']))
     else:
         episode_array.sort(key=(lambda x: x.ctime))

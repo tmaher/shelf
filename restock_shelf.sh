@@ -11,7 +11,6 @@ mkdir -p "${target_dir}/dl" "${target_dir}/pt"
 cd "${target_dir}/dl" || exit 1
 
 audible library export \
-    --resolve-podcasts \
     --format json
 
 audible download \
@@ -24,7 +23,7 @@ audible download \
     --jobs 4 \
     --quality best \
     --filename-mode asin_ascii \
-    --resolve-podcasts \
+    --ignore-podcasts \
     --all \
     --start-date 2023-06-01
 
