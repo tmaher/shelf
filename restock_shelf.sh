@@ -41,6 +41,7 @@ cd "${target_dir}/pt" || exit 1
 audible rss \
     --all \
     --overwrite \
+    --sort-by-purchase-date \
     --start-date 2023-06-01 \
     --name "${SHELF_TITLE}" \
     --desc "${SHELF_DESC}" \

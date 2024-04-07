@@ -501,8 +501,8 @@ async def cli(
         category=podgen.Category(category, subcategory)
     )
 
-    files = _get_input_files(files, recursive=True)
-    for file in files:
+    episodes = []
+    for file in _get_input_files(files, recursive=True):
         ep = EpisodeCreator(
             file=file,
             url_prefix=url_prefix,
@@ -510,12 +510,17 @@ async def cli(
             make_public=make_public
         )
         echo(f"adding {ep.asin} => {ep.title}")
+        episodes.append(ep)
+        # cast.add_episode(ep.podgen_episode)
+
+    if sort_by_purchase_date:
+        library = await _get_library_date_contributors(session, client)
+
+    for ep in episodes:
         cast.add_episode(ep.podgen_episode)
 
     echo("creating feed...")
     cast.rss_file(outfile)
     print(f"feed saved to {outfile}")
-
-    library = await _get_library_date_contributors(session, client)
 
     library
