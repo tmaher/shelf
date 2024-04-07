@@ -17,11 +17,11 @@ audible download --aaxc --pdf --cover --cover-size 500 --chapter \
     --filename-mode asin_ascii \
     --resolve-podcasts \
     --all \
-    --start-date 2024-01-01 --end-date 2099-12-31
+    --start-date 2023-06-01
 
 audible decrypt --all --dir "${target_dir}/pt" \
     --copy-asin-to-metadata \
-    --rebuild-chapters
+    --rebuild-chapters --force-rebuild-chapters
 
 ## injecting arbitrary metadata keys...
 ## ffmpeg -i blah.m4a \
@@ -33,6 +33,7 @@ cd "${target_dir}/pt" || exit 1
 audible rss \
     --all \
     --overwrite \
+    --start-date 2023-06-01 \
     --name "${SHELF_TITLE}" \
     --desc "${SHELF_DESC}" \
     --image "${SHELF_IMAGE}" \

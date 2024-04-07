@@ -8,6 +8,7 @@ Need further work. Some options do not work or options are missing.
 Needs at least ffmpeg 4.4
 """
 
+# import asyncio
 import json
 # import operator
 import pathlib
@@ -31,8 +32,16 @@ from rfc3986 import normalize_uri, is_valid_uri
 import click
 from click import echo, secho
 
-from audible_cli.decorators import pass_session
+from audible_cli.decorators import (
+    pass_client,
+    pass_session,
+    bunch_size_option,
+    end_date_option,
+    start_date_option,
+)
+
 from audible_cli.exceptions import AudibleCliException
+from audible_cli.models import Library
 
 
 class ChapterError(AudibleCliException):
@@ -40,13 +49,9 @@ class ChapterError(AudibleCliException):
 
 
 class SupportedFiles(Enum):
-    AAX = ".aax"
-    AAXC = ".aaxc"
-    M4A = ".m4b"
     M4B = ".m4a"
     MP3 = ".mp3"
     MP4 = ".mp4"
-    MOV = ".mov"
 
     @classmethod
     def get_supported_list(cls):
@@ -152,6 +157,32 @@ def _get_input_files(
         filenames.extend(expanded)
 
     return filenames
+
+
+async def _get_library(session, client):
+    bunch_size = session.params.get("bunch_size")
+    start_date = session.params.get("start_date")
+    end_date = session.params.get("end_date")
+
+    library = await Library.from_api_full_sync(
+        client,
+        response_groups=(
+            "contributors, media, price, product_attrs, product_desc, "
+            "product_extended_attrs, product_plan_details, product_plans, "
+            "rating, sample, sku, series, reviews, ws4v, origin, "
+            "relationships, review_attrs, categories, badge_types, "
+            "category_ladders, claim_code_url, is_downloaded, "
+            "is_finished, is_returnable, origin_asin, pdf_url, "
+            "percent_complete, provided_review"
+        ),
+        bunch_size=bunch_size,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+    await library.resolve_podcats(start_date=start_date, end_date=end_date)
+
+    return library
 
 
 class EpisodeCreator:
@@ -341,6 +372,14 @@ class EpisodeCreator:
     """
 )
 @click.option(
+    "--sort-by-purchase-date",
+    is_flag=True,
+    default=False,
+    help="""
+    Order podcast entries by purchase date. Requires reading from library API
+    """
+)
+@click.option(
     "--all",
     "-a",
     "all_",
@@ -350,9 +389,14 @@ class EpisodeCreator:
         ",".join(SupportedFiles.get_supported_list())
     )
 )
+@bunch_size_option
+@start_date_option
+@end_date_option
 @pass_session
-def cli(
+@pass_client
+async def cli(
     session,
+    client,
     name: str,
     desc: str,
     website: str,
@@ -365,6 +409,7 @@ def cli(
     feed_url: str,
     files: str,
     outfile: str,
+    sort_by_purchase_date: bool,
     all_: bool,
     overwrite: bool,
 ):
@@ -401,6 +446,7 @@ def cli(
     )
 
     print(f"creating podcast site {website}...")
+    print(f"sort by purchase date => {sort_by_purchase_date}")
 
     cast = Podcast(
         name=name,
@@ -425,4 +471,21 @@ def cli(
 
     cast.rss_file(outfile)
     print(f"feed saved to {outfile}")
+
+    library = await _get_library(session, client)
+    for book in library:
+
+        # authors = ", ".join([i["name"] for i in (book.authors or [])])
+        # narrators = ", ".join([i["name"] for i in (book.narrators or [])])
+        stuff = {
+            'asin': book.asin,
+            'title': book.title,
+            'authors':
+                ", ".join([i["name"] for i in (book.authors or [])]),
+            'narrators':
+                ", ".join([i["name"] for i in (book.narrators or [])]),
+            'purchase_date': book.purchase_date,
+        }
+        print(f"book {book.asin} => {stuff}")
+
     True

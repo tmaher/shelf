@@ -518,6 +518,8 @@ class FfmpegFileDecrypter:
             [
                 "-i",
                 str(self._source),
+                "-map_metadata",
+                "0"
             ]
         )
 
@@ -536,31 +538,20 @@ class FfmpegFileDecrypter:
                     [
                         "-i",
                         str(metafile),
-                        "-map_metadata",
-                        "0",
                         "-map_chapters",
                         "1",
                     ]
                 )
-        else:
-            base_cmd.extend(
-                [
-                    "-map_metadata",
-                    "0"
-                ]
-            )
 
         if self._copy_asin_to_metadata and self._asin:
             base_cmd.extend(
                 [
                     "-metadata:g",
-                    "grouping=gROUPing YouR m0m",
-                    "-metadata:g",
                     f"description=DescrpTION {self.ffmeta.comment}",
                     "-metadata:g",
                     f"synopsis=SynopSIS {self.ffmeta.comment}",
                     "-metadata:g",
-                    f"episode_id=EpisODEid {self._asin}",
+                    f"episode_id={self._asin}",
                     # "-movflags",
                     # "+use_metadata_tags"
                 ]
@@ -577,12 +568,7 @@ class FfmpegFileDecrypter:
         subprocess.check_output(base_cmd, text=True)  # noqa: S603
 
         echo(f"File decryption successful: {outfile}")
-        for _ in range(5):
-            echo("***")
-        # echo(f"base CMD => {self.ffmeta.artist}")
-        echo(f"base cmd => {base_cmd}")
-        for _ in range(5):
-            echo("***")
+
 
 @click.command("decrypt")  # noqa: E302
 @click.argument("files", nargs=-1)
