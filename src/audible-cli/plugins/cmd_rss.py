@@ -157,10 +157,10 @@ def _get_input_files(
     return filenames
 
 
-async def _get_library_date_contributors(session, client):
+async def _get_library_info(session, client):
     bunch_size = session.params.get("bunch_size")
-    # start_date = session.params.get("start_date")
-    # end_date = session.params.get("end_date")
+    start_date = session.params.get("start_date")
+    end_date = session.params.get("end_date")
 
     library = await Library.from_api_full_sync(
         client,
@@ -170,30 +170,31 @@ async def _get_library_date_contributors(session, client):
             "product_desc",
         ]),
         bunch_size=bunch_size,
-        # start_date=start_date,
-        # end_date=end_date
+        start_date=start_date,
+        end_date=end_date
     )
-    # await library.resolve_podcats(start_date=start_date, end_date=end_date)
-    await library.resolve_podcats()
+    await library.resolve_podcats(start_date=start_date, end_date=end_date)
 
-    books = []
+    books = {}
     for book in library:
         # authors = ", ".join([i["name"] for i in (book.authors or [])])
         # narrators = ", ".join([i["name"] for i in (book.narrators or [])])
-        bd = {
+        books[book.asin] = {
             'asin': book.asin,
             'title': book.title,
             'authors':
                 ", ".join([i["name"] for i in (book.authors or [])]),
             'narrators':
                 ", ".join([i["name"] for i in (book.narrators or [])]),
-            'purchase_date': book.purchase_date,
+            'date_added': book.purchase_date,
         }
-        # print(f"book {book.asin} => {stuff}")
-        books.append(bd)
-    books.sort(key=(lambda x: x['purchase_date']))
+        # print(f"book {book.asin} => {books[book.asin]}")
+        # books.append(bd)
+        # books[book.asin] = book
 
-    return library
+    # books.sort(key=(lambda x: x['purchase_date']))
+
+    return books
 
 
 class EpisodeCreator:
@@ -240,6 +241,24 @@ class EpisodeCreator:
     @property
     def podgen_episode(self) -> podgen.Episode:
         return self._podgen_episode
+
+    @property
+    def ctime(self):
+        if (not self._ctime):
+            stat = pathlib.Path(self._source).stat()
+            try:
+                self._ctime = stat.st_birthtime
+            except AttributeError:
+                self._ctime = stat.st_ctime
+        return self._ctime
+
+    @property
+    def library_info(self):
+        return self._library_info
+
+    @library_info.setter
+    def library_info(self, var):
+        self._library_info = var
 
     def _do_probe(self):
         base_cmd = [
@@ -501,7 +520,7 @@ async def cli(
         category=podgen.Category(category, subcategory)
     )
 
-    episodes = []
+    episode_array = []
     for file in _get_input_files(files, recursive=True):
         ep = EpisodeCreator(
             file=file,
@@ -510,17 +529,23 @@ async def cli(
             make_public=make_public
         )
         echo(f"adding {ep.asin} => {ep.title}")
-        episodes.append(ep)
+        episode_array.append(ep)
         # cast.add_episode(ep.podgen_episode)
 
     if sort_by_purchase_date:
-        library = await _get_library_date_contributors(session, client)
+        books = await _get_library_info(
+            session,
+            client
+        )
+        for ep in episode_array:
+            ep.library_info = books[ep.asin]
+        episode_array.sort(key=(lambda x: x.library_info['date_added']))
+    else:
+        episode_array.sort(key=(lambda x: x.ctime))
 
-    for ep in episodes:
+    for ep in episode_array:
         cast.add_episode(ep.podgen_episode)
 
     echo("creating feed...")
     cast.rss_file(outfile)
     print(f"feed saved to {outfile}")
-
-    library
