@@ -199,17 +199,17 @@ async def _get_library_date_contributors(session, client):
 class EpisodeCreator:
     def __init__(
         self,
-        cast: podgen.Podcast,
         file: pathlib.Path,
         url_prefix: str,
         overwrite: bool,
         make_public: bool
-    ) -> None:
-        self._cast = cast
+    ):
         self._source = file
         self._url_prefix = url_prefix
         self._overwrite = overwrite
         self._make_public = make_public
+        self.do_probe()
+        self.do_ep()
 
     def do_probe(self):
         base_cmd = [
@@ -254,10 +254,22 @@ class EpisodeCreator:
             duration=timedelta(seconds=float(self._probe["duration"]))
         )
 
-    def run(self):
-        self.do_probe()
+    @property
+    def asin(self) -> str:
+        return self._tags['episode_id']
+
+    @property
+    def source(self) -> str:
+        return self._source
+
+    @property
+    def ep(self) -> Episode:
+        return self._episode
+
+    def add_to_cast(self):
+        # self.do_probe()
         # pprint(self._probe)
-        self.do_ep()
+        # self.do_ep()
         # xmlstr = minidom.parseString(
         #    ElementTree.tostring(self._episode.rss_entry())
         # ).toprettyxml(indent="  ")
@@ -472,13 +484,13 @@ async def cli(
 
     files = _get_input_files(files, recursive=True)
     for file in files:
-        EpisodeCreator(
-            cast=cast,
+        ep = EpisodeCreator(
             file=file,
             url_prefix=url_prefix,
             overwrite=overwrite,
             make_public=make_public
-        ).run()
+        )
+        cast.add_episode(ep.ep)
 
     cast.rss_file(outfile)
     print(f"feed saved to {outfile}")
