@@ -173,9 +173,25 @@ async def _get_library_date_contributors(session, client):
         # start_date=start_date,
         # end_date=end_date
     )
-
     # await library.resolve_podcats(start_date=start_date, end_date=end_date)
     await library.resolve_podcats()
+
+    books = []
+    for book in library:
+        # authors = ", ".join([i["name"] for i in (book.authors or [])])
+        # narrators = ", ".join([i["name"] for i in (book.narrators or [])])
+        bd = {
+            'asin': book.asin,
+            'title': book.title,
+            'authors':
+                ", ".join([i["name"] for i in (book.authors or [])]),
+            'narrators':
+                ", ".join([i["name"] for i in (book.narrators or [])]),
+            'purchase_date': book.purchase_date,
+        }
+        # print(f"book {book.asin} => {stuff}")
+        books.append(bd)
+    books.sort(key=(lambda x: x['purchase_date']))
 
     return library
 
@@ -468,19 +484,5 @@ async def cli(
     print(f"feed saved to {outfile}")
 
     library = await _get_library_date_contributors(session, client)
-    for book in library:
 
-        # authors = ", ".join([i["name"] for i in (book.authors or [])])
-        # narrators = ", ".join([i["name"] for i in (book.narrators or [])])
-        stuff = {
-            'asin': book.asin,
-            'title': book.title,
-            'authors':
-                ", ".join([i["name"] for i in (book.authors or [])]),
-            'narrators':
-                ", ".join([i["name"] for i in (book.narrators or [])]),
-            'purchase_date': book.purchase_date,
-        }
-        print(f"book {book.asin} => {stuff}")
-
-    True
+    library
