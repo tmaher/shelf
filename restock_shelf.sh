@@ -20,8 +20,8 @@ audible download --aaxc --pdf --cover --cover-size 500 --chapter \
     --start-date 2024-01-01 --end-date 2099-12-31
 
 audible decrypt --all --dir "${target_dir}/pt" \
-    --rebuild-chapters --force-rebuild-chapters \
     --copy-asin-to-metadata
+    # --rebuild-chapters --force-rebuild-chapters \
 
 ## injecting arbitrary metadata keys...
 ## ffmpeg -i blah.m4a \

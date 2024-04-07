@@ -254,6 +254,38 @@ class FFMeta:
     def count_chapters(self):
         return len(self._ffmeta_parsed["CHAPTER"])
 
+    @property
+    def date(self):
+        return self._ffmeta_parsed["_"]['date']
+
+    @property
+    def genre(self):
+        return self._ffmeta_parsed["_"]['genre']
+
+    @property
+    def title(self):
+        return self._ffmeta_parsed["_"]['title']
+
+    @property
+    def artist(self):
+        return self._ffmeta_parsed["_"]['artist']
+
+    @property
+    def album_artist(self):
+        return self._ffmeta_parsed["_"]['album_artist']
+
+    @property
+    def album(self):
+        return self._ffmeta_parsed["_"]['album']
+
+    @property
+    def comment(self):
+        return self._ffmeta_parsed["_"]['comment']
+
+    @property
+    def copyright(self):
+        return self._ffmeta_parsed["_"]['copyright']
+
     def set_chapter_option(self, num, option, value):
         chapter = self._ffmeta_parsed["CHAPTER"][num]
         for chapter_option in chapter:
@@ -510,14 +542,27 @@ class FfmpegFileDecrypter:
                         "1",
                     ]
                 )
+        else:
+            base_cmd.extend(
+                [
+                    "-map_metadata",
+                    "0"
+                ]
+            )
 
         if self._copy_asin_to_metadata and self._asin:
             base_cmd.extend(
                 [
                     "-metadata:g",
-                    f"asin={self._asin}",
-                    "-movflags",
-                    "+use_metadata_tags"
+                    "grouping=gROUPing YouR m0m",
+                    "-metadata:g",
+                    f"description=DescrpTION {self.ffmeta.comment}",
+                    "-metadata:g",
+                    f"synopsis=SynopSIS {self.ffmeta.comment}",
+                    "-metadata:g",
+                    f"episode_id=EpisODEid {self._asin}",
+                    # "-movflags",
+                    # "+use_metadata_tags"
                 ]
             )
 
@@ -532,6 +577,12 @@ class FfmpegFileDecrypter:
         subprocess.check_output(base_cmd, text=True)  # noqa: S603
 
         echo(f"File decryption successful: {outfile}")
+        for _ in range(5):
+            print("***")
+        print(f"artist => {self.ffmeta.artist}")
+        print(f"copyright => {self.ffmeta.copyright}")
+        for _ in range(5):
+            print("***")
 
 @click.command("decrypt")  # noqa: E302
 @click.argument("files", nargs=-1)
