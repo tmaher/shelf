@@ -578,11 +578,11 @@ class FfmpegFileDecrypter:
 
         echo(f"File decryption successful: {outfile}")
         for _ in range(5):
-            print("***")
-        print(f"artist => {self.ffmeta.artist}")
-        print(f"copyright => {self.ffmeta.copyright}")
+            echo("***")
+        # echo(f"base CMD => {self.ffmeta.artist}")
+        echo(f"base cmd => {base_cmd}")
         for _ in range(5):
-            print("***")
+            echo("***")
 
 @click.command("decrypt")  # noqa: E302
 @click.argument("files", nargs=-1)
