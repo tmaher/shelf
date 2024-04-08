@@ -3,8 +3,7 @@ FROM python:3.11-alpine3.19
 RUN apk add build-base \
             ffmpeg \
             jq \
-            libffi libffi-dev \
-            ruby
+            libffi libffi-dev
 RUN pip install poetry==1.8.2
 
 RUN mkdir /app
@@ -17,7 +16,7 @@ WORKDIR /app
 
 RUN poetry install
 
-COPY "*.rb" "*.py" "restock_shelf.sh" /app/
+COPY "restock_shelf.sh" /app/
 COPY "src/" /app/src/
 ENV PATH=/app/.venv/bin:${PATH}
 
