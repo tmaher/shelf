@@ -1,8 +1,7 @@
-FROM python:3.11-alpine3.19
+FROM python:3.11-alpine3.19 as buildbase
 
 RUN apk add build-base \
             ffmpeg \
-            jq \
             libffi libffi-dev
 RUN pip install poetry==1.8.2
 
@@ -18,6 +17,13 @@ RUN poetry install
 
 COPY "restock_shelf.sh" /app/
 COPY "src/" /app/src/
-ENV PATH=/app/.venv/bin:${PATH}
+
+RUN apk del build-base
+FROM scratch
+
+COPY --from=buildbase / /
+ENV PATH=/app/.venv/bin:${PATH} \
+    AUDIBLE_CONFIG_DIR=${AUDIBLE_CONFIG_DIR:-/config} \
+    AUDIBLE_PLUGIN_DIR=${AUDIBLE_PLUGIN_DIR:-/app/src/audible-cli/plugins}
 
 CMD ["/app/restock_shelf.sh"]
