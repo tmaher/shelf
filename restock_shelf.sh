@@ -1,10 +1,48 @@
 #!/bin/sh
 
-target_dir=${target_dir:-/shelf}
-export target_dir
+target_dir=${target_dir:-/shelf} export target_dir
 
-cd /app
-pipenv run ./getlib.py
+: "${SHELF_DESC:=description goes here}" ; export SHELF_DESC
+: "${SHELF_TITLE:=title goes here}" ; export SHELF_TITLE
+: "${SHELF_IMAGE:=image-goes-here.jpg}" ; export SHELF_IMAGE
+: "${SHELF_URL_PREFIX:=https://invalid.invalid/}" ; export SHELF_URL_PREFIX
 
-cd "${target_dir}"
-/app/generate_personal_podcast.rb
+mkdir -p "${target_dir}/dl" "${target_dir}/pt"
+cd "${target_dir}/dl" || exit 1
+
+audible library export \
+    --format json
+
+audible download \
+    --aaxc \
+    --pdf \
+    --cover \
+    --cover-size 500 \
+    --chapter \
+    --annotation \
+    --jobs 4 \
+    --quality best \
+    --filename-mode asin_ascii \
+    --ignore-podcasts \
+    --all \
+    --start-date 2023-06-01
+
+audible decrypt \
+    --all \
+    --dir "${target_dir}/pt" \
+    --rebuild-chapters \
+    --force-rebuild-chapters \
+    --copy-asin-to-metadata
+
+cp library.json "${target_dir}/pt"
+cd "${target_dir}/pt" || exit 1
+
+audible rss \
+    --all \
+    --overwrite \
+    --sort-by-purchase-date \
+    --start-date 2023-06-01 \
+    --name "${SHELF_TITLE}" \
+    --desc "${SHELF_DESC}" \
+    --image "${SHELF_IMAGE}" \
+    --url-prefix "${SHELF_URL_PREFIX}" \

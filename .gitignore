@@ -4,3 +4,5 @@ secrets.env.sh
 *.env
 tmp/
 creds/
+config/
+.venv/
