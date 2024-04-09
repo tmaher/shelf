@@ -22,7 +22,7 @@ audible download \
     --cover-size 900 \
     --chapter \
     --annotation \
-    --jobs 6 \
+    --jobs 4 \
     --quality best \
     --filename-mode asin_ascii \
     --ignore-podcasts \
