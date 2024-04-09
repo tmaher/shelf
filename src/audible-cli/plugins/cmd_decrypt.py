@@ -19,7 +19,6 @@ import typing as t
 from enum import Enum
 from functools import reduce
 from glob import glob
-# from shlex import quote
 from shutil import which
 
 import click
@@ -554,8 +553,6 @@ class FfmpegFileDecrypter:
                     f"synopsis=SynopSIS {self.ffmeta.comment}",
                     "-metadata:g",
                     f"episode_id={self._asin}",
-                    # "-movflags",
-                    # "+use_metadata_tags"
                 ]
             )
 
