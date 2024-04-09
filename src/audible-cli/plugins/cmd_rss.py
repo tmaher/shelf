@@ -258,8 +258,7 @@ class EpisodeCreator:
         ]
         child_result = subprocess.run(base_cmd, capture_output=True)
         if child_result.returncode != 0:
-            secho("f Skip {outfile}: ffprobe failed")
-            return
+            raise RuntimeError(f"ffprobe failed, corrupt? {str(self._source)}")
 
         try:
             probe_dict = json.loads(child_result.stdout)
