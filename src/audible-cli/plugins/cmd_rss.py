@@ -173,7 +173,7 @@ async def _get_library_info(session, client):
     for book in library:
         books[book.asin] = {
             'asin': book.asin,
-            'title': book.title,
+            'title': book.full_title,
             'authors':
                 ", ".join([i["name"] for i in (book.authors or [])]),
             'narrators':
@@ -193,6 +193,8 @@ class EpisodeCreator:
         make_public: bool
     ):
         self._source = file
+        self._ctime = None
+        self._img_file = None
         self._url_prefix = url_prefix
         self._overwrite = overwrite
         self._make_public = make_public
@@ -247,6 +249,12 @@ class EpisodeCreator:
     def library_info(self, var):
         self._library_info = var
 
+    @property
+    def img_file(self):
+        if (not self._img_file):
+            self._img_file = f"{pathlib.Path(self.source).stem}.jpg"
+        return self._img_file
+
     def _do_probe(self):
         base_cmd = [
             "ffprobe",
@@ -258,8 +266,7 @@ class EpisodeCreator:
         ]
         child_result = subprocess.run(base_cmd, capture_output=True)
         if child_result.returncode != 0:
-            secho("f Skip {outfile}: ffprobe failed")
-            return
+            raise RuntimeError(f"ffprobe failed, corrupt? {str(self._source)}")
 
         try:
             probe_dict = json.loads(child_result.stdout)
@@ -280,6 +287,7 @@ class EpisodeCreator:
             summary=self._tags["comment"],
             publication_date=pubdate,
             authors=[podgen.Person(self._tags["artist"])],
+            image=f"{self._url_prefix}{self.img_file}",
             withhold_from_itunes=(not self._make_public)
         )
 
@@ -415,6 +423,15 @@ class EpisodeCreator:
     """
 )
 @click.option(
+    "--use-library-api",
+    is_flag=True,
+    default=False,
+    help="""
+    Use title, writers, narrators per-episode from library API
+    If not used, default is to use file metadata (no narrator credit)
+    """
+)
+@click.option(
     "--all",
     "-a",
     "all_",
@@ -445,12 +462,12 @@ async def cli(
     files: str,
     outfile: str,
     sort_by_purchase_date: bool,
+    use_library_api: bool,
     all_: bool,
     overwrite: bool,
 ):
     """Generate RSS File"""
 
-    # raise RuntimeError("zoinks! add pubdate library support before merging")
     if not which("ffprobe"):
         ctx = click.get_current_context()
         ctx.fail("ffprobe not found")
@@ -491,6 +508,7 @@ async def cli(
         withhold_from_itunes=(not make_public),
         image=image,
         feed_url=feed_url,
+        generator=None,
         category=podgen.Category(category, subcategory)
     )
 
@@ -504,20 +522,29 @@ async def cli(
         )
         echo(f"adding {ep.asin} => {ep.title}")
         episode_array.append(ep)
-        # cast.add_episode(ep.podgen_episode)
 
-    if sort_by_purchase_date:
+    if use_library_api or sort_by_purchase_date:
         books = await _get_library_info(
             session,
             client
         )
         for ep in episode_array:
             ep.library_info = books[ep.asin]
-            ep.podgen_episode.publication_date = ep.library_info['date_added']
-            ep.podgen_episode.authors = [
-                podgen.Person(f"Written by {ep.library_info['authors']}"),
-                podgen.Person(f"Narrated by {ep.library_info['narrators']}"),
-            ]
+            if sort_by_purchase_date:
+                ep.podgen_episode.publication_date = \
+                    ep.library_info['date_added']
+            if use_library_api:
+                ep.podgen_episode.title = ep.library_info['title']
+                ep.podgen_episode.authors = [
+                    podgen.Person(
+                        f"Written by {ep.library_info['authors']}"
+                    ),
+                    podgen.Person(
+                        f"Narrated by {ep.library_info['narrators']}"
+                    ),
+                ]
+
+    if sort_by_purchase_date:
         episode_array.sort(key=(lambda x: x.library_info['date_added']))
     else:
         episode_array.sort(key=(lambda x: x.ctime))

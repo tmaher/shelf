@@ -6,3 +6,9 @@ tmp/
 creds/
 config/
 .venv/
+*.aax
+*.aaxc
+*.jpg
+*.m4a
+*.m4b
+*.mp3
