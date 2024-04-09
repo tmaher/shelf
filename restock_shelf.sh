@@ -43,9 +43,13 @@ for book in *.aaxc; do
         img_src="$(echo "${book}" | sed -E 's/-AAX_[0-9_]+.aaxc/_(900)/').jpg"
         if [ -r "${img_src}" ]; then
             cp "${img_src}" "${img_target}"
+        else
+            ffmpeg -i "${book}" -vcodec copy -frames:v 1 tmp_frame_%d.jpg
+            mv tmp_frame_1.jpg "${img_target}"
         fi
     fi
 done
+rm -f tmp_frame_*.jpg
 
 cd "${SHELF_TARGET_DIR}/assets" || exit 1
 
