@@ -13,8 +13,8 @@ cd "${SHELF_TARGET_DIR}" || exit 1
 mkdir -p "assets" "dl"
 cd "dl" || exit 1
 
-audible library export \
-    --format json
+# audible library export \
+#    --format json
 
 audible download \
     --aaxc \
@@ -46,9 +46,10 @@ for book in *.aaxc; do
         : "${img_src:="${book}"}"
 
         ffmpeg \
-            -i "${book}" \
-            -vf "scale=3000:3000:force_original_aspect_ratio=increase,pad=3000:3000:(ow-iw)/2:(oh-ih)/2" \
+            -i "${img_src}" \
+            -vf "scale=3000:3000:force_original_aspect_ratio=decrease,pad=3000:3000:(ow-iw)/2:(oh-ih)/2" \
             -frames:v 1 \
+            -update 1 \
             "${img_target}"
     fi
 done
@@ -59,7 +60,7 @@ audible rss \
     --all \
     --overwrite \
     --sort-by-purchase-date \
-    --add-contributors-from-library-api \
+    --use-library-api \
     --start-date "${SHELF_START_DATE}" \
     --end-date "${SHELF_END_DATE}" \
     --name "${SHELF_TITLE}" \
