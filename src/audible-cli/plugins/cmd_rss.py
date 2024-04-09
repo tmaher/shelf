@@ -173,7 +173,7 @@ async def _get_library_info(session, client):
     for book in library:
         books[book.asin] = {
             'asin': book.asin,
-            'title': book.title,
+            'title': book.full_title,
             'authors':
                 ", ".join([i["name"] for i in (book.authors or [])]),
             'narrators':
@@ -193,6 +193,8 @@ class EpisodeCreator:
         make_public: bool
     ):
         self._source = file
+        self._ctime = None
+        self._img_file = None
         self._url_prefix = url_prefix
         self._overwrite = overwrite
         self._make_public = make_public
@@ -247,6 +249,12 @@ class EpisodeCreator:
     def library_info(self, var):
         self._library_info = var
 
+    @property
+    def img_file(self):
+        if (not self._img_file):
+            self._img_file = f"{pathlib.Path(self.source).stem}.jpg"
+        return self._img_file
+
     def _do_probe(self):
         base_cmd = [
             "ffprobe",
@@ -279,6 +287,7 @@ class EpisodeCreator:
             summary=self._tags["comment"],
             publication_date=pubdate,
             authors=[podgen.Person(self._tags["artist"])],
+            image=f"{self._url_prefix}{self.img_file}",
             withhold_from_itunes=(not self._make_public)
         )
 
@@ -414,12 +423,12 @@ class EpisodeCreator:
     """
 )
 @click.option(
-    "--add-contributors-from-library-api",
+    "--use-library-api",
     is_flag=True,
     default=False,
     help="""
-    Credit writers and narrators per-episode, using library API
-    If not used, default is to credit writer only using file metadata
+    Use title, writers, narrators per-episode from library API
+    If not used, default is to use file metadata (no narrator credit)
     """
 )
 @click.option(
@@ -453,7 +462,7 @@ async def cli(
     files: str,
     outfile: str,
     sort_by_purchase_date: bool,
-    add_contributors_from_library_api: bool,
+    use_library_api: bool,
     all_: bool,
     overwrite: bool,
 ):
@@ -499,6 +508,7 @@ async def cli(
         withhold_from_itunes=(not make_public),
         image=image,
         feed_url=feed_url,
+        generator=None,
         category=podgen.Category(category, subcategory)
     )
 
@@ -513,7 +523,7 @@ async def cli(
         echo(f"adding {ep.asin} => {ep.title}")
         episode_array.append(ep)
 
-    if add_contributors_from_library_api or sort_by_purchase_date:
+    if use_library_api or sort_by_purchase_date:
         books = await _get_library_info(
             session,
             client
@@ -523,7 +533,8 @@ async def cli(
             if sort_by_purchase_date:
                 ep.podgen_episode.publication_date = \
                     ep.library_info['date_added']
-            if add_contributors_from_library_api:
+            if use_library_api:
+                ep.podgen_episode.title = ep.library_info['title']
                 ep.podgen_episode.authors = [
                     podgen.Person(
                         f"Written by {ep.library_info['authors']}"
