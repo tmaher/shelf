@@ -1,7 +1,7 @@
 on:
-    push:
-      branches:
-        - cloudsmith
+  push:
+    branches:
+      - cloudsmith
 
 env:
   REGISTRY: docker.cloudsmith.io
