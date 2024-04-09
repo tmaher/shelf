@@ -415,6 +415,15 @@ class EpisodeCreator:
     """
 )
 @click.option(
+    "--add-contributors-from-library-api",
+    is_flag=True,
+    default=False,
+    help="""
+    Credit writers and narrators per-episode, using library API
+    If not used, default is to credit writer only using file metadata
+    """
+)
+@click.option(
     "--all",
     "-a",
     "all_",
@@ -445,12 +454,12 @@ async def cli(
     files: str,
     outfile: str,
     sort_by_purchase_date: bool,
+    add_contributors_from_library_api: bool,
     all_: bool,
     overwrite: bool,
 ):
     """Generate RSS File"""
 
-    # raise RuntimeError("zoinks! add pubdate library support before merging")
     if not which("ffprobe"):
         ctx = click.get_current_context()
         ctx.fail("ffprobe not found")
@@ -504,20 +513,28 @@ async def cli(
         )
         echo(f"adding {ep.asin} => {ep.title}")
         episode_array.append(ep)
-        # cast.add_episode(ep.podgen_episode)
 
-    if sort_by_purchase_date:
+    if add_contributors_from_library_api or sort_by_purchase_date:
         books = await _get_library_info(
             session,
             client
         )
         for ep in episode_array:
             ep.library_info = books[ep.asin]
-            ep.podgen_episode.publication_date = ep.library_info['date_added']
-            ep.podgen_episode.authors = [
-                podgen.Person(f"Written by {ep.library_info['authors']}"),
-                podgen.Person(f"Narrated by {ep.library_info['narrators']}"),
-            ]
+            if sort_by_purchase_date:
+                ep.podgen_episode.publication_date = \
+                    ep.library_info['date_added']
+            if add_contributors_from_library_api:
+                ep.podgen_episode.authors = [
+                    podgen.Person(
+                        f"Written by {ep.library_info['authors']}"
+                    ),
+                    podgen.Person(
+                        f"Narrated by {ep.library_info['narrators']}"
+                    ),
+                ]
+
+    if sort_by_purchase_date:
         episode_array.sort(key=(lambda x: x.library_info['date_added']))
     else:
         episode_array.sort(key=(lambda x: x.ctime))
