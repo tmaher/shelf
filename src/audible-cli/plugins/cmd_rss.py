@@ -8,9 +8,7 @@ Need further work. Some options do not work or options are missing.
 Needs at least ffmpeg 4.4
 """
 
-# import asyncio
 import json
-# import operator
 import pathlib
 import re
 import subprocess  # noqa: S404
@@ -20,12 +18,8 @@ from glob import glob
 from shutil import which
 from datetime import timedelta
 import dateutil
-# from podgen import Podcast, Episode, Media, Person, Category
 import podgen
 from rfc3986 import normalize_uri, is_valid_uri
-# from pprint import pprint
-# import xml.etree.ElementTree as ElementTree
-# from xml.dom import minidom
 
 import click
 from click import echo, secho
@@ -177,8 +171,6 @@ async def _get_library_info(session, client):
 
     books = {}
     for book in library:
-        # authors = ", ".join([i["name"] for i in (book.authors or [])])
-        # narrators = ", ".join([i["name"] for i in (book.narrators or [])])
         books[book.asin] = {
             'asin': book.asin,
             'title': book.title,
@@ -188,11 +180,6 @@ async def _get_library_info(session, client):
                 ", ".join([i["name"] for i in (book.narrators or [])]),
             'date_added': book.purchase_date,
         }
-        # print(f"book {book.asin} => {books[book.asin]}")
-        # books.append(bd)
-        # books[book.asin] = book
-
-    # books.sort(key=(lambda x: x['purchase_date']))
 
     return books
 
@@ -287,7 +274,6 @@ class EpisodeCreator:
     def _create_podgen_episode(self) -> None:
         pubdate = dateutil.parser.isoparse(self._tags["creation_time"])
         file_name = pathlib.Path(self._source).name
-        # echo(f"tags => {self._tags}")
         self._podgen_episode = podgen.Episode(
             id=self.asin,
             title=self._tags["title"],
@@ -296,25 +282,12 @@ class EpisodeCreator:
             authors=[podgen.Person(self._tags["artist"])],
             withhold_from_itunes=(not self._make_public)
         )
-        # ep_url = f"{self._url_prefix}{file_name}"
-        # print(f"about to media-ify {ep_url}")
 
         self._podgen_episode.media = podgen.Media(
             url=f"{self._url_prefix}{file_name}",
             size=self._probe["size"],
             duration=timedelta(seconds=float(self._probe["duration"]))
         )
-
-    def add_to_cast(self):
-        # self.do_probe()
-        # pprint(self._probe)
-        # self.do_ep()
-        # xmlstr = minidom.parseString(
-        #    ElementTree.tostring(self._episode.rss_entry())
-        # ).toprettyxml(indent="  ")
-        # print(xmlstr)
-        echo(f"adding {self._source}")
-        self._cast.add_episode(self._episode)
 
 @click.command("rss")  # noqa: E302
 @click.argument("files", nargs=-1)
