@@ -10,7 +10,7 @@
 
 cd "${SHELF_TARGET_DIR}" || exit 1
 mkdir -p "assets" "dl"
-cd "assets" || exit 1
+cd "dl" || exit 1
 
 audible library export \
     --format json
@@ -53,6 +53,7 @@ audible rss \
     --all \
     --overwrite \
     --sort-by-purchase-date \
+    --add-contributors-from-library-api \
     --start-date "${SHELF_START_DATE}" \
     --end-date "${SHELF_END_DATE}" \
     --name "${SHELF_TITLE}" \
