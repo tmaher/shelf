@@ -13,10 +13,10 @@ ENV AUDIBLE_PLUGIN_DIR=${AUDIBLE_PLUGIN_DIR:-/app/src/audible-cli/plugins}
 RUN mkdir -p ${AUDIBLE_CONFIG_DIR}
 WORKDIR /app
 
-RUN poetry install
-
 COPY "restock_shelf.sh" /app/
+COPY "*.md" /app/
 COPY "src/" /app/src/
+RUN poetry install
 
 RUN apk del build-base
 FROM scratch

@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Shelf!!!"
 authors = []
 readme = "README.md"
-package-mode = false
+packages = [
+    { include = "shelf", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
@@ -13,6 +15,7 @@ audible-cli = "^0.3.1"
 isbntools = "^4.3.29"
 podgen = "^1.1.0"
 rfc3986 = "^2.0.0"
+feedgen = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]
