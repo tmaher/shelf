@@ -16,7 +16,12 @@ isbntools = "^4.3.29"
 podgen = "^1.1.0"
 rfc3986 = "^2.0.0"
 feedgen = "^1.0.0"
+pytest = "^8.1.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+tests = ["tests", "*/tests"]
