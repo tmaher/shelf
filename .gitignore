@@ -12,3 +12,4 @@ config/
 *.m4a
 *.m4b
 *.mp3
+.pytest_cache
