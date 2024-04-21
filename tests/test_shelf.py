@@ -1,21 +1,21 @@
 import pytest
-from shelf import ShelfFeedGenerator
+from feedgen.feed import FeedGenerator
 
 
 class TestSFG:
     @pytest.fixture
     def my_sfg(self):
-        sfg = ShelfFeedGenerator()
-        sfg.title('bob the angry podcast')
-        sfg.id('https://bob.the.angry.podcast/')
-        return sfg
+        fg = FeedGenerator()
+        fg.title('bob the angry podcast')
+        fg.id('https://bob.the.angry.podcast/')
+        return fg
 
-    def test_create(self, my_sfg):
-        assert isinstance(my_sfg, ShelfFeedGenerator)
+    def test_create(self, my_fg):
+        assert isinstance(my_fg, FeedGenerator)
 
-    def test_basic_attrs(self, my_sfg):
-        assert my_sfg.title() == 'bob the angry podcast'
-        assert my_sfg.id() == 'https://bob.the.angry.podcast/'
+    def test_basic_attrs(self, my_fg):
+        assert my_fg.title() == 'bob the angry podcast'
+        assert my_fg.id() == 'https://bob.the.angry.podcast/'
 
-    def test_ext(self, my_sfg):
+    def test_ext(self, my_fg):
         True
