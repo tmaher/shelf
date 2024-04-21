@@ -13,4 +13,5 @@ cd "${APPDIR}" || _error "Unable to cd to '${APPDIR}'"
 
 PATH="${APPDIR}/.venv/bin" export PATH
 
-pytest
+export PYTHONDONTWRITEBYTECODE=1
+pytest "${@}"
