@@ -35,7 +35,9 @@ class TestPodcasting20Extension:
         assert fg.podcast.itunes_explicit() == 'yes'
 
     def test_locked(self, fg):
-        fg.podcasting20.locked(locked='yes', owner='bob@angry.podcast')
+        fg.podcasting20.locked('yes', owner='bob@angry.podcast')
         assert fg.podcasting20.locked() == {
             'locked': 'yes', 'owner': 'bob@angry.podcast'
         }
+        with pytest.raises(ValueError):
+            fg.podcasting20.locked('bogus')

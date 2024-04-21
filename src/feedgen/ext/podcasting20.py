@@ -113,11 +113,17 @@ class Podcasting20BaseExtension(BaseExtension):
         A value of yes means that any attempt to import this feed into a new
         platform should be rejected.
 
-        :param locked: is the podcast locked (yes/no)
-        :param owner: email address to verify during moves
+        :param locked: must be "yes" or "no"
+        :param owner: (optional) The owner attribute is an email address that
+        can be used to verify ownership of this feed during move and import
+        operations. This could be a public email or a virtual email address
+        at the hosting provider that redirects to the owner's true email
+        address.
         :returns: dict of locked & owner email
         '''
         if locked is not None:
+            if locked not in ('yes', 'no'):
+                raise ValueError("Locked may only be 'yes' or 'no'")
             if locked and owner:
                 self._pc20elem_locked = {
                     'locked': locked,
