@@ -113,7 +113,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
     '''
 
 
-class DcEntryExtension(Podcasting20BaseExtension):
+class Podcasting20EntryExtension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
     '''
     def extend_atom(self, entry):

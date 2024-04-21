@@ -16,18 +16,29 @@ feedgen.ext.__path__ = pkgutil.extend_path(
 
 class TestPodcasting20Extension:
     @pytest.fixture
-    def my_fg(self):
+    def fg(self):
         fg = FeedGenerator()
+        fg.load_extension('podcast')
+        fg.load_extension('dc')
+        fg.load_extension('podcasting20')
+
+        fg.podcast.itunes_explicit('yes')
         fg.title('bob the angry podcast')
         fg.id('https://bob.the.angry.podcast/')
         return fg
 
-    def test_create(self, my_fg):
-        assert isinstance(my_fg, FeedGenerator)
+    def test_create(self, fg):
+        assert isinstance(fg, FeedGenerator)
 
-    def test_basic_attrs(self, my_fg):
-        assert my_fg.title() == 'bob the angry podcast'
-        assert my_fg.id() == 'https://bob.the.angry.podcast/'
+    def test_basic_attrs(self, fg):
+        assert fg.title() == 'bob the angry podcast'
+        assert fg.id() == 'https://bob.the.angry.podcast/'
 
-    def test_ext(self, my_fg):
-        my_fg.load_extension('podcasting20')
+    def test_itunes_explicit(self, fg):
+        assert fg.podcast.itunes_explicit() == 'yes'
+
+    def test_locked(self, fg):
+        fg.podcasting20.locked(locked='yes', owner='bob@angry.podcast')
+        assert fg.podcasting20.locked(
+            {'locked': 'yes', 'owner': 'bob@angry.podcast'}
+        )
