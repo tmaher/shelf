@@ -4,7 +4,7 @@ from feedgen.feed import FeedGenerator
 
 class TestSFG:
     @pytest.fixture
-    def my_sfg(self):
+    def my_fg(self):
         fg = FeedGenerator()
         fg.title('bob the angry podcast')
         fg.id('https://bob.the.angry.podcast/')
