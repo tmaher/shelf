@@ -15,5 +15,6 @@ class ShelfFeedGenerator(FeedGenerator):
 This is another class
     """
     def __init__(
+        self
     ):
-        True
+        return self
