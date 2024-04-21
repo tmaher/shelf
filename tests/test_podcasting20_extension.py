@@ -2,7 +2,7 @@ import pytest
 from feedgen.feed import FeedGenerator
 
 
-class TestPC20FG:
+class TestPodcasting20Extension:
     @pytest.fixture
     def my_fg(self):
         fg = FeedGenerator()
