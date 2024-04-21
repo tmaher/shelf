@@ -9,6 +9,7 @@ class Podcasting20BaseExtension(BaseExtension):
     '''
 
     def __init__(self):
+        self._nodes = {}
         self._pc20elem_transcript = None
         self._pc20elem_chapters = None
         self._pc20elem_podroll = None
@@ -155,7 +156,7 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
     '''
     def extend_atom(self, entry):
-        '''Add dc elements to an atom item. Alters the item itself.
+        '''Add podcasting 2.0 elements to an atom item. Alters the item itself.
 
         :param entry: An atom entry element.
         :returns: The entry element.
@@ -164,7 +165,7 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
         return entry
 
     def extend_rss(self, item):
-        '''Add dc elements to a RSS item. Alters the item itself.
+        '''Add podcasting 2.0 elements to a RSS item. Alters the item itself.
 
         :param item: A RSS item element.
         :returns: The item element.
