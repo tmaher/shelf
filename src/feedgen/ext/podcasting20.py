@@ -107,6 +107,26 @@ class Podcasting20BaseExtension(BaseExtension):
 
         return rss_feed
 
+    def locked(self, locked=None, owner=None):
+        '''This tag may be set to yes or no. The purpose is to tell other
+        podcast hosting platforms whether they are allowed to import this feed.
+        A value of yes means that any attempt to import this feed into a new
+        platform should be rejected.
+
+        :param locked: is the podcast locked (yes/no)
+        :param owner: email address to verify during moves
+        :returns: dict of locked & owner email
+        '''
+        if locked is not None:
+            if locked and owner:
+                self._pc20elem_locked = {
+                    'locked': locked,
+                    'owner': owner
+                }
+            elif locked and not owner:
+                self._pc20elem_locked = {'locked': locked}
+        return self._pc20elem_locked
+
 
 class Podcasting20Extension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.

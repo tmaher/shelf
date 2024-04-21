@@ -39,6 +39,6 @@ class TestPodcasting20Extension:
 
     def test_locked(self, fg):
         fg.podcasting20.locked(locked='yes', owner='bob@angry.podcast')
-        assert fg.podcasting20.locked(
-            {'locked': 'yes', 'owner': 'bob@angry.podcast'}
-        )
+        assert fg.podcasting20.locked() == {
+            'locked': 'yes', 'owner': 'bob@angry.podcast'
+        }
