@@ -3,7 +3,6 @@ import feedgen
 import feedgen.ext
 import pkgutil
 from feedgen.feed import FeedGenerator
-import sys
 
 # GROSS
 feedgen.__path__ = \
@@ -45,4 +44,8 @@ class TestPodcasting20Extension:
         with pytest.raises(ValueError):
             fg.podcasting20.locked('bogus')
 
-        sys.stderr.write(fg.rss_str(pretty=True).decode('UTF-8'))
+        xml_frag = \
+            '<podcast:locked owner="bob@angry.podcast">yes</podcast:locked>'
+        assert xml_frag in fg.rss_str().decode('UTF-8')
+        # fg.rss_str
+        # sys.stderr.write(fg.rss_str(pretty=True).decode('UTF-8'))

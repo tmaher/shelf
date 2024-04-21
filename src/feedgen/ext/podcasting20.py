@@ -1,6 +1,6 @@
 from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem
-import sys
+# import sys
 
 
 class Podcasting20BaseExtension(BaseExtension):
