@@ -1,5 +1,6 @@
 from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem
+import sys
 
 
 class Podcasting20BaseExtension(BaseExtension):
@@ -80,10 +81,21 @@ class Podcasting20BaseExtension(BaseExtension):
             'valueTimeSplit'
         ]:
             if hasattr(self, '_pc20elem_%s' % elem):
-                for val in getattr(self, '_pc20elem_%s' % elem) or []:
-                    node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, elem),
-                                    xml_element)
-                    node.text = val
+                attr = getattr(self, '_pc20elem_%s' % elem)
+                if attr is None:
+                    continue
+                # print(f"I FOUND {elem}")
+                node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, elem),
+                                xml_element)
+                if elem == 'locked':
+                    node.text = attr['locked']
+                    if attr.get('owner'):
+                        node.attrib['owner'] = attr['owner']
+                else:
+                    for val in getattr(self, '_pc20elem_%s' % elem) or []:
+                        node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, elem),
+                                        xml_element)
+                        node.text = val
 
     def extend_atom(self, atom_feed):
         '''Extend an Atom feed with the set Podcasting 2.0 fields.
