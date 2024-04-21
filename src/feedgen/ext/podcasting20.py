@@ -136,12 +136,12 @@ class Podcasting20BaseExtension(BaseExtension):
         if locked is not None:
             if locked not in ('yes', 'no'):
                 raise ValueError("Locked may only be 'yes' or 'no'")
-            if locked and owner:
+            if owner:
                 self._pc20elem_locked = {
                     'locked': locked,
                     'owner': owner
                 }
-            elif locked and not owner:
+            else:
                 self._pc20elem_locked = {'locked': locked}
         return self._pc20elem_locked
 
