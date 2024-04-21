@@ -9,6 +9,8 @@ class Podcasting20BaseExtension(BaseExtension):
     '''
 
     def __init__(self):
+        PC20ELEMENTS_NS = 'https://podcastindex.org/namespace/1.0'
+
         self._nodes = {}
         self._pc20elem_transcript = None
         self._pc20elem_chapters = None
@@ -48,7 +50,7 @@ class Podcasting20BaseExtension(BaseExtension):
 
         :param xml_element: etree element
         '''
-        PC20ELEMENTS_NS = 'https://podcastindex.org/namespace/1.0'
+        # PC20ELEMENTS_NS = 'https://podcastindex.org/namespace/1.0'
 
         for elem in [
             'transcript',
@@ -86,7 +88,7 @@ class Podcasting20BaseExtension(BaseExtension):
                 if attr is None:
                     continue
                 # print(f"I FOUND {elem}")
-                node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, elem),
+                node = xml_elem('{%s}%s' % (self.PC20ELEMENTS_NS, elem),
                                 xml_element)
                 if elem == 'locked':
                     node.text = attr['locked']
@@ -94,8 +96,9 @@ class Podcasting20BaseExtension(BaseExtension):
                         node.attrib['owner'] = attr['owner']
                 else:
                     for val in getattr(self, '_pc20elem_%s' % elem) or []:
-                        node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, elem),
-                                        xml_element)
+                        node = xml_elem(
+                            '{%s}%s' % (self.PC20ELEMENTS_NS, elem),
+                            xml_element)
                         node.text = val
 
     def extend_atom(self, atom_feed):
@@ -144,6 +147,8 @@ class Podcasting20BaseExtension(BaseExtension):
                 }
             else:
                 self._pc20elem_locked = {'locked': locked}
+            # node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, 'locked'))
+
         return self._pc20elem_locked
 
 
