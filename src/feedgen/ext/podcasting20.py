@@ -9,7 +9,7 @@ class Podcasting20BaseExtension(BaseExtension):
     '''
 
     def __init__(self):
-        PC20ELEMENTS_NS = 'https://podcastindex.org/namespace/1.0'
+        self.PC20_NS = 'https://podcastindex.org/namespace/1.0'
 
         self._nodes = {}
         self._pc20elem_transcript = None
@@ -52,6 +52,11 @@ class Podcasting20BaseExtension(BaseExtension):
         '''
         # PC20ELEMENTS_NS = 'https://podcastindex.org/namespace/1.0'
 
+        for tag in self._nodes.keys():
+            xml_element.append(self._nodes[tag])
+
+        return
+
         for elem in [
             'transcript',
             'chapters',
@@ -88,7 +93,7 @@ class Podcasting20BaseExtension(BaseExtension):
                 if attr is None:
                     continue
                 # print(f"I FOUND {elem}")
-                node = xml_elem('{%s}%s' % (self.PC20ELEMENTS_NS, elem),
+                node = xml_elem('{%s}%s' % (self.PC20_NS, elem),
                                 xml_element)
                 if elem == 'locked':
                     node.text = attr['locked']
@@ -97,7 +102,7 @@ class Podcasting20BaseExtension(BaseExtension):
                 else:
                     for val in getattr(self, '_pc20elem_%s' % elem) or []:
                         node = xml_elem(
-                            '{%s}%s' % (self.PC20ELEMENTS_NS, elem),
+                            '{%s}%s' % (self.PC20_NS, elem),
                             xml_element)
                         node.text = val
 
@@ -140,15 +145,15 @@ class Podcasting20BaseExtension(BaseExtension):
         if locked is not None:
             if locked not in ('yes', 'no'):
                 raise ValueError("Locked may only be 'yes' or 'no'")
+            val = {'locked': locked}
+            node = xml_elem('{%s}%s' % (self.PC20_NS, 'locked'))
+            node.text = locked
             if owner:
-                self._pc20elem_locked = {
-                    'locked': locked,
-                    'owner': owner
-                }
-            else:
-                self._pc20elem_locked = {'locked': locked}
-            # node = xml_elem('{%s}%s' % (PC20ELEMENTS_NS, 'locked'))
+                node.attrib['owner'] = owner
+                val['owner'] = owner
 
+            self._pc20elem_locked = val
+            self._nodes['locked'] = node
         return self._pc20elem_locked
 
 
