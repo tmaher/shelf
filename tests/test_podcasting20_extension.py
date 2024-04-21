@@ -5,13 +5,10 @@ import pkgutil
 from feedgen.feed import FeedGenerator
 
 # GROSS
-feedgen.__path__ = pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
-feedgen.ext.__path__ = pkgutil.extend_path(
-    feedgen.ext.__path__,
-    feedgen.ext.__name__
-)
-# print(f"feedgen.path is {feedgen.__path__}")
-# print(f"feedgen.ext.path is {feedgen.ext.__path__}")
+feedgen.__path__ = \
+    pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
+feedgen.ext.__path__ = \
+    pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 
 
 class TestPodcasting20Extension:
