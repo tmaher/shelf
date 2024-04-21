@@ -2,7 +2,7 @@ from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem
 
 
-class Podcasting20Extension(BaseExtension):
+class Podcasting20BaseExtension(BaseExtension):
     '''Podcasting 2.0 extension
     See https://podcasting2.org/podcast-namespace
     '''
@@ -106,3 +106,30 @@ class Podcasting20Extension(BaseExtension):
         self._extend_xml(channel)
 
         return rss_feed
+
+
+class Podcasting20Extension(Podcasting20BaseExtension):
+    '''Podcasting 2.0 Elements extension for podcasts.
+    '''
+
+
+class DcEntryExtension(Podcasting20BaseExtension):
+    '''Podcasting 2.0 Elements extension for podcasts.
+    '''
+    def extend_atom(self, entry):
+        '''Add dc elements to an atom item. Alters the item itself.
+
+        :param entry: An atom entry element.
+        :returns: The entry element.
+        '''
+        self._extend_xml(entry)
+        return entry
+
+    def extend_rss(self, item):
+        '''Add dc elements to a RSS item. Alters the item itself.
+
+        :param item: A RSS item element.
+        :returns: The item element.
+        '''
+        self._extend_xml(item)
+        return item

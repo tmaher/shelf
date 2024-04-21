@@ -18,4 +18,4 @@ class TestPC20FG:
         assert my_fg.id() == 'https://bob.the.angry.podcast/'
 
     def test_ext(self, my_fg):
-        True
+        my_fg.load_extension('podcasting20')
