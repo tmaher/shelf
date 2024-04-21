@@ -1,5 +1,20 @@
 import pytest
 from feedgen.feed import FeedGenerator
+import feedgen
+import feedgen.ext
+import pkgutil
+
+# GROSS
+feedgen.__path__ = pkgutil.extend_path(
+    feedgen.__path__,
+    'feedgen'
+)
+feedgen.ext.__path__ = pkgutil.extend_path(
+    feedgen.ext.__path__,
+    'feedgen.ext'
+)
+# print(f"feedgen.path is {feedgen.__path__}")
+# print(f"feedgen.ext.path is {feedgen.ext.__path__}")
 
 
 class TestPodcasting20Extension:
