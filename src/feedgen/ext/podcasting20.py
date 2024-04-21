@@ -154,6 +154,7 @@ class Podcasting20BaseExtension(BaseExtension):
 
             self._pc20elem_locked = val
             self._nodes['locked'] = node
+
         return self._pc20elem_locked
 
 
