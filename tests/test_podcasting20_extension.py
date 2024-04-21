@@ -3,6 +3,7 @@ import feedgen
 import feedgen.ext
 import pkgutil
 from feedgen.feed import FeedGenerator
+import sys
 
 # GROSS
 feedgen.__path__ = \
@@ -15,13 +16,14 @@ class TestPodcasting20Extension:
     @pytest.fixture
     def fg(self):
         fg = FeedGenerator()
-        fg.load_extension('podcast')
-        fg.load_extension('dc')
-        fg.load_extension('podcasting20')
+        fg.load_extension('podcast', rss=True, atom=True)
+        fg.load_extension('dc', rss=True, atom=True)
+        fg.load_extension('podcasting20', rss=True, atom=True)
 
         fg.podcast.itunes_explicit('yes')
         fg.title('bob the angry podcast')
-        fg.id('https://bob.the.angry.podcast/')
+        fg.link(href='https://bob.the.angry.podcast/', rel='self')
+        fg.description('this is a fake podcast by a very angry flower')
         return fg
 
     def test_create(self, fg):
@@ -29,7 +31,8 @@ class TestPodcasting20Extension:
 
     def test_basic_attrs(self, fg):
         assert fg.title() == 'bob the angry podcast'
-        assert fg.id() == 'https://bob.the.angry.podcast/'
+        assert fg.link() == [{'href': 'https://bob.the.angry.podcast/',
+                             'rel': 'self'}]
 
     def test_itunes_explicit(self, fg):
         assert fg.podcast.itunes_explicit() == 'yes'
@@ -41,3 +44,5 @@ class TestPodcasting20Extension:
         }
         with pytest.raises(ValueError):
             fg.podcasting20.locked('bogus')
+
+        sys.stderr.write(fg.rss_str(pretty=True).decode('UTF-8'))
