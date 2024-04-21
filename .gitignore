@@ -13,3 +13,5 @@ config/
 *.m4b
 *.mp3
 .pytest_cache
+**/__pycache__/
+**/*.pyc

@@ -17,4 +17,4 @@ This is another class
     def __init__(
         self
     ):
-        return self
+        return None
