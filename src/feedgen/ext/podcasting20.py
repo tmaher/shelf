@@ -43,17 +43,19 @@ class Podcasting20BaseExtension(BaseExtension):
         self._pc20elem_valueTimeSplit = None
 
     def extend_ns(self):
-        return {'podcast': 'https://podcastindex.org/namespace/1.0'}
+        return {'podcast': self.PC20_NS}
 
     def _extend_xml(self, xml_element):
         '''Extend xml_element with set Podcasting 2.0 fields.
 
         :param xml_element: etree element
         '''
-        # PC20ELEMENTS_NS = 'https://podcastindex.org/namespace/1.0'
-
         for tag in self._nodes.keys():
-            xml_element.append(self._nodes[tag])
+            if isinstance(self._nodes[tag], list):
+                for this_tag in self._nodes[tag]:
+                    xml_element.append(this_tag)
+            else:
+                xml_element.append(self._nodes[tag])
 
     def extend_atom(self, atom_feed):
         '''Extend an Atom feed with the set Podcasting 2.0 fields.
@@ -108,6 +110,38 @@ class Podcasting20BaseExtension(BaseExtension):
 
         return self._pc20elem_locked
 
+    def funding(self, fundings=[]):
+        '''This tag lists possible donation/funding links for the podcast.
+        The content of the tag is the recommended string to be used with
+        the link.
+
+        :param funding: array of dicts with two elements: 'text' and 'url'.
+        'text' is a free form string supplied by the creator which they
+        expect to be displayed in the app next to the link. Please do not
+        exceed 128 characters for the node value or it may be truncated by
+        aggregators. 'url' is the URL to be followed to fund the podcast.
+        '''
+        if fundings != []:
+            if not isinstance(fundings, list):
+                raise ValueError("funding takes an array of dicts")
+            funding_nodes = []
+            vals = []
+            for fund in fundings:
+                if not isinstance(fund, dict):
+                    raise ValueError("funding takes an array of dicts")
+                if (not fund['url']) or (not fund['text']):
+                    raise ValueError("url and text are both required")
+                val = {'url': fund['url'], 'text': fund['text']}
+                vals.append(val)
+                node = xml_elem('{%s}%s' % (self.PC20_NS, 'funding'))
+                node.text = fund['text']
+                node.attrib['url'] = fund['url']
+                funding_nodes.append(node)
+            self._nodes['funding'] = funding_nodes
+            self._pc20elem_funding = vals
+
+        return self._pc20elem_funding
+
 
 class Podcasting20Extension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
@@ -137,3 +171,6 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
 
     def locked(*args, **kwargs):
         raise AttributeError('locked is channel level only')
+
+    def funding(*args, **kwargs):
+        raise AttributeError('funding is channel level only')

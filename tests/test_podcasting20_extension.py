@@ -3,7 +3,7 @@ import feedgen
 import feedgen.ext
 import pkgutil
 from feedgen.feed import FeedGenerator
-import sys  # noqa: F401
+# import sys  # noqa: F401
 
 # GROSS
 feedgen.__path__ = \
@@ -45,12 +45,47 @@ class TestPodcasting20Extension:
         with pytest.raises(ValueError):
             fg.podcasting20.locked('bogus')
 
-        fe = fg.add_entry().title('locked ep')
+        fe = fg.add_entry()
+        fe.title('locked ep')
         with pytest.raises(AttributeError):
             fe.podcasting20.locked('yes', owner='bob@angry.podcast')
 
         xml_frag = \
             '<podcast:locked owner="bob@angry.podcast">yes</podcast:locked>'
-        assert xml_frag in fg.rss_str().decode('UTF-8')
-        # fg.rss_str
-        # sys.stderr.write(fg.rss_str(pretty=True).decode('UTF-8'))
+
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        assert xml_frag in fg_xml
+
+    def test_funding(self, fg):
+        test_fundings = [
+            {'text': "mo' money",
+                'url': 'https://funding2.angry.podcast/'},
+            {'text': 'show me the money',
+                'url': 'https://funding1.angry.podcast/'}
+        ]
+        fg.podcasting20.funding(test_fundings)
+        with pytest.raises(ValueError):
+            fg.podcasting20.funding('bogus')
+        with pytest.raises(ValueError):
+            fg.podcasting20.funding(['bogus'])
+
+        assert fg.podcasting20.funding() == test_fundings
+
+        fe = fg.add_entry()
+        fe.title('funded ep')
+        # print(f"MY FE IIIIIIIIIS {fe}")
+        with pytest.raises(AttributeError):
+            fe.podcasting20.funding(test_fundings)
+
+        xml_frag_1 = \
+            '<podcast:funding url="https://funding1.angry.podcast/">'\
+            'show me the money</podcast:funding>'
+        xml_frag_2 = \
+            '<podcast:funding url="https://funding2.angry.podcast/">'\
+            "mo' money</podcast:funding>"
+
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        assert xml_frag_1 in fg_xml
+        assert xml_frag_2 in fg_xml
+
+        print(fg_xml)
