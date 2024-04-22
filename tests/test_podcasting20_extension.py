@@ -94,7 +94,7 @@ class TestPodcasting20Extension:
             "mo' money</podcast:funding>"
 
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        print(fg_xml)
+        # print(fg_xml)
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
 
@@ -103,7 +103,7 @@ class TestPodcasting20Extension:
             {'url': 'https://trailer420.angry.podcast/',
              'pubdate': 'Sun, 20 Apr 1969 16:20:00 GMT',
              'text': 'a real smoking trailer'},
-            {'url': 'https://trailer2.angry.podcast/',
+            {'url': 'https://trailer0.angry.podcast/',
              'pubdate': 'Thu, 01 Jan 1970 00:00:00 GMT',
              'text': 'this trailer is epoch!'}
         ]
@@ -111,6 +111,13 @@ class TestPodcasting20Extension:
             fg.podcasting20.trailer('bogus')
         with pytest.raises(ValueError):
             fg.podcasting20.trailer(['bogus'])
+        with pytest.raises(ValueError):
+            fg.podcasting20.trailer({'url': 'http://bogus/'})
+        with pytest.raises(ValueError):
+            fg.podcasting20.trailer({'url': 'http://bogus/', 'pubdate': 0})
+        with pytest.raises(ValueError):
+            fg.podcasting20.trailer(
+                {'url': 'http://bogus/', 'pubdate': 0, 'text': 'fake', 'x': 1})
 
         fg.podcasting20.trailer(test_trailers[0])
         assert fg.podcasting20.trailer() == [test_trailers[0]]
@@ -131,6 +138,7 @@ class TestPodcasting20Extension:
             f"<podcast:trailer url=\"{test_trailers[1]['url']}\""\
             f" pubdate=\"{test_trailers[1]['pubdate']}\">"\
             f"{test_trailers[1]['text']}</podcast:trailer>"
+        # print(fg_xml)
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
 

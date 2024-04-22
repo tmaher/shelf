@@ -147,61 +147,58 @@ class Podcasting20BaseExtension(BaseExtension):
                 funding_nodes.append(node)
             self._nodes['funding'] = funding_nodes
             self._pc20elem_funding = vals
-
         return self._pc20elem_funding
 
-    def trailer(self, trailers=[]):
+    def trailer(self, trailers=[], replace=False):
         '''This element is used to define the location of an audio or video
         file to be used as a trailer for the entire podcast or a specific
         season. There can be more than one trailer present in the channel
         of the feed. This element is basically just like an <enclosure> with
-        the extra pubdate and season attributes added. dict keys are...
+        the extra pubdate and season attributes added.
 
-        * text (required): title of the trailer. It is required. Please do
-        not exceed 128 characters for the node value or it may be truncated
-        by aggregators.
-        * url (required): This is a url that points to the audio or video file
-        to be played. This attribute is a string.
-        * pubdate (required): The date the trailer was published.
-        This attribute is an RFC2822 formatted date string.
-        * length (recommended): The length of the file in bytes.
-        This attribute is a number.
-        * type (recommended): The mime type of the file.
-        This attribute is a string.
-        * season: If this attribute is present it specifies that this trailer
-        is for a particular season number. This attribute is a number.
+        Dict keys are as follows. text, url, and pubdate are all required.
+            - text (required): title of the trailer. It is required.
+            Please do not exceed 128 characters for the node value or
+            it may be truncated by aggregators.
+            - url (required): This is a url that points to the audio or video
+            file to be played. This attribute is a string.
+            - pubdate (required): The date the trailer was published.
+            This attribute is an RFC2822 formatted date string.
+            - length (recommended): The length of the file in bytes.
+            This attribute is a number.
+            - type (recommended): The mime type of the file.
+            This attribute is a string.
+            - season: If this attribute is present it specifies that this
+            trailer is for a particular season number.
+            This attribute is a number.
 
-        :param trailers: array of dicts with three requied keys
-        (text, url, pubdate), and three optional (length, type, season).
+        :param trailers: dict or array of dicts as described above
+        :param replace: Add or replace old data. (default false)
+        :returns List of funding tags as dictionaries
         '''
         if trailers != []:
-            if not isinstance(trailers, list):
-                raise ValueError("trailer takes an array of dicts")
-            trailer_nodes = []
-            vals = []
+            trailers = ensure_format(
+                trailers,
+                set(['text', 'url', 'pubdate', 'length', 'type', 'season']),
+                set(['text', 'url', 'pubdate'])
+            )
+            if replace or (not self._nodes.get('trailer')):
+                trailer_nodes = []
+                vals = []
+            else:
+                trailer_nodes = self._nodes['trailer']
+                vals = self._pc20elem_trailer
             for trail in trailers:
-                if not isinstance(trail, dict):
-                    raise ValueError("trailer takes an array of dicts")
-                if ((not trail.get('text'))
-                        or (not trail.get('url'))
-                        or (not trail.get('pubdate'))):
-                    raise ValueError("url, text, and pubdate are required")
-                val = {'url': trail['url'],
-                       'text': trail['text'],
-                       'pubdate': trail['pubdate']}
+                val = trail
                 node = xml_elem('{%s}%s' % (self.PC20_NS, 'trailer'))
-                node.text = trail['text']
-                node.attrib['url'] = trail['url']
-                node.attrib['pubdate'] = trail['pubdate']
-                for attr in ['length', 'type', 'season']:
-                    if trail.get(attr):
-                        val[attr] = trail[attr]
-                        node.attrib[attr] = attr
+                node.text = val['text']
+                for attr in ['url', 'pubdate', 'length', 'type', 'season']:
+                    if val.get(attr):
+                        node.attrib[attr] = val[attr]
                 trailer_nodes.append(node)
                 vals.append(val)
             self._nodes['trailer'] = trailer_nodes
             self._pc20elem_trailer = vals
-
         return self._pc20elem_trailer
 
     def guid(self, text=None):
