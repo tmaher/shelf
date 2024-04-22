@@ -76,6 +76,8 @@ class TestPodcasting20Extension:
         with pytest.raises(ValueError):
             fg.podcasting20.funding([{'text': '1', 'url': '2', 'bogus': '3'}])
 
+        fg.podcasting20.funding(test_fundings[0])
+        assert fg.podcasting20.funding() == test_fundings[0]
         fg.podcasting20.funding(test_fundings)
         assert fg.podcasting20.funding() == test_fundings
 
