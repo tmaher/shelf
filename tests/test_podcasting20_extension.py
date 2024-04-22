@@ -78,7 +78,7 @@ class TestPodcasting20Extension:
 
         fg.podcasting20.funding(test_fundings[0])
         assert fg.podcasting20.funding() == [test_fundings[0]]
-        fg.podcasting20.funding(test_fundings)
+        fg.podcasting20.funding(test_fundings, replace=True)
         assert fg.podcasting20.funding() == test_fundings
 
         fe = fg.add_entry()

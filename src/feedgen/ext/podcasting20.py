@@ -110,12 +110,12 @@ class Podcasting20BaseExtension(BaseExtension):
 
         return self._pc20elem_locked
 
-    def funding(self, fundings=[]):
+    def funding(self, fundings=[], replace=False):
         '''This tag lists possible donation/funding links for the podcast.
         The content of the tag is the recommended string to be used with
         the link.
 
-        Funding dicts have two fields, both required
+        Funding dicts have two fields, both are required
             - 'text' is a free form string supplied by the creator which they
             expect to be displayed in the app next to the link. Please do not
             exceed 128 characters for the node value or it may be truncated by
@@ -123,7 +123,7 @@ class Podcasting20BaseExtension(BaseExtension):
             - 'url' is the URL to be followed to fund the podcast.
 
         :param fundings: Dicitonary or list of dictionaries with text and url
-        :param replace: Add or replace old data.
+        :param replace: Add or replace old data. (default false)
         :returns List of funding tags as dictionaries
         '''
         if fundings != []:
@@ -132,8 +132,12 @@ class Podcasting20BaseExtension(BaseExtension):
                 set(['text', 'url']),
                 set(['text', 'url'])
             )
-            funding_nodes = []
-            vals = []
+            if replace or (not self._nodes.get('funding')):
+                funding_nodes = []
+                vals = []
+            else:
+                funding_nodes = self._nodes['funding']
+                vals = self._pc20elem_funding
             for fund in fundings:
                 val = {'url': fund['url'], 'text': fund['text']}
                 vals.append(val)
