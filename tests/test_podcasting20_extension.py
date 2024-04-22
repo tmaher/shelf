@@ -46,7 +46,7 @@ class TestPodcasting20Extension:
     def test_locked(self, fg):
         fg.podcasting20.locked('yes', owner='bob@angry.podcast')
         assert fg.podcasting20.locked() == {
-            'locked': 'yes', 'owner': 'bob@angry.podcast'
+            'text': 'yes', 'owner': 'bob@angry.podcast'
         }
         with pytest.raises(ValueError):
             fg.podcasting20.locked('bogus')
@@ -77,7 +77,7 @@ class TestPodcasting20Extension:
             fg.podcasting20.funding([{'text': '1', 'url': '2', 'bogus': '3'}])
 
         fg.podcasting20.funding(test_fundings[0])
-        assert fg.podcasting20.funding() == test_fundings[0]
+        assert fg.podcasting20.funding() == [test_fundings[0]]
         fg.podcasting20.funding(test_fundings)
         assert fg.podcasting20.funding() == test_fundings
 

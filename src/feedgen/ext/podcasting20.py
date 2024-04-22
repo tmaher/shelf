@@ -81,13 +81,13 @@ class Podcasting20BaseExtension(BaseExtension):
 
     # #### channel-only tags ####
 
-    def locked(self, locked=None, owner=None):
+    def locked(self, text=None, owner=None):
         '''This tag may be set to yes or no. The purpose is to tell other
         podcast hosting platforms whether they are allowed to import this feed.
         A value of yes means that any attempt to import this feed into a new
         platform should be rejected.
 
-        :param locked: must be "yes" or "no"
+        :param text: must be "yes" or "no"
         :param owner: (optional) The owner attribute is an email address that
         can be used to verify ownership of this feed during move and import
         operations. This could be a public email or a virtual email address
@@ -95,12 +95,12 @@ class Podcasting20BaseExtension(BaseExtension):
         address.
         :returns: dict of locked & owner email
         '''
-        if locked is not None:
-            if locked not in ('yes', 'no'):
+        if text is not None:
+            if text not in ('yes', 'no'):
                 raise ValueError("Locked may only be 'yes' or 'no'")
-            val = {'locked': locked}
+            val = {'text': text}
             node = xml_elem('{%s}%s' % (self.PC20_NS, 'locked'))
-            node.text = locked
+            node.text = text
             if owner:
                 node.attrib['owner'] = owner
                 val['owner'] = owner
@@ -115,11 +115,16 @@ class Podcasting20BaseExtension(BaseExtension):
         The content of the tag is the recommended string to be used with
         the link.
 
-        :param fundings: array of dicts with two elements: 'text' and 'url'.
-        'text' is a free form string supplied by the creator which they
-        expect to be displayed in the app next to the link. Please do not
-        exceed 128 characters for the node value or it may be truncated by
-        aggregators. 'url' is the URL to be followed to fund the podcast.
+        Funding dicts have two fields, both required
+            - 'text' is a free form string supplied by the creator which they
+            expect to be displayed in the app next to the link. Please do not
+            exceed 128 characters for the node value or it may be truncated by
+            aggregators.
+            - 'url' is the URL to be followed to fund the podcast.
+
+        :param fundings: Dicitonary or list of dictionaries with text and url
+        :param replace: Add or replace old data.
+        :returns List of funding tags as dictionaries
         '''
         if fundings != []:
             fundings = ensure_format(
