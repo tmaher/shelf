@@ -107,12 +107,14 @@ class TestPodcasting20Extension:
              'pubdate': 'Thu, 01 Jan 1970 00:00:00 GMT',
              'text': 'this trailer is epoch!'}
         ]
-        fg.podcasting20.trailer(test_trailers)
         with pytest.raises(ValueError):
             fg.podcasting20.trailer('bogus')
         with pytest.raises(ValueError):
             fg.podcasting20.trailer(['bogus'])
 
+        fg.podcasting20.trailer(test_trailers[0])
+        assert fg.podcasting20.trailer() == [test_trailers[0]]
+        fg.podcasting20.trailer(test_trailers, replace=True)
         assert fg.podcasting20.trailer() == test_trailers
 
         fe = fg.add_entry()
