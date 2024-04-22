@@ -26,7 +26,6 @@ class TestPodcasting20Extension:
             {'href': 'https://bob.the.angry.podcast/rss', 'rel': 'self'},
             {'href': 'https://bob.the.angry.podcast/about'}
         ])
-        print(f"MYYYYYYY link issssss {fg.link()})")
         fg.description('this is a fake podcast by a very angry flower')
         return fg
 
@@ -70,12 +69,14 @@ class TestPodcasting20Extension:
             {'text': 'show me the money',
                 'url': 'https://funding1.angry.podcast/'}
         ]
-        fg.podcasting20.funding(test_fundings)
         with pytest.raises(ValueError):
             fg.podcasting20.funding('bogus')
         with pytest.raises(ValueError):
             fg.podcasting20.funding(['bogus'])
+        with pytest.raises(ValueError):
+            fg.podcasting20.funding([{'text': '1', 'url': '2', 'bogus': '3'}])
 
+        fg.podcasting20.funding(test_fundings)
         assert fg.podcasting20.funding() == test_fundings
 
         fe = fg.add_entry()
@@ -91,7 +92,7 @@ class TestPodcasting20Extension:
             "mo' money</podcast:funding>"
 
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
+        print(fg_xml)
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
 
@@ -128,7 +129,6 @@ class TestPodcasting20Extension:
             f"{test_trailers[1]['text']}</podcast:trailer>"
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
-        print(fg_xml)
 
 #    def test_guid(self, fg):
 #        assert False

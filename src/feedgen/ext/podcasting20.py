@@ -1,5 +1,5 @@
 from feedgen.ext.base import BaseExtension
-from feedgen.util import xml_elem
+from feedgen.util import xml_elem, ensure_format
 # import sys
 
 
@@ -122,15 +122,14 @@ class Podcasting20BaseExtension(BaseExtension):
         aggregators. 'url' is the URL to be followed to fund the podcast.
         '''
         if fundings != []:
-            if not isinstance(fundings, list):
-                raise ValueError("funding takes an array of dicts")
+            fundings = ensure_format(
+                fundings,
+                set(['text', 'url']),
+                set(['text', 'url'])
+            )
             funding_nodes = []
             vals = []
             for fund in fundings:
-                if not isinstance(fund, dict):
-                    raise ValueError("funding takes an array of dicts")
-                if (not fund['url']) or (not fund['text']):
-                    raise ValueError("url and text are both required")
                 val = {'url': fund['url'], 'text': fund['text']}
                 vals.append(val)
                 node = xml_elem('{%s}%s' % (self.PC20_NS, 'funding'))
@@ -195,6 +194,13 @@ class Podcasting20BaseExtension(BaseExtension):
             self._pc20elem_trailer = vals
 
         return self._pc20elem_trailer
+
+    def guid(self, text=None):
+        '''docstring go here'''
+        if text is not None:
+            True
+            # node = xml_elem('{%s}%s' % (self.PC20_NS, 'guid'))
+        return self._pc20elem_guid
 
 
 class Podcasting20Extension(Podcasting20BaseExtension):
