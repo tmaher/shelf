@@ -3,6 +3,7 @@ import feedgen
 import feedgen.ext
 import pkgutil
 from feedgen.feed import FeedGenerator
+import sys  # noqa: F401
 
 # GROSS
 feedgen.__path__ = \
@@ -43,6 +44,10 @@ class TestPodcasting20Extension:
         }
         with pytest.raises(ValueError):
             fg.podcasting20.locked('bogus')
+
+        fe = fg.add_entry().title('locked ep')
+        with pytest.raises(AttributeError):
+            fe.podcasting20.locked('yes', owner='bob@angry.podcast')
 
         xml_frag = \
             '<podcast:locked owner="bob@angry.podcast">yes</podcast:locked>'

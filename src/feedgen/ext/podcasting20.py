@@ -55,57 +55,6 @@ class Podcasting20BaseExtension(BaseExtension):
         for tag in self._nodes.keys():
             xml_element.append(self._nodes[tag])
 
-        return
-
-        for elem in [
-            'transcript',
-            'chapters',
-            'podroll',
-            'locked',
-            'funding',
-            'soundbite',
-            'person',
-            'location',
-            'season',
-            'episode',
-            'trailer',
-            'license',
-            'alternateEnclosure',
-            'source',
-            'integrity',
-            'guid',
-            'value',
-            'valueRecipient',
-            'medium',
-            'images',
-            'liveItem',
-            'contentLink',
-            'socialInteract',
-            'block',
-            'txt',
-            'remoteItem',
-            'updateFrequency',
-            'podping',
-            'valueTimeSplit'
-        ]:
-            if hasattr(self, '_pc20elem_%s' % elem):
-                attr = getattr(self, '_pc20elem_%s' % elem)
-                if attr is None:
-                    continue
-                # print(f"I FOUND {elem}")
-                node = xml_elem('{%s}%s' % (self.PC20_NS, elem),
-                                xml_element)
-                if elem == 'locked':
-                    node.text = attr['locked']
-                    if attr.get('owner'):
-                        node.attrib['owner'] = attr['owner']
-                else:
-                    for val in getattr(self, '_pc20elem_%s' % elem) or []:
-                        node = xml_elem(
-                            '{%s}%s' % (self.PC20_NS, elem),
-                            xml_element)
-                        node.text = val
-
     def extend_atom(self, atom_feed):
         '''Extend an Atom feed with the set Podcasting 2.0 fields.
 
@@ -127,6 +76,8 @@ class Podcasting20BaseExtension(BaseExtension):
         self._extend_xml(channel)
 
         return rss_feed
+
+    # #### channel-only tags ####
 
     def locked(self, locked=None, owner=None):
         '''This tag may be set to yes or no. The purpose is to tell other
@@ -183,3 +134,6 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
         '''
         self._extend_xml(item)
         return item
+
+    def locked(*args, **kwargs):
+        raise AttributeError('locked is channel level only')
