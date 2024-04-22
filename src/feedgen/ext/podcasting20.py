@@ -1,6 +1,20 @@
 from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem, ensure_format
-# import sys
+
+from uuid import UUID, uuid5
+from urllib.parse import urlsplit
+import re
+import sys  # noqa: F401
+
+
+def url2guid(url):
+    GUID_NS_PODCAST = UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
+    s = urlsplit(url)
+    no_scheme_url = re.sub(
+        r'/+\Z', '',
+        ''.join([s.netloc, s.path, s.query, s.fragment])
+    )
+    return str(uuid5(GUID_NS_PODCAST, no_scheme_url))
 
 
 class Podcasting20BaseExtension(BaseExtension):

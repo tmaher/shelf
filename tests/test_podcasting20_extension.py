@@ -142,6 +142,19 @@ class TestPodcasting20Extension:
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
 
+    def test_url2guid(self, fg):
+        from feedgen.ext.podcasting20 import url2guid  # type: ignore
+        test_data = [
+            {'url': 'https://mp3s.nashownotes.com/pc20rss.xml',
+             'guid': '917393e3-1b1e-5cef-ace4-edaa54e1f810'},
+            {'url': 'podnews.net/rss',
+             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'}
+        ]
+
+        assert url2guid(test_data[0]['url']) == test_data[0]['guid']
+        assert url2guid(test_data[1]['url']) == test_data[1]['guid']
+
+
 #    def test_guid(self, fg):
 #        assert False
 
