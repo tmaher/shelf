@@ -139,11 +139,11 @@ class Podcasting20BaseExtension(BaseExtension):
                 funding_nodes = self._nodes['funding']
                 vals = self._pc20elem_funding
             for fund in fundings:
-                val = {'url': fund['url'], 'text': fund['text']}
+                val = fund
                 vals.append(val)
                 node = xml_elem('{%s}%s' % (self.PC20_NS, 'funding'))
-                node.text = fund['text']
-                node.attrib['url'] = fund['url']
+                node.text = val['text']
+                node.attrib['url'] = val['url']
                 funding_nodes.append(node)
             self._nodes['funding'] = funding_nodes
             self._pc20elem_funding = vals
