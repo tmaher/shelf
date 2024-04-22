@@ -73,19 +73,52 @@ class TestPodcasting20Extension:
 
         fe = fg.add_entry()
         fe.title('funded ep')
-        # print(f"MY FE IIIIIIIIIS {fe}")
         with pytest.raises(AttributeError):
             fe.podcasting20.funding(test_fundings)
 
-        xml_frag_1 = \
+        xml_frag_0 = \
             '<podcast:funding url="https://funding1.angry.podcast/">'\
             'show me the money</podcast:funding>'
-        xml_frag_2 = \
+        xml_frag_1 = \
             '<podcast:funding url="https://funding2.angry.podcast/">'\
             "mo' money</podcast:funding>"
 
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        # print(fg_xml)
+        assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
-        assert xml_frag_2 in fg_xml
 
-        print(fg_xml)
+    def test_trailer(self, fg):
+        test_trailers = [
+            {'url': 'https://trailer420.angry.podcast/',
+             'pubdate': 'Sun, 20 Apr 1969 16:20:00 GMT',
+             'text': 'a real smoking trailer'},
+            {'url': 'https://trailer2.angry.podcast/',
+             'pubdate': 'Thu, 01 Jan 1970 00:00:00 GMT',
+             'text': 'this trailer is epoch!'}
+        ]
+        fg.podcasting20.trailer(test_trailers)
+        with pytest.raises(ValueError):
+            fg.podcasting20.trailer('bogus')
+        with pytest.raises(ValueError):
+            fg.podcasting20.trailer(['bogus'])
+
+        assert fg.podcasting20.trailer() == test_trailers
+
+        fe = fg.add_entry()
+        fe.title('trailer ep')
+        with pytest.raises(AttributeError):
+            fe.podcasting20.trailer(test_trailers)
+
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        xml_frag_0 = \
+            f"<podcast:trailer url=\"{test_trailers[0]['url']}\""\
+            f" pubdate=\"{test_trailers[0]['pubdate']}\">"\
+            f"{test_trailers[0]['text']}</podcast:trailer>"
+        xml_frag_1 = \
+            f"<podcast:trailer url=\"{test_trailers[1]['url']}\""\
+            f" pubdate=\"{test_trailers[1]['pubdate']}\">"\
+            f"{test_trailers[1]['text']}</podcast:trailer>"
+        assert xml_frag_0 in fg_xml
+        assert xml_frag_1 in fg_xml
+        # print(fg_xml)

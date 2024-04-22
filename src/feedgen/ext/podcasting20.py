@@ -115,7 +115,7 @@ class Podcasting20BaseExtension(BaseExtension):
         The content of the tag is the recommended string to be used with
         the link.
 
-        :param funding: array of dicts with two elements: 'text' and 'url'.
+        :param fundings: array of dicts with two elements: 'text' and 'url'.
         'text' is a free form string supplied by the creator which they
         expect to be displayed in the app next to the link. Please do not
         exceed 128 characters for the node value or it may be truncated by
@@ -141,6 +141,60 @@ class Podcasting20BaseExtension(BaseExtension):
             self._pc20elem_funding = vals
 
         return self._pc20elem_funding
+
+    def trailer(self, trailers=[]):
+        '''This element is used to define the location of an audio or video
+        file to be used as a trailer for the entire podcast or a specific
+        season. There can be more than one trailer present in the channel
+        of the feed. This element is basically just like an <enclosure> with
+        the extra pubdate and season attributes added. dict keys are...
+
+        * text (required): title of the trailer. It is required. Please do
+        not exceed 128 characters for the node value or it may be truncated
+        by aggregators.
+        * url (required): This is a url that points to the audio or video file
+        to be played. This attribute is a string.
+        * pubdate (required): The date the trailer was published.
+        This attribute is an RFC2822 formatted date string.
+        * length (recommended): The length of the file in bytes.
+        This attribute is a number.
+        * type (recommended): The mime type of the file.
+        This attribute is a string.
+        * season: If this attribute is present it specifies that this trailer
+        is for a particular season number. This attribute is a number.
+
+        :param trailers: array of dicts with three requied keys
+        (text, url, pubdate), and three optional (length, type, season).
+        '''
+        if trailers != []:
+            if not isinstance(trailers, list):
+                raise ValueError("trailer takes an array of dicts")
+            trailer_nodes = []
+            vals = []
+            for trail in trailers:
+                if not isinstance(trail, dict):
+                    raise ValueError("trailer takes an array of dicts")
+                if ((not trail.get('text'))
+                        or (not trail.get('url'))
+                        or (not trail.get('pubdate'))):
+                    raise ValueError("url, text, and pubdate are required")
+                val = {'url': trail['url'],
+                       'text': trail['text'],
+                       'pubdate': trail['pubdate']}
+                node = xml_elem('{%s}%s' % (self.PC20_NS, 'trailer'))
+                node.text = trail['text']
+                node.attrib['url'] = trail['url']
+                node.attrib['pubdate'] = trail['pubdate']
+                for attr in ['length', 'type', 'season']:
+                    if trail.get(attr):
+                        val[attr] = trail[attr]
+                        node.attrib[attr] = attr
+                trailer_nodes.append(node)
+                vals.append(val)
+            self._nodes['trailer'] = trailer_nodes
+            self._pc20elem_trailer = vals
+
+        return self._pc20elem_trailer
 
 
 class Podcasting20Extension(Podcasting20BaseExtension):
@@ -174,3 +228,6 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
 
     def funding(*args, **kwargs):
         raise AttributeError('funding is channel level only')
+
+    def trailer(*args, **kwargs):
+        raise AttributeError('trailer is channel level only')
