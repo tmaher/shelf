@@ -37,6 +37,7 @@ class TestPodcasting20Extension:
     def test_itunes_explicit(self, fg):
         assert fg.podcast.itunes_explicit() == 'yes'
 
+    # #### channel-only tags ####
     def test_locked(self, fg):
         fg.podcasting20.locked('yes', owner='bob@angry.podcast')
         assert fg.podcasting20.locked() == {
@@ -122,3 +123,24 @@ class TestPodcasting20Extension:
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
         # print(fg_xml)
+
+    def test_guid(self, fg):
+        assert False
+
+    def test_medium(self, fg):
+        assert False
+
+    def test_liveItem(self, fg):
+        assert False
+
+    def test_block(self, fg):
+        assert False
+
+    def test_podroll(self, fg):
+        assert False
+
+    def test_updateFrequency(self, fg):
+        assert False
+
+    def test_podping(self, fg):
+        assert False
