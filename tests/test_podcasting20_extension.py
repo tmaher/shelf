@@ -5,7 +5,8 @@ import pkgutil
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
-# GROSS
+# FIXME: feedgen is not a namespaced package, hence the path manipulation
+# Remove before submitting PR to upstream
 feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
