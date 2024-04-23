@@ -198,8 +198,8 @@ class TestPodcasting20Extension:
         assert xml_frag_1 in fg_xml
         assert xml_frag_0 not in fg_xml
 
-#    def test_medium(self, fg):
-#        assert False
+    def test_medium(self, fg):
+        assert False
 
 #    def test_liveItem(self, fg):
 #        assert False

@@ -269,6 +269,25 @@ class Podcasting20Extension(Podcasting20BaseExtension):
 
         return self._pc20elem_guid
 
+    def medium(self, medium=None):
+        '''The medium tag tells an application what the content contained
+        within the feed IS, as opposed to what the content is ABOUT in the
+        case of a category. This allows a podcast app to modify it's behavior
+        or UI to give a better experience to the user for this content. For
+        example, if a podcast has <podcast:medium>music</podcast:medium> an
+        app may choose to reset playback speed to 1x and adjust it's EQ
+        settings to be better for music vs. spoken word.
+
+        Accepted medium names are curated within a list maintained by the
+        community as new mediums are discovered over time. Newly proposed
+        mediums should require some level of justification to be added to
+        this list. One may argue and/or prove use of a new medium even for
+        only one application, should it prove different enough from existing
+        mediums to have meaning.
+        '''
+
+        return self._pc20elem_medium
+
 
 class Podcasting20EntryExtension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
