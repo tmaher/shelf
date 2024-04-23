@@ -284,6 +284,45 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         this list. One may argue and/or prove use of a new medium even for
         only one application, should it prove different enough from existing
         mediums to have meaning.
+
+        The node value is a string denoting one of the following possible
+        values:
+
+            - podcast (default) - Describes a feed for a podcast show. If no
+            medium tag is present in the channel, this medium is assumed.
+            - music - A feed of music organized into an "album" with each
+            item a song within the album.
+            - video - Like a "podcast" but used in a more visual experience.
+            Something akin to a dedicated video channel like would be found on
+            YouTube.
+            - film - Specific types of videos with one item per feed. This is
+            different than a video medium because the content is considered to
+            be cinematic; like a movie or documentary.
+            - audiobook - Specific types of audio with one item per feed, or
+            where items represent chapters within the book.
+            - newsletter - Describes a feed of curated written articles.
+            Newsletter articles now sometimes have an spoken version audio
+            enclosure attached.
+            - blog - Describes a feed of informally written articles. Similar
+            to newsletter but more informal as in a traditional blog platform
+            style.
+
+        In addition to the above mediums, each medium also has a counterpart
+        "list" variant, where the original medium name is suffixed by the
+        letter "L" to indicate that it is a "List" of that type of content.
+        For example, podcast would become podcastL, music would become musicL,
+        audiobook would become audiobookL, etc.
+
+        There is also a dedicated list medium for mixed content:
+
+            - mixed - This list medium type describes a feed of
+            <podcast:remoteItem>'s that point to different remote medium
+            types. For instance, a single list feed might point to music,
+            podcast and audiobook items in other feeds. An example would be a
+            personal consumption history feed.
+
+        :param medium: the medium, as described above
+        :returns the medium string        
         '''
 
         return self._pc20elem_medium
