@@ -17,6 +17,7 @@ podgen = "^1.1.0"
 rfc3986 = "^2.0.0"
 feedgen = "^1.0.0"
 pytest = "^8.1.1"
+icalendar = "^5.0.12"
 
 [build-system]
 requires = ["poetry-core"]
