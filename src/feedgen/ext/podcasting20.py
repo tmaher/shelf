@@ -361,7 +361,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             self._pc20elem_medium = medium
         return self._pc20elem_medium
 
-    def block(self, block=None, id=None, slug_override=False):
+    def block(self, block=None, id=None, slug_override=False, replace=False):
         '''This element allows a podcaster to express which platforms are
         allowed to publicly display this feed and its contents. In its basic
         form, it is a direct drop-in replacement for the <itunes:block> tag,
