@@ -184,7 +184,7 @@ class TestPodcasting20Extension:
             test_data[0]['guid']
 
         fe = fg.add_entry()
-        fe.title('trailer ep')
+        fe.title('guid ep')
         with pytest.raises(AttributeError):
             fe.podcasting20.guid(guid=test_data[0]['guid'])
 
@@ -199,7 +199,27 @@ class TestPodcasting20Extension:
         assert xml_frag_0 not in fg_xml
 
     def test_medium(self, fg):
-        assert False
+        with pytest.raises(ValueError):
+            fg.podcasting20.medium('bogus')
+
+        assert fg.podcasting20.medium('podcast') == 'podcast'
+        assert fg.podcasting20.medium('music') == 'music'
+        assert fg.podcasting20.medium('audiobookL') == 'audiobookL'
+
+        fe = fg.add_entry()
+        fe.title('medium ep')
+        with pytest.raises(AttributeError):
+            fe.podcasting20.guid('music')
+
+        xml_frag_0 = \
+            "<podcast:medium>videoL</podcast:medium>"
+        xml_frag_1 = \
+            "<podcast:medium>film</podcast:medium>"
+        fg.podcasting20.medium('film')
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        print(fg_xml)
+        assert xml_frag_1 in fg_xml
+        assert xml_frag_0 not in fg_xml
 
 #    def test_liveItem(self, fg):
 #        assert False

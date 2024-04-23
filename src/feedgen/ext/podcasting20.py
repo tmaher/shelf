@@ -322,7 +322,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             personal consumption history feed.
 
         :param medium: the medium, as described above
-        :returns the medium string        
+        :returns the medium string
         '''
 
         return self._pc20elem_medium
