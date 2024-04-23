@@ -399,25 +399,32 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         :param replace: Add or replace old data. (default false)
         :returns: dict of block and (optionally) id
         '''
-        if block or id:
-            val = {'block': block}
-            slug_list = self.SERVICE_SLUGS
-            if id:
-                val['id'] = id
-                if slug_override:
-                    slug_list = [val['id']]
-            ensure_format(
-                val,
+        if blocks != []:
+            valid_values = {'block': ['yes', 'no']}
+            if not slug_override:
+                valid_values['id'] = self.SERVICE_SLUGS
+            blocks = ensure_format(
+                blocks,
                 set(['block', 'id']),
                 set(['block']),
-                {'block': ['yes', 'no'], 'id': slug_list}
+                valid_values
             )
-            node = xml_elem('{%s}%s' % (self.PC20_NS, 'block'))
-            node.text = val['block']
-            if val['id']:
-                node.attrib['id'] = val['id']
-            self._nodes['block'] = node
-            self._pc20elem_block = val
+            if replace or (not self._nodes.get('block')):
+                block_nodes = []
+                vals = []
+            else:
+                block_nodes = self._nodes['block']
+                vals = self._pc20elem_block
+            for block in blocks:
+                val = block
+                node = xml_elem('{%s}%s' % (self.PC20_NS, 'block'))
+                node.text = val['block']
+                if val['id']:
+                    node.attrib['id'] = val['id']
+                block_nodes.append(node)
+                vals.append(val)
+            self._nodes['block'] = block_nodes
+            self._pc20elem_block = vals
         return self._pc20elem_block
 
 

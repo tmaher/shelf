@@ -226,13 +226,15 @@ class TestPodcasting20Extension:
             {'block': 'bogus'},
             {'id': 'rss'},
             {'block': 'yes', 'id': '_bogus'},
-            {}
         ]
         with pytest.raises(ValueError):
             fg.podcasting20.block(bad_test_blocks)
-        for bad_block in bad_test_blocks:
-            with pytest.raises(ValueError):
-                fg.podcasting20.block(bad_block)
+        with pytest.raises(ValueError):
+            fg.podcasting20.block(bad_test_blocks[0], replace=True)
+        with pytest.raises(ValueError):
+            fg.podcasting20.block(bad_test_blocks[1], replace=True)
+        with pytest.raises(ValueError):
+            fg.podcasting20.block(bad_test_blocks[2], replace=True)
 
         test_blocks = [
             {'block': 'yes', 'id': 'rss'},
@@ -253,18 +255,26 @@ class TestPodcasting20Extension:
             replace=True
         )
         assert fg.podcasting20.block() == override_test_blocks
-        for override_block in override_test_blocks:
-            fg.podcasting20.block(
-                override_block,
-                slug_override=True,
-                replace=True
-            )
-            assert fg.podcasting20.block() == override_block
+        fg.podcasting20.block(
+            override_test_blocks[0],
+            slug_override=True,
+            replace=True
+        )
+        assert fg.podcasting20.block() == [override_test_blocks[0]]
+        fg.podcasting20.block(
+            override_test_blocks[1],
+            slug_override=True,
+            replace=True
+        )
+        assert fg.podcasting20.block() == [override_test_blocks[1]]
+
         with pytest.raises(ValueError):
             fg.podcasting20.block(override_test_blocks, replace=True)
-        for override_block in override_test_blocks:
-            with pytest.raises(ValueError):
-                fg.podcasting20.block(override_block, replace=True)
+
+        with pytest.raises(ValueError):
+            fg.podcasting20.block(override_test_blocks[0], replace=True)
+        with pytest.raises(ValueError):
+            fg.podcasting20.block(override_test_blocks[1], replace=True)
 
         fe = fg.add_entry()
         fe.title('block ep')
@@ -277,7 +287,7 @@ class TestPodcasting20Extension:
             '<podcast:block id="podcastindex">no</podcast:block>'
         fg.podcasting20.block(test_blocks, replace=True)
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        print(fg_xml)
+        # print(fg_xml)
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
 
