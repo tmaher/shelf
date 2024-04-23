@@ -147,7 +147,9 @@ class TestPodcasting20Extension:
         test_data = [
             {'url': 'https://mp3s.nashownotes.com/pc20rss.xml',
              'guid': '917393e3-1b1e-5cef-ace4-edaa54e1f810'},
-            {'url': 'podnews.net/rss',
+            {'url': 'podnews.net/rss////',
+             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'},
+            {'url': 'podnews.net/rss/',
              'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'}
         ]
 
