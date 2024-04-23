@@ -427,25 +427,30 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             self._pc20elem_block = vals
         return self._pc20elem_block
 
-    def update_frequency(
-            self, text=None, complete=None, dtstart=None, rrule=None):
+    def update_frequency(self, uf=None):
         ''' This element allows a podcaster to express their intended release
         schedule as structured data and text.
 
-        :param text: The node value is a free-form string, which might be
-        displayed alongside other information about the podcast. Please do
-        not exceed 128 characters for the node value or it may be truncated
-        by aggregators.
-        :param complete: (optional) Boolean specifying if the podcast has
-        no intention to release further episodes. If not set, this should be
-        assumed to be false.
-        :param dtstart: (optional) The date or datetime the recurrence rule
-        begins as an [ISO8601-fornmatted]
-        (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
-        string. If the rrule contains a value for COUNT, then this attribute
-        is required. If the rrule contains a value for UNTIL, then the value
-        of this attribute must be formatted to the same date/datetime standard.
-        :param rrule: (optional) A recurrence rule as defined in iCalendar
-        RFC 5545 Section 3.3.10.
+        dict keys are as follows. all are optional
+
+            - text: a free-form string, which might be displayed alongside
+            other information about the podcast. Please do not exceed 128
+            characters for the node value or it may be truncated by
+            aggregators.
+            - dtstart: The date or datetime the recurrence rule begins as
+            an ISO8601-fornmatted
+            (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
+            string. If the rrule contains a value for COUNT, then this
+            attribute is required. If the rrule contains a value for UNTIL,
+            then the value of this attribute must be formatted to the same
+            date/datetime standard.
+            - complete: Boolean specifying if the podcast has no intention
+            to release further episodes. If not set, this should be assumed
+            to be false.
+            - rrule: A recurrence rule as defined in iCalendar RFC 5545
+            Section 3.3.10.
+
+        :param uf: dict as described above
+        :returns: the previously set dict
         '''
         return self._pc20elem_updateFrequency

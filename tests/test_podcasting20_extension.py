@@ -314,7 +314,7 @@ class TestPodcasting20Extension:
         assert xml_frag_1 in fg_xml
 
     def test_updateFrequency(self, fg):
-        test_freq = [
+        tcase = [
             {'text': 'fortnightly', 'rrule': 'FREQ=WEEKLY;INTERVAL=2'},
             {'text': 'm/w/f', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,WE,FR'},
             {'text': 'US turkey day',
@@ -325,8 +325,40 @@ class TestPodcasting20Extension:
              },
             {'text': "That’s all folks!", 'complete': True}
         ]
+        fg.podcasting20.update_frequency(tcase[0])
+        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        fg.podcasting20.update_frequency(tcase[1])
+        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        fg.podcasting20.update_frequency(tcase[2])
+        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        fg.podcasting20.update_frequency(tcase[3])
+        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        fg.podcasting20.update_frequency(tcase[4])
+        assert fg.podcasting20.update_frequency() == [tcase[0]]
 
-        assert False
+        badcase_rrule = {'text': 'rr bogus text', 'rrule': 'bogus rr'}
+        badcase_dtstart = {'text': 'dt bogus text', 'dtstart': 'bogus dt'}
+        badcase_complete = {'text': 'comp bogus text',
+                            'complete': 'bogocomp'}
+        with pytest.raises(ValueError):
+            fg.podcasting20.update_frequency(badcase_rrule)
+        with pytest.raises(ValueError):
+            fg.podcasting20.update_frequency(badcase_dtstart)
+        with pytest.raises(ValueError):
+            fg.podcasting20.update_frequency(badcase_complete)
+
+        xml_frag_0 = \
+            '<podcast:updateFrequency rrule="FREQ=WEEKLY;INTERVAL=2">' \
+            'fortnightly<podcast:updateFrequency>'
+        xml_frag_1 = \
+            '<podcast:updateFrequency rrule="FREQ=WEEKLY;BYDAY=MO,WE,FR">' \
+            'm/w/f<podcast:updateFrequency>'
+        fg.podcasting20.update_frequency(tcase[0])
+        fg.podcasting20.update_frequency(tcase[1])
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        print(fg_xml)
+        assert xml_frag_0 not in fg_xml
+        assert xml_frag_1 in fg_xml
 
 #    def test_podping(self, fg):
 #        assert False
