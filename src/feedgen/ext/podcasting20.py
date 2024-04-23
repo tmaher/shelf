@@ -324,7 +324,24 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         :param medium: the medium, as described above
         :returns the medium string
         '''
-
+        if medium:
+            ensure_format(
+                {'medium': medium}, set(['medium']), set(['medium']),
+                {'medium': [
+                    'podcast', 'podcastL',
+                    'music', 'musicL',
+                    'video', 'videoL',
+                    'film', 'filmL',
+                    'audiobook', 'audiobookL',
+                    'newsletter', 'newsletterL',
+                    'blog', 'blogL',
+                    'mixed'
+                ]}
+            )
+            node = xml_elem('{%s}%s' % (self.PC20_NS, 'medium'))
+            node.text = medium
+            self._nodes['medium'] = node
+            self._pc20elem_medium = medium
         return self._pc20elem_medium
 
 

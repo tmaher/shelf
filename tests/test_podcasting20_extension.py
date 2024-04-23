@@ -217,7 +217,7 @@ class TestPodcasting20Extension:
             "<podcast:medium>film</podcast:medium>"
         fg.podcasting20.medium('film')
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        print(fg_xml)
+        # print(fg_xml)
         assert xml_frag_1 in fg_xml
         assert xml_frag_0 not in fg_xml
 
