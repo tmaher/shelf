@@ -314,6 +314,18 @@ class TestPodcasting20Extension:
         assert xml_frag_1 in fg_xml
 
     def test_updateFrequency(self, fg):
+        test_freq = [
+            {'text': 'fortnightly', 'rrule': 'FREQ=WEEKLY;INTERVAL=2'},
+            {'text': 'm/w/f', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,WE,FR'},
+            {'text': 'US turkey day',
+             'rrule': 'FREQ=YEARLY;BYDAY=+4TH;BYMONTH=11'},
+            {'text': 'Alt Mondays for 10 episodes starting on Aug 28, 2023',
+             'rrule': 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO;COUNT=10',
+             'dtstart': '2023-08-28T00:00:00.000Z'
+             },
+            {'text': "That’s all folks!", 'complete': True}
+        ]
+
         assert False
 
 #    def test_podping(self, fg):
