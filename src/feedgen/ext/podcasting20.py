@@ -29,6 +29,23 @@ class Podcasting20BaseExtension(BaseExtension):
     def __init__(self):
         self.PC20_NS = 'https://podcastindex.org/namespace/1.0'
 
+        # Canonical list of service slugs is at...
+        # https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
+        self.SERVICE_SLUGS = [
+            'acast', 'amazon', 'anchor', 'apple', 'audible', 'audioboom',
+            'backtracks', 'bitcoin', 'blubrry', 'buzzsprout', 'captivate',
+            'castos', 'castopod', 'facebook', 'fireside', 'fyyd', 'google',
+            'gpodder', 'hypercatcher', 'kasts', 'libsyn', 'mastodon',
+            'megafono', 'megaphone', 'omnystudio', 'overcast', 'paypal',
+            'pinecast', 'podbean', 'podcastaddict', 'podcastguru',
+            'podcastindex', 'podcasts', 'podchaser', 'podcloud',
+            'podfriend', 'podiant', 'podigee', 'podnews', 'podomatic',
+            'podserve', 'podverse', 'redcircle', 'relay',
+            'resonaterecordings', 'rss', 'shoutengine', 'simplecast',
+            'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
+            'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
+        ]
+
         self._nodes = {}
         self._pc20elem_transcript = None
         self._pc20elem_chapters = None
@@ -344,7 +361,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             self._pc20elem_medium = medium
         return self._pc20elem_medium
 
-    def block(self, block=None, id=None):
+    def block(self, block=None, id=None, slug_override=False):
         '''This element allows a podcaster to express which platforms are
         allowed to publicly display this feed and its contents. In its basic
         form, it is a direct drop-in replacement for the <itunes:block> tag,
@@ -370,9 +387,15 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         :param block: (requied) text value for block tag, must be yes/no
         :param id: (optional) A single entry from the service slug list.
             See https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt  # noqa: E501
+        :param slug_override: (optional, default False) normally id is
+            checked against the list of service slugs, and if you use
+            an id not on the list, you get a ValueError, to catch typos.
+            If you want to ignore the list (e.g. new service hasn't been
+            added yet, or a private service), set slug_override=True and
+            then you can use anything for id
         :returns: dict of block and (optionally) id
         '''
-        False
+        return self._pc20elem_block
 
 
 class Podcasting20EntryExtension(Podcasting20BaseExtension):

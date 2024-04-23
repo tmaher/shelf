@@ -222,7 +222,34 @@ class TestPodcasting20Extension:
         assert xml_frag_0 not in fg_xml
 
     def test_block(self, fg):
-        assert False
+        fg.podcasting20.block('yes', id='rss')
+        assert fg.podcasting20.block() == \
+            {'block': 'yes', 'id': 'rss'}
+        fg.podcasting20.block('no', id='podcastindex')
+        assert fg.podcasting20.block() == \
+            {'block': 'no', 'id': 'podcastindex'}
+        with pytest.raises(ValueError):
+            fg.podcasting20.block('bogus')
+        with pytest.raises(ValueError):
+            fg.podcasting20.block('yes', id='__bogus')
+        fg.podcasting20.block('yes', id='__bogus', slug_override=True)
+        assert fg.podcasting20.block() == \
+            {'block': 'yes', 'id': '__bogus'}
+
+        fe = fg.add_entry()
+        fe.title('block ep')
+        with pytest.raises(AttributeError):
+            fe.podcasting20.blocked('yes', id='rss')
+
+        xml_frag_0 = \
+            '<podcast:block id="rss">yes</podcast:block>'
+        xml_frag_1 = \
+            '<podcast:block id="rss">yes</podcast:block>'
+
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        print(fg_xml)
+        assert xml_frag_1 in fg_xml
+        assert xml_frag_0 not in fg_xml
 
 #    def test_podroll(self, fg):
 #        assert False
