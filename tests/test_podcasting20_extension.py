@@ -156,9 +156,45 @@ class TestPodcasting20Extension:
         assert url2guid(test_data[0]['url']) == test_data[0]['guid']
         assert url2guid(test_data[1]['url']) == test_data[1]['guid']
 
+    def test_guid(self, fg):
+        test_data = [
+            {'url': 'https://mp3s.nashownotes.com/pc20rss.xml',
+             'guid': '917393e3-1b1e-5cef-ace4-edaa54e1f810'},
+            {'url': 'podnews.net/rss////',
+             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'},
+            {'url': 'podnews.net/rss/',
+             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'}
+        ]
 
-#    def test_guid(self, fg):
-#        assert False
+        with pytest.raises(ValueError):
+            fg.podcasting20.guid(guid='bogus')
+
+        with pytest.raises(ValueError):
+            fg.podcasting20.guid(guid=test_data[0]['guid'],
+                                 url=test_data[0]['url'])
+
+        assert fg.podcasting20.guid(url=test_data[0]['url']) == \
+            test_data[0]['guid']
+        assert fg.podcasting20.guid(url=test_data[1]['url']) == \
+            test_data[1]['guid']
+        assert fg.podcasting20.guid(url=test_data[2]['url']) == \
+            test_data[2]['guid']
+        assert fg.podcasting20.guid(guid=test_data[0]['guid']) == \
+            test_data[0]['guid']
+
+        fe = fg.add_entry()
+        fe.title('trailer ep')
+        with pytest.raises(AttributeError):
+            fe.podcasting20.guid(guid=test_data[0]['guid'])
+
+        xml_frag_0 = \
+            f"<podcast:guid>{test_data[0]['guid']}</podcast:guid>"
+        xml_frag_1 = \
+            f"<podcast:guid>{test_data[1]['guid']}</podcast:guid>"
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        assert xml_frag_1 in fg_xml
+        assert xml_frag_0 not in fg_xml
+        print(fg_xml)
 
 #    def test_medium(self, fg):
 #        assert False

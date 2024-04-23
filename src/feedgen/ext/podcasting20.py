@@ -215,10 +215,35 @@ class Podcasting20BaseExtension(BaseExtension):
             self._pc20elem_trailer = vals
         return self._pc20elem_trailer
 
-    def guid(self, text=None):
-        '''docstring go here'''
-        if text is not None:
-            True
+    def guid(self, guid=None, url=None):
+        '''This element is used to declare a unique, global identifier for a
+        podcast. The value is a UUIDv5, and is easily generated from the RSS
+        feed url, with the protocol scheme and trailing slashes stripped off,
+        combined with a unique "podcast" namespace which has a UUID of
+        ead4c236-bf58-58c6-a2c6-a6b28d128cb6.
+
+        *NOTE*: A podcast gets assigned a podcast:guid once in its lifetime
+        using its current feed url (at the time of assignment) as the seed
+        value. That GUID is then meant to follow the podcast from then on,
+        for the duration of its life, even if the feed url changes. This
+        means that when a podcast moves from one hosting platform to another,
+        its podcast:guid should be discovered by the new host and imported
+        into the new platform for inclusion into the feed.
+
+        This method accepts *EITHER* a caller-provided GUID *OR* a feed
+        URL. If you pass both guid & url, it will raise ValueError.
+
+        :param guid: a UUIDv5 string to use as GUID. This will be used
+            unmodified in the resulting XML.
+        :param url: the feed URL, which will be used to compute the UUIDv5
+            GUID. It is ok to include the protocol scheme and trailing
+            slashes. They will be stripped off per the podcasting 2.0 spec.
+            For example: https://podnews.net/rss , https://podnews.net/rss/ ,
+            and podnews.net/rss will all result in the same GUID.
+        :returns: the GUID string
+        '''
+        if guid and url:
+            raise ValueError("use either guid or url, NOT BOTH")
             # node = xml_elem('{%s}%s' % (self.PC20_NS, 'guid'))
         return self._pc20elem_guid
 
