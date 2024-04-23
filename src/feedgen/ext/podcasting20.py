@@ -2,14 +2,14 @@ from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem, ensure_format
 
 import uuid
-from urllib.parse import urlsplit
+import urllib
 import re
 import sys  # noqa: F401
 
 
 def url2guid(url):
     GUID_NS_PODCAST = uuid.UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
-    s = urlsplit(url)
+    s = urllib.parse.urlsplit(url)
     no_scheme_url = re.sub(
         r'/+\Z', '',
         ''.join([s.netloc, s.path, s.query, s.fragment])
@@ -275,6 +275,9 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
 
     Tags that are only direct children of <item> go in this class.
     '''
+    def __init__(self):
+        super().__init__()
+
     def extend_atom(self, entry):
         '''Add podcasting 2.0 elements to an atom item. Alters the item itself.
 
