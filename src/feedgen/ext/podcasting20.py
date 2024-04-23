@@ -244,7 +244,18 @@ class Podcasting20BaseExtension(BaseExtension):
         '''
         if guid and url:
             raise ValueError("use either guid or url, NOT BOTH")
-            # node = xml_elem('{%s}%s' % (self.PC20_NS, 'guid'))
+        if guid or url:
+            if guid:
+                # validate guid is well-formated by parsing
+                # if it isn't, this will raise ValueError
+                guid = str(UUID(guid))
+            elif url:
+                guid = url2guid(url)
+            node = xml_elem('{%s}%s' % (self.PC20_NS, 'guid'))
+            node.text = guid
+            self._nodes['guid'] = node
+            self._pc20elem_guid = guid
+
         return self._pc20elem_guid
 
 
@@ -282,3 +293,6 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
 
     def trailer(*args, **kwargs):
         raise AttributeError('trailer is channel level only')
+
+    def guid(*args, **kwargs):
+        raise AttributeError('guid is channel level only')
