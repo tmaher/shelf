@@ -397,7 +397,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             added yet, or a private service), set slug_override=True and
             then you can use anything for id
         :param replace: Add or replace old data. (default false)
-        :returns: dict of block and (optionally) id
+        :returns: list of dicts of block and (optionally) id
         '''
         if blocks != []:
             valid_values = {'block': ['yes', 'no']}
