@@ -344,6 +344,36 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             self._pc20elem_medium = medium
         return self._pc20elem_medium
 
+    def block(self, block=None, id=None):
+        '''This element allows a podcaster to express which platforms are
+        allowed to publicly display this feed and its contents. In its basic
+        form, it is a direct drop-in replacement for the <itunes:block> tag,
+        but allows for greater flexibility by the inclusion of the id
+        attribute and by including multiple copies of itself in the feed.
+
+        Platforms should not ingest a feed for public display/use if their
+        slug exists in the id of a yes block tag, or if an unbounded yes block
+        tag exists (meaning block all public ingestion). Conversely, if a
+        platform finds their slug in the id of a no block tag, they are free
+        to ingest that feed for public display/usage.
+
+        In plain language, the sequence of discovery an ingesting platform
+        should use is as follows:
+
+        - Does <podcast:block id="[myslug]">no</podcast:block> exist in this
+        feed? Safe to ingest.
+        - Does <podcast:block id="[myslug]">yes</podcast:block> exist in this
+        feed? Do not ingest.
+        - Does <podcast:block>yes</podcast:block> exist in this feed? Do not
+        ingest.
+
+        :param block: (requied) text value for block tag, must be yes/no
+        :param id: (optional) A single entry from the service slug list.
+            See https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt  # noqa: E501
+        :returns: dict of block and (optionally) id
+        '''
+        False
+
 
 class Podcasting20EntryExtension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
