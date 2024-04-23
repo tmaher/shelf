@@ -30,6 +30,12 @@ class TestPodcasting20Extension:
         fg.description('this is a fake podcast by a very angry flower')
         return fg
 
+    def test_entry_extension(self, fg):
+        from feedgen.ext.podcasting20_entry import Podcasting20EntryExtension  # type: ignore # noqa: E402 E501
+
+        ee = Podcasting20EntryExtension()
+        assert isinstance(ee, Podcasting20EntryExtension)
+
     def test_create(self, fg):
         assert isinstance(fg, FeedGenerator)
 
