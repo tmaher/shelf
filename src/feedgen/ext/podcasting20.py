@@ -4,6 +4,7 @@ from feedgen.util import xml_elem, ensure_format
 import uuid
 import urllib
 import re
+import iso8601
 import sys  # noqa: F401
 
 
@@ -453,4 +454,22 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         :param uf: dict as described above
         :returns: the previously set dict
         '''
+        # epoch_ical = '19700101T000000Z'
+        if uf:
+            uf = ensure_format(
+                uf,
+                set(['text', 'dtstart', 'complete', 'rrule']),
+                set(),
+                {'complete': [True, False]}
+            )[0]
+            if uf.get('dtstart'):
+                try:
+                    dt_parsed = iso8601.parse_date(uf['dtstart'])
+                except iso8601.ParseError:
+                    raise ValueError("dtstart must be in ISO 8601 format")
+                dt_roundtrip = dt_parsed.isoformat(timespec='milliseconds')
+                if re.search(r"Z\Z", uf['dtstart']):
+                    dt_roundtrip = re.sub(r"\+00:00", "Z", dt_roundtrip)
+                uf['dtstart'] = dt_roundtrip
+
         return self._pc20elem_updateFrequency
