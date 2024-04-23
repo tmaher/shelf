@@ -29,23 +29,6 @@ class Podcasting20BaseExtension(BaseExtension):
     def __init__(self):
         self.PC20_NS = 'https://podcastindex.org/namespace/1.0'
 
-        # Canonical list of service slugs is at...
-        # https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
-        self.SERVICE_SLUGS = [
-            'acast', 'amazon', 'anchor', 'apple', 'audible', 'audioboom',
-            'backtracks', 'bitcoin', 'blubrry', 'buzzsprout', 'captivate',
-            'castos', 'castopod', 'facebook', 'fireside', 'fyyd', 'google',
-            'gpodder', 'hypercatcher', 'kasts', 'libsyn', 'mastodon',
-            'megafono', 'megaphone', 'omnystudio', 'overcast', 'paypal',
-            'pinecast', 'podbean', 'podcastaddict', 'podcastguru',
-            'podcastindex', 'podcasts', 'podchaser', 'podcloud',
-            'podfriend', 'podiant', 'podigee', 'podnews', 'podomatic',
-            'podserve', 'podverse', 'redcircle', 'relay',
-            'resonaterecordings', 'rss', 'shoutengine', 'simplecast',
-            'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
-            'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
-        ]
-
         self._nodes = {}
         self._pc20elem_transcript = None
         self._pc20elem_chapters = None
@@ -118,6 +101,23 @@ class Podcasting20Extension(Podcasting20BaseExtension):
     '''
     def __init__(self):
         super().__init__()
+
+        # Canonical list of service slugs is at...
+        # https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
+        self.SERVICE_SLUGS = [
+            'acast', 'amazon', 'anchor', 'apple', 'audible', 'audioboom',
+            'backtracks', 'bitcoin', 'blubrry', 'buzzsprout', 'captivate',
+            'castos', 'castopod', 'facebook', 'fireside', 'fyyd', 'google',
+            'gpodder', 'hypercatcher', 'kasts', 'libsyn', 'mastodon',
+            'megafono', 'megaphone', 'omnystudio', 'overcast', 'paypal',
+            'pinecast', 'podbean', 'podcastaddict', 'podcastguru',
+            'podcastindex', 'podcasts', 'podchaser', 'podcloud',
+            'podfriend', 'podiant', 'podigee', 'podnews', 'podomatic',
+            'podserve', 'podverse', 'redcircle', 'relay',
+            'resonaterecordings', 'rss', 'shoutengine', 'simplecast',
+            'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
+            'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
+        ]
         self._pc20elem_locked = None
         self._pc20elem_funding = None
         self._pc20elem_trailer = None
