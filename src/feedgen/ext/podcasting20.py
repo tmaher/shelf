@@ -1,25 +1,29 @@
 from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem, ensure_format
 
-from uuid import UUID, uuid5
+import uuid
 from urllib.parse import urlsplit
 import re
 import sys  # noqa: F401
 
 
 def url2guid(url):
-    GUID_NS_PODCAST = UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
+    GUID_NS_PODCAST = uuid.UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
     s = urlsplit(url)
     no_scheme_url = re.sub(
         r'/+\Z', '',
         ''.join([s.netloc, s.path, s.query, s.fragment])
     )
-    return str(uuid5(GUID_NS_PODCAST, no_scheme_url))
+    return str(uuid.uuid5(GUID_NS_PODCAST, no_scheme_url))
 
 
 class Podcasting20BaseExtension(BaseExtension):
-    '''Podcasting 2.0 extension
-    See https://podcasting2.org/podcast-namespace
+    '''Podcasting 2.0 extension. See the following for specs:
+
+        * https://podcasting2.org/podcast-namespace
+        * https://podcastindex.org/namespace/1.0
+
+    Tags shared <channel> and <item> go here.
     '''
 
     def __init__(self):
@@ -29,19 +33,15 @@ class Podcasting20BaseExtension(BaseExtension):
         self._pc20elem_transcript = None
         self._pc20elem_chapters = None
         self._pc20elem_podroll = None
-        self._pc20elem_locked = None
-        self._pc20elem_funding = None
         self._pc20elem_soundbite = None
         self._pc20elem_person = None
         self._pc20elem_location = None
         self._pc20elem_season = None
         self._pc20elem_episode = None
-        self._pc20elem_trailer = None
         self._pc20elem_license = None
         self._pc20elem_alternateEnclosure = None
         self._pc20elem_source = None
         self._pc20elem_integrity = None
-        self._pc20elem_guid = None
         self._pc20elem_value = None
         self._pc20elem_valueRecipient = None
         self._pc20elem_medium = None
@@ -93,7 +93,18 @@ class Podcasting20BaseExtension(BaseExtension):
 
         return rss_feed
 
-    # #### channel-only tags ####
+
+class Podcasting20Extension(Podcasting20BaseExtension):
+    '''Podcasting 2.0 Elements extension for podcasts.
+
+    Tags that are only direct children of <channel> go in this class
+    '''
+    def __init__(self):
+        super().__init__()
+        self._pc20elem_locked = None
+        self._pc20elem_funding = None
+        self._pc20elem_trailer = None
+        self._pc20elem_guid = None
 
     def locked(self, text=None, owner=None):
         '''This tag may be set to yes or no. The purpose is to tell other
@@ -248,7 +259,7 @@ class Podcasting20BaseExtension(BaseExtension):
             if guid:
                 # validate guid is well-formated by parsing
                 # if it isn't, this will raise ValueError
-                guid = str(UUID(guid))
+                guid = str(uuid.UUID(guid))
             elif url:
                 guid = url2guid(url)
             node = xml_elem('{%s}%s' % (self.PC20_NS, 'guid'))
@@ -259,13 +270,10 @@ class Podcasting20BaseExtension(BaseExtension):
         return self._pc20elem_guid
 
 
-class Podcasting20Extension(Podcasting20BaseExtension):
-    '''Podcasting 2.0 Elements extension for podcasts.
-    '''
-
-
 class Podcasting20EntryExtension(Podcasting20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
+
+    Tags that are only direct children of <item> go in this class.
     '''
     def extend_atom(self, entry):
         '''Add podcasting 2.0 elements to an atom item. Alters the item itself.
@@ -284,15 +292,3 @@ class Podcasting20EntryExtension(Podcasting20BaseExtension):
         '''
         self._extend_xml(item)
         return item
-
-    def locked(*args, **kwargs):
-        raise AttributeError('locked is channel level only')
-
-    def funding(*args, **kwargs):
-        raise AttributeError('funding is channel level only')
-
-    def trailer(*args, **kwargs):
-        raise AttributeError('trailer is channel level only')
-
-    def guid(*args, **kwargs):
-        raise AttributeError('guid is channel level only')
