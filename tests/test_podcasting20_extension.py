@@ -221,9 +221,6 @@ class TestPodcasting20Extension:
         assert xml_frag_1 in fg_xml
         assert xml_frag_0 not in fg_xml
 
-#    def test_liveItem(self, fg):
-#        assert False
-
 #    def test_block(self, fg):
 #        assert False
 
@@ -234,4 +231,7 @@ class TestPodcasting20Extension:
 #        assert False
 
 #    def test_podping(self, fg):
+#        assert False
+
+#    def test_liveItem(self, fg):
 #        assert False
