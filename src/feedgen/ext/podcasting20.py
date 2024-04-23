@@ -361,7 +361,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             self._pc20elem_medium = medium
         return self._pc20elem_medium
 
-    def block(self, block=None, id=None, slug_override=False, replace=False):
+    def block(self, blocks=None, slug_override=False, replace=False):
         '''This element allows a podcaster to express which platforms are
         allowed to publicly display this feed and its contents. In its basic
         form, it is a direct drop-in replacement for the <itunes:block> tag,
@@ -384,15 +384,19 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         - Does <podcast:block>yes</podcast:block> exist in this feed? Do not
         ingest.
 
-        :param block: (requied) text value for block tag, must be yes/no
-        :param id: (optional) A single entry from the service slug list.
-            See https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt  # noqa: E501
+        dict keys are as follows. block is required
+            - block (required): text value of node, must be yes or no
+            - id (optional): A single entry from the service slug list, see
+            https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
+
+        :param blocks: dict or array of dicts as described above
         :param slug_override: (optional, default False) normally id is
             checked against the list of service slugs, and if you use
             an id not on the list, you get a ValueError, to catch typos.
             If you want to ignore the list (e.g. new service hasn't been
             added yet, or a private service), set slug_override=True and
             then you can use anything for id
+        :param replace: Add or replace old data. (default false)
         :returns: dict of block and (optionally) id
         '''
         if block or id:
