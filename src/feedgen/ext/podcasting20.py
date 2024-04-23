@@ -395,6 +395,25 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             then you can use anything for id
         :returns: dict of block and (optionally) id
         '''
+        if block or id:
+            val = {'block': block}
+            slug_list = self.SERVICE_SLUGS
+            if id:
+                val['id'] = id
+                if slug_override:
+                    slug_list = [val['id']]
+            ensure_format(
+                val,
+                set(['block', 'id']),
+                set(['block']),
+                {'block': ['yes', 'no'], 'id': slug_list}
+            )
+            node = xml_elem('{%s}%s' % (self.PC20_NS, 'block'))
+            node.text = val['block']
+            if val['id']:
+                node.attrib['id'] = val['id']
+            self._nodes['block'] = node
+            self._pc20elem_block = val
         return self._pc20elem_block
 
 

@@ -242,10 +242,10 @@ class TestPodcasting20Extension:
             fe.podcasting20.blocked('yes', id='rss')
 
         xml_frag_0 = \
-            '<podcast:block id="rss">yes</podcast:block>'
+            '<podcast:block id="podcastindex">yes</podcast:block>'
         xml_frag_1 = \
             '<podcast:block id="rss">yes</podcast:block>'
-
+        fg.podcasting20.block('yes', 'rss')
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
         print(fg_xml)
         assert xml_frag_1 in fg_xml
