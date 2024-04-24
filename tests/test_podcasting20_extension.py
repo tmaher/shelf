@@ -316,27 +316,28 @@ class TestPodcasting20Extension:
     def test_updateFrequency(self, fg):
         tcase = [
             {'text': 'fortnightly', 'rrule': 'FREQ=WEEKLY;INTERVAL=2'},
-            {'text': 'm/w/f', 'rrule': 'FREQ=WEEKLY;BYDAY=MO,WE,FR'},
+            {'text': 'Every Monday and Wednesday',
+             'rrule': 'FREQ=WEEKLY;BYDAY=MO,WE'},
             {'text': 'US turkey day',
              'rrule': 'FREQ=YEARLY;BYDAY=+4TH;BYMONTH=11'},
             {'text': 'Alt Mondays for 10 episodes starting on Aug 28, 2023',
              'rrule': 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO;COUNT=10',
              'dtstart': '2023-08-28T00:00:00.000Z'
              },
-            {'text': "That’s all folks!", 'complete': True}
+            {'text': "That’s all folks!", 'complete': 'true'}
         ]
         fg.podcasting20.update_frequency(tcase[0])
-        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        assert fg.podcasting20.update_frequency() == tcase[0]
         fg.podcasting20.update_frequency(tcase[1])
-        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        assert fg.podcasting20.update_frequency() == tcase[1]
         fg.podcasting20.update_frequency(tcase[2])
-        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        assert fg.podcasting20.update_frequency() == tcase[2]
         fg.podcasting20.update_frequency(tcase[3])
-        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        assert fg.podcasting20.update_frequency() == tcase[3]
         fg.podcasting20.update_frequency(tcase[4])
-        assert fg.podcasting20.update_frequency() == [tcase[0]]
+        assert fg.podcasting20.update_frequency() == tcase[4]
 
-        badcase_rrule = {'text': 'rr bogus text', 'rrule': 'bogus rr'}
+        badcase_rrule = {'text': 'rr bogus text', 'rrule': 'freq=bogus'}
         badcase_dtstart = {'text': 'dt bogus text', 'dtstart': 'bogus dt'}
         badcase_complete = {'text': 'comp bogus text',
                             'complete': 'bogocomp'}
@@ -351,8 +352,8 @@ class TestPodcasting20Extension:
             '<podcast:updateFrequency rrule="FREQ=WEEKLY;INTERVAL=2">' \
             'fortnightly<podcast:updateFrequency>'
         xml_frag_1 = \
-            '<podcast:updateFrequency rrule="FREQ=WEEKLY;BYDAY=MO,WE,FR">' \
-            'm/w/f<podcast:updateFrequency>'
+            '<podcast:updateFrequency rrule="FREQ=WEEKLY;BYDAY=MO,WE">'\
+            'Every Monday and Wednesday</podcast:updateFrequency>'
         fg.podcasting20.update_frequency(tcase[0])
         fg.podcasting20.update_frequency(tcase[1])
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')

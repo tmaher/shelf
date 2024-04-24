@@ -4,7 +4,9 @@ from feedgen.util import xml_elem, ensure_format
 import uuid
 import urllib
 import re
-import iso8601
+# import iso8601
+from datetime import datetime, timezone
+import icalendar
 import sys  # noqa: F401
 
 
@@ -432,44 +434,65 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         ''' This element allows a podcaster to express their intended release
         schedule as structured data and text.
 
-        dict keys are as follows. all are optional
+        dict keys are as follows. text is required
 
             - text: a free-form string, which might be displayed alongside
             other information about the podcast. Please do not exceed 128
             characters for the node value or it may be truncated by
             aggregators.
-            - dtstart: The date or datetime the recurrence rule begins as
-            an ISO8601-fornmatted
+            - dtstart (optional): The date or datetime the recurrence rule
+            begins as an ISO8601-fornmatted
             (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString)
             string. If the rrule contains a value for COUNT, then this
             attribute is required. If the rrule contains a value for UNTIL,
             then the value of this attribute must be formatted to the same
             date/datetime standard.
-            - complete: Boolean specifying if the podcast has no intention
-            to release further episodes. If not set, this should be assumed
-            to be false.
-            - rrule: A recurrence rule as defined in iCalendar RFC 5545
-            Section 3.3.10.
+            - complete (optional): Boolean specifying if the podcast has no
+            intention to release further episodes. If not set, this should be
+            assumed to be false.
+            - rrule (optional, recommended): A recurrence rule as defined
+            in iCalendar RFC 5545 Section 3.3.10.
 
         :param uf: dict as described above
         :returns: the previously set dict
         '''
-        # epoch_ical = '19700101T000000Z'
         if uf:
-            uf = ensure_format(
+            if (not isinstance(uf, dict)):
+                raise ValueError("only single dictionary allowed")
+            val = ensure_format(
                 uf,
                 set(['text', 'dtstart', 'complete', 'rrule']),
-                set(),
-                {'complete': [True, False]}
+                set(['text']),
+                {'complete': ['true', 'false']}
             )[0]
-            if uf.get('dtstart'):
-                try:
-                    dt_parsed = iso8601.parse_date(uf['dtstart'])
-                except iso8601.ParseError:
-                    raise ValueError("dtstart must be in ISO 8601 format")
-                dt_roundtrip = dt_parsed.isoformat(timespec='milliseconds')
-                if re.search(r"Z\Z", uf['dtstart']):
-                    dt_roundtrip = re.sub(r"\+00:00", "Z", dt_roundtrip)
-                uf['dtstart'] = dt_roundtrip
+            node = xml_elem('{%s}%s' % (self.PC20_NS, 'updateFrequency'))
+            node.text = val['text']
+            if val.get('dtstart'):
+                # run dtstart through iso8601 parser to validate syntax
+                # The podcasting 2.0 spec specifically notes
+                # that they use the restricted JavaScript subset of
+                # ISO 8601 (always miliseconds, always UTC), so
+                # forcibly convert to that
+                #
+                # "Z" as timezone was only added in python 3.11 :(
+                ts = re.sub(r"Z\Z", "+00:00", uf['dtstart'])
+                dt_parsed = datetime.fromisoformat(ts)
+                dt_parsed = dt_parsed.astimezone(timezone.utc)
+                # if .isoformat() throws an exception here about timespec,
+                # upgrade to python 3.6 or later. python 3.5 is EOL
+                ts = dt_parsed.isoformat(timespec='milliseconds')
+                val['dtstart'] = re.sub(r"\+00:00\Z", "Z", ts)
+                node.attrib['dtstart'] = val['dtstart']
+            if val.get('rrule'):
+                # run rrule through the iCalendar parser to validate syntax
+                icalendar.Event.from_ical(
+                    'BEGIN:VTODO\nDTSTART:19700101T000000Z\n'
+                    f"RRULE:{val['rrule']}\nEND:VTODO\n"
+                )
+                node.attrib['rrule'] = val['rrule']
+            if val.get('complete'):
+                node.attrib['complete'] = val['complete']
+            self._nodes['update_frequency'] = node
+            self._pc20elem_updateFrequency = val
 
         return self._pc20elem_updateFrequency
