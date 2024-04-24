@@ -4,7 +4,6 @@ from feedgen.util import xml_elem, ensure_format
 import uuid
 import urllib
 import re
-# import iso8601
 from datetime import datetime, timezone
 import icalendar
 import sys  # noqa: F401
