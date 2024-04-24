@@ -349,8 +349,8 @@ class TestPodcasting20Extension:
             fg.podcasting20.update_frequency(badcase_complete)
 
         xml_frag_0 = \
-            '<podcast:updateFrequency rrule="FREQ=WEEKLY;INTERVAL=2">' \
-            'fortnightly<podcast:updateFrequency>'
+            '<podcast:updateFrequency rrule="FREQ=WEEKLY;INTERVAL=2">'\
+            'fortnightly</podcast:updateFrequency>'
         xml_frag_1 = \
             '<podcast:updateFrequency rrule="FREQ=WEEKLY;BYDAY=MO,WE">'\
             'Every Monday and Wednesday</podcast:updateFrequency>'
