@@ -357,15 +357,43 @@ class TestPodcasting20Extension:
         fg.podcasting20.update_frequency(tcase[0])
         fg.podcasting20.update_frequency(tcase[1])
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        print(fg_xml)
+        # print(fg_xml)
         assert xml_frag_0 not in fg_xml
         assert xml_frag_1 in fg_xml
 
-#    def test_podping(self, fg):
-#        assert False
+    def test_podping(self, fg):
+        tcase = [
+            {'uses_podping': 'false'},
+            {'uses_podping': 'true'},
+            {'replace': True}
+        ]
+
+        fg.podcasting20.podping(**tcase[0])
+        assert fg.podcasting20.podping() == tcase[0]
+        fg.podcasting20.podping(**tcase[1])
+        assert fg.podcasting20.podping() == tcase[1]
+        fg.podcasting20.podping(**tcase[2])
+        assert fg.podcasting20.podping() is None
+
+        with pytest.raises(ValueError):
+            fg.podcasting20.podping(uses_podping='bogus')
+
+        xml_frag_0 = \
+            '<podcast:podping usesPodping="false"/>'
+        xml_frag_1 = \
+            '<podcast:podping usesPodping="true"/>'
+        fg.podcasting20.podping(**tcase[0])
+        fg.podcasting20.podping(**tcase[1])
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        # print(fg_xml)
+        assert xml_frag_0 not in fg_xml
+        assert xml_frag_1 in fg_xml
 
 #    def test_podroll(self, fg):
 #        assert False
 
+# note - as of 2024-04-24
+# https://podcasting2.org/podcast-namespace/tags/liveItem says liveItem
+# is not used anywhere, so deferring this for now
 #    def test_liveItem(self, fg):
 #        assert False
