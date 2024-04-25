@@ -49,7 +49,10 @@ class TestPodcasting20Extension:
     def test_itunes_explicit(self, fg):
         assert fg.podcast.itunes_explicit() == 'yes'
 
-    # #### channel-only tags ####
+    # ### SIMPLE tags
+    #    - only exist as children of channel
+    #    - no children
+
     def test_locked(self, fg):
         fg.podcasting20.locked('yes', owner='bob@angry.podcast')
         assert fg.podcasting20.locked() == {
@@ -389,11 +392,46 @@ class TestPodcasting20Extension:
         assert xml_frag_0 not in fg_xml
         assert xml_frag_1 in fg_xml
 
+# #### DUAL-USE: these tags
+#    - may be children of item **OR** channel, but...
+#    - DO NOT have any children themselves
+
+#    def test_person(self, fg):
+#        assert False
+
+#    def test_location(self, fg):
+#        assert False
+
+#    def test_license(self, fg):
+#        assert False
+
+#    def test_images(self, fg):
+#        assert False
+
+#    def test_txt(self, fg):
+#        assert False
+
+# #### COMPLEX tags - these either...
+#    - MAY have parents other than channel or item, *OR*
+#    - MAY have children themselves
+
 #    def test_podroll(self, fg):
+#        assert False
+
+#    def test_remote_item(self, fg):
 #        assert False
 
 # note - as of 2024-04-24
 # https://podcasting2.org/podcast-namespace/tags/liveItem says liveItem
 # is not used anywhere, so deferring this for now
 #    def test_liveItem(self, fg):
+#        assert False
+
+#    def test_value():
+#        assert False
+
+#    def test_value_recipient():
+#        assert False
+
+#    def test_value_time_split():
 #        assert False
