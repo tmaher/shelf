@@ -1,16 +1,16 @@
 import pytest
-import feedgen
-import feedgen.ext
-import pkgutil
+# import feedgen
+# import feedgen.ext
+# import pkgutil
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
 # FIXME: feedgen is not a namespaced package, hence the path manipulation
 # Remove before submitting PR to upstream
-feedgen.__path__ = \
-    pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
-feedgen.ext.__path__ = \
-    pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
+# feedgen.__path__ = \
+#    pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
+# feedgen.ext.__path__ = \
+#    pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 
 
 class TestPc20Ext:
@@ -18,7 +18,7 @@ class TestPc20Ext:
     def fg(self):
         fg = FeedGenerator()
         fg.load_extension('podcast', rss=True, atom=True)
-        fg.load_extension('dc', rss=True, atom=True)
+        # fg.load_extension('dc', rss=True, atom=True)
         fg.load_extension('pc20', rss=True, atom=True)
 
         fg.podcast.itunes_explicit('yes')
