@@ -10,6 +10,22 @@ import sys  # noqa: F401
 
 PC20_NS = 'https://podcastindex.org/namespace/1.0'
 PC20_NS_GUID_UUID = uuid.UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
+# Canonical list of service slugs is at...
+# https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
+PC20_SERVICE_SLUGS = [
+    'acast', 'amazon', 'anchor', 'apple', 'audible', 'audioboom',
+    'backtracks', 'bitcoin', 'blubrry', 'buzzsprout', 'captivate',
+    'castos', 'castopod', 'facebook', 'fireside', 'fyyd', 'google',
+    'gpodder', 'hypercatcher', 'kasts', 'libsyn', 'mastodon',
+    'megafono', 'megaphone', 'omnystudio', 'overcast', 'paypal',
+    'pinecast', 'podbean', 'podcastaddict', 'podcastguru',
+    'podcastindex', 'podcasts', 'podchaser', 'podcloud',
+    'podfriend', 'podiant', 'podigee', 'podnews', 'podomatic',
+    'podserve', 'podverse', 'redcircle', 'relay',
+    'resonaterecordings', 'rss', 'shoutengine', 'simplecast',
+    'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
+    'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
+]
 
 
 def url2guid(url):
@@ -404,7 +420,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         if blocks != []:
             valid_values = {'block': ['yes', 'no']}
             if not slug_override:
-                valid_values['id'] = self.SERVICE_SLUGS
+                valid_values['id'] = PC20_SERVICE_SLUGS
             blocks = ensure_format(
                 blocks,
                 set(['block', 'id']),

@@ -9,7 +9,7 @@ feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
-from feedgen.ext.podcasting20 import Podcasting20BaseExtension  # type: ignore # noqa: E402 E501
+from feedgen.ext.podcasting20 import Podcasting20BaseExtension, PC20_NS  # type: ignore # noqa: E402 E501
 # from feedgen.util import xml_elem, ensure_format
 
 
