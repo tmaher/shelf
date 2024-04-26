@@ -1,16 +1,16 @@
 import pytest
-# import feedgen
-# import feedgen.ext
-# import pkgutil
+import feedgen
+import feedgen.ext
+import pkgutil
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
 # FIXME: feedgen is not a namespaced package, hence the path manipulation
 # Remove before submitting PR to upstream
-# feedgen.__path__ = \
-#    pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
-# feedgen.ext.__path__ = \
-#    pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
+feedgen.__path__ = \
+    pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
+feedgen.ext.__path__ = \
+    pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 
 
 class TestPc20Ext:
@@ -387,7 +387,7 @@ class TestPc20Ext:
         fg.pc20.podping(**tcase[0])
         fg.pc20.podping(**tcase[1])
         fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
+        print(fg_xml)
         assert xml_frag_0 not in fg_xml
         assert xml_frag_1 in fg_xml
 
