@@ -37,7 +37,7 @@ def url2guid(url):
     return str(uuid.uuid5(PC20_NS_GUID_UUID, no_scheme_url))
 
 
-class Podcasting20BaseExtension(BaseExtension):
+class Pc20BaseExtension(BaseExtension):
     '''Podcasting 2.0 extension. See the following for specs:
 
         * https://podcasting2.org/podcast-namespace
@@ -112,7 +112,7 @@ class Podcasting20BaseExtension(BaseExtension):
         return rss_feed
 
 
-class Podcasting20Extension(Podcasting20BaseExtension):
+class Pc20Extension(Pc20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
 
     Tags that are only direct children of <channel> go in this class

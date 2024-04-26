@@ -9,11 +9,11 @@ feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
-from feedgen.ext.podcasting20 import Podcasting20BaseExtension, PC20_NS  # type: ignore # noqa: E402 E501
+from feedgen.ext.pc20 import Pc20BaseExtension, PC20_NS  # type: ignore # noqa: E402 E501
 # from feedgen.util import xml_elem, ensure_format
 
 
-class Podcasting20EntryExtension(Podcasting20BaseExtension):
+class Pc20EntryExtension(Pc20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
 
     Tags that are only direct children of <item> go in this class.

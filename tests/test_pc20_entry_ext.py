@@ -19,7 +19,7 @@ class TestPc20EntryExt:
         fg = FeedGenerator()
         fg.load_extension('podcast', rss=True, atom=True)
         fg.load_extension('dc', rss=True, atom=True)
-        fg.load_extension('podcasting20', rss=True, atom=True)
+        fg.load_extension('pc20', rss=True, atom=True)
 
         fg.podcast.itunes_explicit('yes')
         fg.title('bob the angry podcast')
@@ -35,7 +35,7 @@ class TestPc20EntryExt:
         fe = fg.add_entry()
         fe.title('bob gets angry')
         with pytest.raises(AttributeError):
-            fe.podcasting20.locked('yes', owner='bob@angry.podcast')
+            fe.pc20.locked('yes', owner='bob@angry.podcast')
         return fe
 
     def test_poc(self, fg, fe):
