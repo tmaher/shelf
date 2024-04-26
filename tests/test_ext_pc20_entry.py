@@ -46,8 +46,72 @@ class TestPc20EntryExt:
 #    - only exist as children of item
 #    - no children
 
-#    def test_transcript():
-#        assert False
+    def test_transcript(self, fg, fe):
+        tcase_html = {
+            'url': 'https://example.com/episode1/transcript.html',
+            'type': 'text/html'
+        }
+        tcase_vtt = {
+            'url': 'https://example.com/episode1/transcript.vtt',
+            'type': 'text/vtt'
+        }
+        tcase_json = {
+            'url': 'https://example.com/episode1/transcript.json',
+            'type': 'application/json',
+            'language': 'es',
+            'rel': 'captions'
+        }
+        tcase_srt = {
+            'url': 'https://example.com/episode1/transcript.srt',
+            'type': 'application/x-subrip',
+            'rel': 'captions'
+        }
+
+        fe.pc20.transcript(tcase_html)
+        assert fe.pc20.transcript() == [tcase_html]
+        fe.pc20.transcript(tcase_vtt, replace=True)
+        assert fe.pc20.transcript() == [tcase_vtt]
+        fe.pc20.transcript(tcase_json, replace=True)
+        assert fe.pc20.transcript() == [tcase_json]
+        fe.pc20.transcript(tcase_srt, replace=True)
+        assert fe.pc20.transcript() == [tcase_srt]
+
+        bad_test_nourl = {
+            'type': 'application/json',
+            'language': 'es',
+            'rel': 'captions'
+        }
+        bad_test_notype = {
+            'url': 'https://example.com/episode1/transcript.json',
+            'language': 'es',
+            'rel': 'captions'
+        }
+
+        with pytest.raises(ValueError):
+            fe.pc20.transcript(bad_test_nourl, replace=True)
+        with pytest.raises(ValueError):
+            fe.pc20.transcript(bad_test_notype, replace=True)
+
+        xcase_html_xml = '''<podcast:transcript url="https://example.com/episode1 transcript.html" type="text/html" />'''
+        xcase_vtt_xml = '''<podcast:transcript url="https://example.com/episode1/transcript.vtt" type="text/vtt" />'''
+        xcase_json_xml = '''<podcast:transcript
+        url="https://example.com/episode1/transcript.json"
+        type="application/json"
+        language="es"
+        rel="captions"
+/>'''
+        xcase_srt_xml = \
+            '''<podcast:transcript url="https://example.com/episode1/transcript.srt" type="application/x-subrip" rel="captions" />'''
+
+        fe.pc20.transcript(
+            [tcase_html, tcase_vtt, tcase_json, tcase_srt],
+            replace=True)
+        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        print(fg_xml)
+        assert xcase_html_xml in fg_xml
+        # assert xcase_vtt_xml in fg_xml
+        # assert xcase_json_xml in fg_xml
+        # assert xcase_srt_xml in fg_xml
 
 #    def test_chapters():
 #        assert False

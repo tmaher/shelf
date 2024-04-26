@@ -48,14 +48,9 @@ class Pc20BaseExtension(BaseExtension):
 
     def __init__(self):
         self._nodes = {}
-        self.__pc20_transcript = None
-        self.__pc20_chapters = None
         self.__pc20_podroll = None
-        self.__pc20_soundbite = None
         self.__pc20_person = None
         self.__pc20_location = None
-        self.__pc20_season = None
-        self.__pc20_episode = None
         self.__pc20_license = None
         self.__pc20_alternateEnclosure = None
         self.__pc20_source = None
@@ -66,7 +61,6 @@ class Pc20BaseExtension(BaseExtension):
         self.__pc20_images = None
         self.__pc20_liveItem = None
         self.__pc20_contentLink = None
-        self.__pc20_socialInteract = None
         self.__pc20_block = None
         self.__pc20_txt = None
         self.__pc20_remoteItem = None
