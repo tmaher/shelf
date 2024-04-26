@@ -32,31 +32,31 @@ class Podcasting20BaseExtension(BaseExtension):
 
     def __init__(self):
         self._nodes = {}
-        self._pc20elem_transcript = None
-        self._pc20elem_chapters = None
-        self._pc20elem_podroll = None
-        self._pc20elem_soundbite = None
-        self._pc20elem_person = None
-        self._pc20elem_location = None
-        self._pc20elem_season = None
-        self._pc20elem_episode = None
-        self._pc20elem_license = None
-        self._pc20elem_alternateEnclosure = None
-        self._pc20elem_source = None
-        self._pc20elem_integrity = None
-        self._pc20elem_value = None
-        self._pc20elem_valueRecipient = None
-        self._pc20elem_medium = None
-        self._pc20elem_images = None
-        self._pc20elem_liveItem = None
-        self._pc20elem_contentLink = None
-        self._pc20elem_socialInteract = None
-        self._pc20elem_block = None
-        self._pc20elem_txt = None
-        self._pc20elem_remoteItem = None
-        self._pc20elem_updateFrequency = None
-        self._pc20elem_podping = None
-        self._pc20elem_valueTimeSplit = None
+        self.__pc20_transcript = None
+        self.__pc20_chapters = None
+        self.__pc20_podroll = None
+        self.__pc20_soundbite = None
+        self.__pc20_person = None
+        self.__pc20_location = None
+        self.__pc20_season = None
+        self.__pc20_episode = None
+        self.__pc20_license = None
+        self.__pc20_alternateEnclosure = None
+        self.__pc20_source = None
+        self.__pc20_integrity = None
+        self.__pc20_value = None
+        self.__pc20_valueRecipient = None
+        self.__pc20_medium = None
+        self.__pc20_images = None
+        self.__pc20_liveItem = None
+        self.__pc20_contentLink = None
+        self.__pc20_socialInteract = None
+        self.__pc20_block = None
+        self.__pc20_txt = None
+        self.__pc20_remoteItem = None
+        self.__pc20_updateFrequency = None
+        self.__pc20_podping = None
+        self.__pc20_valueTimeSplit = None
 
     def extend_ns(self):
         return {'podcast': PC20_NS}
@@ -120,10 +120,10 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
             'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
         ]
-        self._pc20elem_locked = None
-        self._pc20elem_funding = None
-        self._pc20elem_trailer = None
-        self._pc20elem_guid = None
+        self.__pc20_locked = None
+        self.__pc20_funding = None
+        self.__pc20_trailer = None
+        self.__pc20_guid = None
 
     def locked(self, text=None, owner=None):
         '''This tag may be set to yes or no. The purpose is to tell other
@@ -149,10 +149,10 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 node.attrib['owner'] = owner
                 val['owner'] = owner
 
-            self._pc20elem_locked = val
+            self.__pc20_locked = val
             self._nodes['locked'] = node
 
-        return self._pc20elem_locked
+        return self.__pc20_locked
 
     def funding(self, fundings=[], replace=False):
         '''This tag lists possible donation/funding links for the podcast.
@@ -181,7 +181,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 vals = []
             else:
                 funding_nodes = self._nodes['funding']
-                vals = self._pc20elem_funding
+                vals = self.__pc20_funding
             for fund in fundings:
                 val = fund
                 vals.append(val)
@@ -190,8 +190,8 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 node.attrib['url'] = val['url']
                 funding_nodes.append(node)
             self._nodes['funding'] = funding_nodes
-            self._pc20elem_funding = vals
-        return self._pc20elem_funding
+            self.__pc20_funding = vals
+        return self.__pc20_funding
 
     def trailer(self, trailers=[], replace=False):
         '''This element is used to define the location of an audio or video
@@ -231,7 +231,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 vals = []
             else:
                 trailer_nodes = self._nodes['trailer']
-                vals = self._pc20elem_trailer
+                vals = self.__pc20_trailer
             for trail in trailers:
                 val = trail
                 node = xml_elem('{%s}%s' % (PC20_NS, 'trailer'))
@@ -242,8 +242,8 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 trailer_nodes.append(node)
                 vals.append(val)
             self._nodes['trailer'] = trailer_nodes
-            self._pc20elem_trailer = vals
-        return self._pc20elem_trailer
+            self.__pc20_trailer = vals
+        return self.__pc20_trailer
 
     def guid(self, guid=None, url=None):
         '''This element is used to declare a unique, global identifier for a
@@ -284,9 +284,9 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             node = xml_elem('{%s}%s' % (PC20_NS, 'guid'))
             node.text = guid
             self._nodes['guid'] = node
-            self._pc20elem_guid = guid
+            self.__pc20_guid = guid
 
-        return self._pc20elem_guid
+        return self.__pc20_guid
 
     def medium(self, medium=None):
         '''The medium tag tells an application what the content contained
@@ -360,8 +360,8 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             node = xml_elem('{%s}%s' % (PC20_NS, 'medium'))
             node.text = medium
             self._nodes['medium'] = node
-            self._pc20elem_medium = medium
-        return self._pc20elem_medium
+            self.__pc20_medium = medium
+        return self.__pc20_medium
 
     def block(self, blocks=None, slug_override=False, replace=False):
         '''This element allows a podcaster to express which platforms are
@@ -416,7 +416,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 vals = []
             else:
                 block_nodes = self._nodes['block']
-                vals = self._pc20elem_block
+                vals = self.__pc20_block
             for block in blocks:
                 val = block
                 node = xml_elem('{%s}%s' % (PC20_NS, 'block'))
@@ -426,8 +426,8 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 block_nodes.append(node)
                 vals.append(val)
             self._nodes['block'] = block_nodes
-            self._pc20elem_block = vals
-        return self._pc20elem_block
+            self.__pc20_block = vals
+        return self.__pc20_block
 
     def update_frequency(self, uf=None):
         ''' This element allows a podcaster to express their intended release
@@ -492,9 +492,9 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             if val.get('complete'):
                 node.attrib['complete'] = val['complete']
             self._nodes['update_frequency'] = node
-            self._pc20elem_updateFrequency = val
+            self.__pc20_updateFrequency = val
 
-        return self._pc20elem_updateFrequency
+        return self.__pc20_updateFrequency
 
     def podping(self, uses_podping=None, replace=False):
         '''This element allows feed owners to signal to aggregators that the
@@ -506,7 +506,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
         '''
 
         if replace:
-            self._pc20elem_podping = None
+            self.__pc20_podping = None
             self._nodes.pop('podping', None)
         if uses_podping is not None:
             if uses_podping not in ['true', 'false']:
@@ -516,6 +516,6 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             node = xml_elem('{%s}%s' % (PC20_NS, 'podping'))
             node.attrib['usesPodping'] = val['uses_podping']
             self._nodes['podping'] = node
-            self._pc20elem_podping = val
+            self.__pc20_podping = val
 
-        return self._pc20elem_podping
+        return self.__pc20_podping
