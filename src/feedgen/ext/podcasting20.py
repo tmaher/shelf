@@ -8,15 +8,17 @@ from datetime import datetime, timezone
 import icalendar
 import sys  # noqa: F401
 
+PC20_NS = 'https://podcastindex.org/namespace/1.0'
+PC20_NS_GUID_UUID = uuid.UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
+
 
 def url2guid(url):
-    GUID_NS_PODCAST = uuid.UUID('ead4c236-bf58-58c6-a2c6-a6b28d128cb6')
     s = urllib.parse.urlsplit(url)
     no_scheme_url = re.sub(
         r'/+\Z', '',
         ''.join([s.netloc, s.path, s.query, s.fragment])
     )
-    return str(uuid.uuid5(GUID_NS_PODCAST, no_scheme_url))
+    return str(uuid.uuid5(PC20_NS_GUID_UUID, no_scheme_url))
 
 
 class Podcasting20BaseExtension(BaseExtension):
@@ -29,8 +31,6 @@ class Podcasting20BaseExtension(BaseExtension):
     '''
 
     def __init__(self):
-        self.PC20_NS = 'https://podcastindex.org/namespace/1.0'
-
         self._nodes = {}
         self._pc20elem_transcript = None
         self._pc20elem_chapters = None
@@ -59,7 +59,7 @@ class Podcasting20BaseExtension(BaseExtension):
         self._pc20elem_valueTimeSplit = None
 
     def extend_ns(self):
-        return {'podcast': self.PC20_NS}
+        return {'podcast': PC20_NS}
 
     def _extend_xml(self, xml_element):
         '''Extend xml_element with set Podcasting 2.0 fields.
@@ -143,7 +143,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             if text not in ('yes', 'no'):
                 raise ValueError("Locked may only be 'yes' or 'no'")
             val = {'text': text}
-            node = xml_elem('{%s}%s' % (self.PC20_NS, 'locked'))
+            node = xml_elem('{%s}%s' % (PC20_NS, 'locked'))
             node.text = text
             if owner:
                 node.attrib['owner'] = owner
@@ -185,7 +185,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
             for fund in fundings:
                 val = fund
                 vals.append(val)
-                node = xml_elem('{%s}%s' % (self.PC20_NS, 'funding'))
+                node = xml_elem('{%s}%s' % (PC20_NS, 'funding'))
                 node.text = val['text']
                 node.attrib['url'] = val['url']
                 funding_nodes.append(node)
@@ -234,7 +234,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 vals = self._pc20elem_trailer
             for trail in trailers:
                 val = trail
-                node = xml_elem('{%s}%s' % (self.PC20_NS, 'trailer'))
+                node = xml_elem('{%s}%s' % (PC20_NS, 'trailer'))
                 node.text = val['text']
                 for attr in ['url', 'pubdate', 'length', 'type', 'season']:
                     if val.get(attr):
@@ -281,7 +281,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 guid = str(uuid.UUID(guid))
             elif url:
                 guid = url2guid(url)
-            node = xml_elem('{%s}%s' % (self.PC20_NS, 'guid'))
+            node = xml_elem('{%s}%s' % (PC20_NS, 'guid'))
             node.text = guid
             self._nodes['guid'] = node
             self._pc20elem_guid = guid
@@ -357,7 +357,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                     'mixed'
                 ]}
             )
-            node = xml_elem('{%s}%s' % (self.PC20_NS, 'medium'))
+            node = xml_elem('{%s}%s' % (PC20_NS, 'medium'))
             node.text = medium
             self._nodes['medium'] = node
             self._pc20elem_medium = medium
@@ -419,7 +419,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 vals = self._pc20elem_block
             for block in blocks:
                 val = block
-                node = xml_elem('{%s}%s' % (self.PC20_NS, 'block'))
+                node = xml_elem('{%s}%s' % (PC20_NS, 'block'))
                 node.text = val['block']
                 if val['id']:
                     node.attrib['id'] = val['id']
@@ -464,7 +464,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 set(['text']),
                 {'complete': ['true', 'false']}
             )[0]
-            node = xml_elem('{%s}%s' % (self.PC20_NS, 'updateFrequency'))
+            node = xml_elem('{%s}%s' % (PC20_NS, 'updateFrequency'))
             node.text = val['text']
             if val.get('dtstart'):
                 # run dtstart through iso8601 parser to validate syntax
@@ -513,7 +513,7 @@ class Podcasting20Extension(Podcasting20BaseExtension):
                 raise ValueError(
                     "uses_podping must be either 'true' or ''false'")
             val = {'uses_podping': uses_podping}
-            node = xml_elem('{%s}%s' % (self.PC20_NS, 'podping'))
+            node = xml_elem('{%s}%s' % (PC20_NS, 'podping'))
             node.attrib['usesPodping'] = val['uses_podping']
             self._nodes['podping'] = node
             self._pc20elem_podping = val
