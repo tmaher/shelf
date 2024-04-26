@@ -13,7 +13,7 @@ feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 
 
-class TestPodcasting20Extension:
+class TestPc20EntryExt:
     @pytest.fixture
     def fg(self):
         fg = FeedGenerator()
