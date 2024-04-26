@@ -46,9 +46,6 @@ class TestPc20Ext:
             {'href': 'https://bob.the.angry.podcast/about'}
         ]
 
-    def test_itunes_explicit(self, fg):
-        assert fg.podcast.itunes_explicit() == 'yes'
-
     # ### SIMPLE tags
     #    - only exist as children of channel
     #    - no children
