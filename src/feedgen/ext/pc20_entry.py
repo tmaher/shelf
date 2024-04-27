@@ -3,6 +3,11 @@ from .pc20 import Pc20BaseExtension, PC20_NS
 from feedgen.util import ensure_format, xml_elem
 
 
+def to_lower_camel_case(snake_str):
+    cs = "".join(x.capitalize() for x in snake_str.lower().split("_"))
+    return snake_str[0].lower() + cs[1:]
+
+
 class Pc20EntryExtension(Pc20BaseExtension):
     '''Podcasting 2.0 Elements extension for podcasts.
 
@@ -62,7 +67,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         :param transcripts: dict or list of dicts as described above
         :param replace: Add or replace old data. (default false)
-        :returns List of transcript tags as dictionaries
+        :return: List of transcript tags as dictionaries
         '''
 
         if transcripts != []:
@@ -131,3 +136,57 @@ class Pc20EntryExtension(Pc20BaseExtension):
             self._nodes['chapters'] = node
             self.__pc20_chapters = val
         return self.__pc20_chapters
+
+    def soundbite(self, *args, **kwargs):
+        '''Points to one or more soundbites within a podcast episode. The
+        intended use includes episodes previews, discoverability, audiogram
+        generation, episode highlights, etc. It should be assumed that the
+        audio/video source of the soundbite is the audio/video given in the
+        item's <enclosure> element.
+
+        Dict keys are as follows
+            - text (optional): This is a free form string from the podcast
+            creator to specify a title for the soundbite. If the podcaster
+            does not provide a value for the soundbite title, then leave the
+            value blank, and podcast apps can decide to use the episode title
+            or some other placeholder value in its place. Please do not
+            exceed 128 characters for the node value or it may be truncated
+            by aggregators.
+            - startTime (required): The time where the soundbite begins
+            - duration (required): How long is the soundbite (recommended
+            between 15 and 120 seconds)
+
+        :param: dict or array of dicts as described above
+        :param replace: Add or replace old data. (default false)
+        :return: List of transcript tags as dictionaries
+        '''
+
+        replace = kwargs.pop('replace', False)
+        if not (args or kwargs or replace):
+            return self.__pc20_transcript
+        if (args and (kwargs or len(args) > 1)):
+            raise ValueError("Too Many Args!")
+        new_vals = args[0] if args else kwargs
+
+        new_vals = ensure_format(
+            new_vals,
+            set(['text', 'start_time', 'duration']),
+            set(['start_time', 'duration'])
+        )
+        if replace or (not self.__pc20_soundbite):
+            nodes = []
+            vals = []
+        else:
+            nodes = self._nodes['soundbite']
+            vals = self.__pc20_transcript
+        for val in new_vals:
+            node = xml_elem('{%s}%s' % (PC20_NS, 'soundbite'))
+            node.text = val.pop('text', None)
+            for k, v in val.items():
+                node.attrib[to_lower_camel_case(k)] = v
+            nodes.append(node)
+            vals.append(val)
+        self._nodes['soundbite'] = nodes
+        self.__pc20_soundbite = vals
+
+        return self.__pc20_soundbite

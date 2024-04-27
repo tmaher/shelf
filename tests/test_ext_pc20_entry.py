@@ -230,8 +230,6 @@ class TestPc20EntryExt:
 
         xml_simple_multi_test(fg, fe.pc20.soundbite, "soundbite", good_cases)
 
-        assert False
-
 #    def test_season():
 #        assert False
 
