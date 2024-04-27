@@ -16,7 +16,7 @@ feedgen.ext.__path__ = \
 from feedgen.ext.pc20 import PC20_NS, pc20_extend_ns  # type: ignore # noqa: E402 E501
 
 
-def xml_simple_attr_test(fg, tag_func, tag_name, cases):
+def xml_simple_single_test(fg, tag_func, tag_name, cases):
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
     close_dtag = "</data>"
 
@@ -49,7 +49,7 @@ def xml_simple_attr_test(fg, tag_func, tag_name, cases):
             assert spec_attr == test_attr
 
 
-def xml_simple_multi_attr_test(fg, tag_func, tag_name, cases):
+def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     from xmldiff import main
 
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
@@ -165,8 +165,8 @@ class TestPc20EntryExt:
                 }}
         ]
 
-        # xml_simple_attr_test(fg, fe.pc20.transcript, "transcript", good_cases)
-        xml_simple_multi_attr_test(
+        # xml_simple_single_test(fg, fe.pc20.transcript, "transcript", good_cases)
+        xml_simple_multi_test(
             fg, fe.pc20.transcript, "transcript", good_cases)
 
 #    def test_chapters():
