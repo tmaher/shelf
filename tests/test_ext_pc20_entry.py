@@ -16,6 +16,39 @@ feedgen.ext.__path__ = \
 from feedgen.ext.pc20 import PC20_NS, pc20_extend_ns  # type: ignore # noqa: E402 E501
 
 
+def xml_simple_attr_test(fg, tag_func, tag_name, cases):
+    open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
+    close_dtag = "</data>"
+
+    for case in cases:
+        spec_xml = open_dtag + case['spec'] + close_dtag
+        spec_root = etree.fromstring(spec_xml)
+
+        tag_func(case['test'], replace=True)
+        test_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        test_root = etree.XML(test_xml.encode('UTF-8'))
+        # print("***********************************\n\n")
+        # print(f"spec - {spec_xml}")
+        # print(f"test - {test_xml}")
+        # print("***********************************\n\n")
+
+        for attr in case['test'].keys():
+            if attr == "text":
+                xp_frag = "text()"
+            else:
+                xp_frag = f"@{attr}"
+
+            test_attr = test_root.xpath(
+                f"/rss/channel/item/podcast:{tag_name}/{xp_frag}",
+                namespaces=pc20_extend_ns()
+            )
+            spec_attr = spec_root.xpath(
+                f"/data/podcast:{tag_name}/{xp_frag}",
+                namespaces=pc20_extend_ns()
+            )
+            assert spec_attr == test_attr
+
+
 class TestPc20EntryExt:
     @pytest.fixture
     def fg(self):
@@ -50,50 +83,24 @@ class TestPc20EntryExt:
 #    - no children
 
     def test_transcript(self, fg, fe):
-        tcase_html = {
-            'url': 'https://example.com/episode1/transcript.html',
-            'type': 'text/html'
-        }
-        tcase_vtt = {
-            'url': 'https://example.com/episode1/transcript.vtt',
-            'type': 'text/vtt'
-        }
-        tcase_json = {
-            'url': 'https://example.com/episode1/transcript.json',
-            'type': 'application/json',
-            'language': 'es',
-            'rel': 'captions'
-        }
-        tcase_srt = {
-            'url': 'https://example.com/episode1/transcript.srt',
-            'type': 'application/x-subrip',
-            'rel': 'captions'
-        }
+        bad_cases = [
+            {'desc': 'no url',
+             'test': {
+                'type': 'application/json',
+                'language': 'es',
+                'rel': 'captions'
+                }},
+            {'desc': 'no type',
+             'test': {
+                'url': 'https://example.com/episode1/transcript.json',
+                'language': 'es',
+                'rel': 'captions'
+                }}
+        ]
 
-        fe.pc20.transcript(tcase_html)
-        assert fe.pc20.transcript() == [tcase_html]
-        fe.pc20.transcript(tcase_vtt, replace=True)
-        assert fe.pc20.transcript() == [tcase_vtt]
-        fe.pc20.transcript(tcase_json, replace=True)
-        assert fe.pc20.transcript() == [tcase_json]
-        fe.pc20.transcript(tcase_srt, replace=True)
-        assert fe.pc20.transcript() == [tcase_srt]
-
-        bad_test_nourl = {
-            'type': 'application/json',
-            'language': 'es',
-            'rel': 'captions'
-        }
-        bad_test_notype = {
-            'url': 'https://example.com/episode1/transcript.json',
-            'language': 'es',
-            'rel': 'captions'
-        }
-
-        with pytest.raises(ValueError):
-            fe.pc20.transcript(bad_test_nourl, replace=True)
-        with pytest.raises(ValueError):
-            fe.pc20.transcript(bad_test_notype, replace=True)
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fe.pc20.transcript(bad_case['test'], replace=True)
 
         cases = [
             {'desc': 'html',
@@ -134,30 +141,7 @@ class TestPc20EntryExt:
                 }}
         ]
 
-        open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
-        close_dtag = "</data>"
-        for case in cases:
-            spec_xml = open_dtag + case['spec'] + close_dtag
-            spec_root = etree.fromstring(spec_xml)
-
-            fe.pc20.transcript(case['test'], replace=True)
-            test_xml = fg.rss_str(pretty=True).decode('UTF-8')
-            test_root = etree.XML(test_xml.encode('UTF-8'))
-            # print("***********************************\n\n")
-            # print(f"spec - {spec_xml}")
-            # print(f"test - {test_xml}")
-            # print("***********************************\n\n")
-
-            for attr in case['test'].keys():
-                test_attr = test_root.xpath(
-                    f"/rss/channel/item/podcast:transcript/@{attr}",
-                    namespaces=pc20_extend_ns()
-                )
-                spec_attr = spec_root.xpath(
-                    f"/data/podcast:transcript/@{attr}",
-                    namespaces=pc20_extend_ns()
-                )
-                assert spec_attr == test_attr
+        xml_simple_attr_test(fg, fe.pc20.transcript, "transcript", cases)
 
 #    def test_chapters():
 #        assert False
