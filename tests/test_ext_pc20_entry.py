@@ -194,8 +194,43 @@ class TestPc20EntryExt:
         ]
         xml_simple_single_test(fg, fe.pc20.chapters, "chapters", good_cases)
 
-#    def test_soundbite():
-#        assert False
+    def test_soundbite(self, fg, fe):
+        bad_cases = [
+            {'desc': 'no startTime',
+             'test': {
+                 'duration': "101"
+             }},
+            {'desc': 'no duration',
+             'test': {
+                 'startTime': "200"
+             }}
+        ]
+
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fe.pc20.soundbite(bad_case['test'])
+
+        good_cases = [
+            {'desc': 'no text',
+             'spec':
+                '''<podcast:soundbite startTime="73.0" duration="60.0" />''',
+             'test': {
+                'start_time': '73.0',
+                'duration': '60.0'
+                }},
+            {'desc': ' with text',
+             'spec':
+                '''<podcast:soundbite startTime="1234.5" duration="42.25">Why the Podcast Namespace Matters</podcast:soundbite>''',
+             'test': {
+                'start_time': '1234.5',
+                'duration': '42.25',
+                'text': 'Why the Podcast Namespace Matters'
+             }}
+        ]
+
+        xml_simple_multi_test(fg, fe.pc20.soundbite, "soundbite", good_cases)
+
+        assert False
 
 #    def test_season():
 #        assert False
