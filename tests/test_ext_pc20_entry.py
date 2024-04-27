@@ -169,8 +169,24 @@ class TestPc20EntryExt:
         xml_simple_multi_test(
             fg, fe.pc20.transcript, "transcript", good_cases)
 
-#    def test_chapters():
-#        assert False
+    def test_chapters(self, fg, fe):
+        bad_cases = [
+            {'desc': 'no url',
+             'test': {
+                'type': 'application/json+chapters',
+                }},
+        ]
+
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fe.pc20.chapters(bad_case['test'], replace=True)
+
+        good_cases = [
+            {'desc': 'spec', 'spec':
+                '''<podcast:chapters url="https://example.com/episode1/chapters.json" type="application/json+chapters" />'''
+             }
+        ]
+        xml_simple_single_test(fg, fe.pc20.chapters, "chapters", good_cases)
 
 #    def test_soundbite():
 #        assert False
