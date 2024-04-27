@@ -59,10 +59,10 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
         "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
     tag_func(list(map(lambda x: x['test'], cases)), replace=True)
-    test_kids = etree.XML(
-            fg.rss_str(pretty=True)).xpath(
-                f"//podcast:{tag_name}",
-                namespaces=pc20_extend_ns()
+    test_kids = etree.XML(fg.rss_str(pretty=True))\
+        .xpath(
+            f"//podcast:{tag_name}",
+            namespaces=pc20_extend_ns()
         )
     test_dtag = etree.fromstring(open_dtag + close_dtag)
     for kid in test_kids:
