@@ -45,7 +45,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
         self._extend_xml(item)
         return item
 
-    def transcript(self, transcripts=[], replace=False):
+    def transcript(self, *args, **kwargs):
         '''This tag is used to link to a transcript or closed captions file.
         Multiple tags can be present for multiple transcript formats.
 
@@ -65,34 +65,16 @@ class Pc20EntryExtension(Pc20BaseExtension):
             regardless of what the mime type is. In that scenario, time
             codes are assumed to be present in the file in some capacity.
 
-        :param transcripts: dict or list of dicts as described above
+        :param: dict or array of dicts as described above
         :param replace: Add or replace old data. (default false)
         :return: List of transcript tags as dictionaries
         '''
-
-        if transcripts != []:
-            transcripts = ensure_format(
-                transcripts,
-                set(['url', 'type', 'language', 'rel']),
-                set(['url', 'type'])
-            )
-            if replace or (not self._nodes.get('transcript')):
-                nodes = []
-                vals = []
-            else:
-                nodes = self._nodes['transcript']
-                vals = self.__pc20_transcript
-            for transcript in transcripts:
-                val = transcript
-                node = xml_elem('{%s}%s' % (PC20_NS, 'transcript'))
-                for attr in ['url', 'type', 'language', 'rel']:
-                    if val.get(attr):
-                        node.attrib[attr] = val[attr]
-                nodes.append(node)
-                vals.append(val)
-            self._nodes['transcript'] = nodes
-            self.__pc20_transcript = vals
-        return self.__pc20_transcript
+        helper_args = {
+            '_ensure_allowed': ['url', 'type', 'language', 'rel'],
+            '_ensure_required': ['url', 'type']
+        }
+        helper_args.update(kwargs)
+        self.simple_multi_helper(args, helper_args)
 
     def chapters(self, *args, **kwargs):
         '''Links to an external file (see example file) containing chapter
@@ -160,33 +142,51 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :param replace: Add or replace old data. (default false)
         :return: List of transcript tags as dictionaries
         '''
+        helper_args = {
+            '_ensure_allowed': ['text', 'start_time', 'duration'],
+            '_ensure_required': ['start_time', 'duration']
+        }
+        helper_args.update(kwargs)
+        self.simple_multi_helper(args, helper_args)
 
-        replace = kwargs.pop('replace', False)
-        if not (args or kwargs or replace):
-            return self.__pc20_transcript
-        if (args and (kwargs or len(args) > 1)):
+    def simple_multi_helper(self, l_args, kw_args):
+        import inspect
+        tag_name = inspect.stack()[1][3]
+        # tag_name = kwargs.pop('tag_name')
+        attr_name = f"__pc20_{tag_name}"
+        ensure_allowed = kw_args.pop('_ensure_allowed')
+        ensure_required = kw_args.pop('_ensure_required')
+        ensure_allowed_values = kw_args.pop('_ensure_allowed_values', None)
+        ensure_defaults = kw_args.pop('_ensure_defaults', None)
+        replace = kw_args.pop('replace', False)
+
+        if not (l_args or kw_args or replace):
+            return getattr(self, attr_name, None)
+        if (l_args and (kw_args or len(l_args) > 1)):
             raise ValueError("Too Many Args!")
-        new_vals = args[0] if args else kwargs
+        new_vals = l_args[0] if l_args else kw_args
 
         new_vals = ensure_format(
             new_vals,
-            set(['text', 'start_time', 'duration']),
-            set(['start_time', 'duration'])
+            set(ensure_allowed),
+            set(ensure_required),
+            ensure_allowed_values,
+            ensure_defaults
         )
-        if replace or (not self.__pc20_soundbite):
+        if replace or (not getattr(self, attr_name, None)):
             nodes = []
             vals = []
         else:
-            nodes = self._nodes['soundbite']
-            vals = self.__pc20_transcript
+            nodes = self._nodes[attr_name]
+            vals = getattr(self, attr_name)
         for val in new_vals:
-            node = xml_elem('{%s}%s' % (PC20_NS, 'soundbite'))
+            node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
             node.text = val.pop('text', None)
             for k, v in val.items():
                 node.attrib[to_lower_camel_case(k)] = v
             nodes.append(node)
             vals.append(val)
-        self._nodes['soundbite'] = nodes
-        self.__pc20_soundbite = vals
+        self._nodes[tag_name] = nodes
+        setattr(self, attr_name, vals)
 
-        return self.__pc20_soundbite
+        return getattr(self, attr_name)

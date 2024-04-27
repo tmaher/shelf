@@ -61,6 +61,9 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
         "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
     tag_func(list(map(lambda x: x['test'], cases)), replace=True)
+    feed_test_xml = fg.rss_str(pretty=True)
+    print(f"\nSPEC => {spec_xml}\n")
+    print(f"TEST => {feed_test_xml}\n")
     test_kids = etree.XML(fg.rss_str(pretty=True))\
         .xpath(
             f"//podcast:{tag_name}",
