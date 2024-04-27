@@ -69,10 +69,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :param replace: Add or replace old data. (default false)
         :return: List of transcript tags as dictionaries
         '''
-        helper_args = {
-            '_ensure_allowed': ['url', 'type', 'language', 'rel'],
-            '_ensure_required': ['url', 'type']
-        }
+        helper_args = {'_ensure': {
+            'allowed': ['url', 'type', 'language', 'rel'],
+            'required': ['url', 'type']
+        }}
         helper_args.update(kwargs)
         self.simple_multi_helper(args, helper_args)
 
@@ -142,22 +142,18 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :param replace: Add or replace old data. (default false)
         :return: List of transcript tags as dictionaries
         '''
-        helper_args = {
-            '_ensure_allowed': ['text', 'start_time', 'duration'],
-            '_ensure_required': ['start_time', 'duration']
-        }
+        helper_args = {'_ensure': {
+            'allowed': ['text', 'start_time', 'duration'],
+            'required': ['start_time', 'duration']
+        }}
         helper_args.update(kwargs)
         self.simple_multi_helper(args, helper_args)
 
     def simple_multi_helper(self, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]
-        # tag_name = kwargs.pop('tag_name')
         attr_name = f"__pc20_{tag_name}"
-        ensure_allowed = kw_args.pop('_ensure_allowed')
-        ensure_required = kw_args.pop('_ensure_required')
-        ensure_allowed_values = kw_args.pop('_ensure_allowed_values', None)
-        ensure_defaults = kw_args.pop('_ensure_defaults', None)
+        ensure = kw_args.pop('_ensure')
         replace = kw_args.pop('replace', False)
 
         if not (l_args or kw_args or replace):
@@ -168,10 +164,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         new_vals = ensure_format(
             new_vals,
-            set(ensure_allowed),
-            set(ensure_required),
-            ensure_allowed_values,
-            ensure_defaults
+            set(ensure['allowed']),
+            set(ensure['required']),
+            ensure.get('allowed_values', None),
+            ensure.get('defaults', None)
         )
         if replace or (not getattr(self, attr_name, None)):
             nodes = []
