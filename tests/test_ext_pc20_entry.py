@@ -50,19 +50,27 @@ def xml_simple_attr_test(fg, tag_func, tag_name, cases):
 
 
 def xml_simple_multi_attr_test(fg, tag_func, tag_name, cases):
+    from xmldiff import main
+
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
     close_dtag = "</data>"
 
     spec_xml = open_dtag + \
-        map(lambda x: x['spec'], cases) + close_dtag
-    spec_root = etree.fromstring(spec_xml)
+        "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
-    tag_func(map(lambda x: x['test'], replace=True))
-    test_xml = fg.rss_str(pretty=True).decode('UTF-8')
-    test_root = etree.XML(test_xml.encode('UTF-8'))
+    tag_func(list(map(lambda x: x['test'], cases)), replace=True)
+    test_kids = etree.XML(
+            fg.rss_str(pretty=True)).xpath(
+                f"//podcast:{tag_name}",
+                namespaces=pc20_extend_ns()
+        )
+    test_dtag = etree.fromstring(open_dtag + close_dtag)
+    for kid in test_kids:
+        test_dtag.append(kid)
+    test_xml_rt = etree.tostring(test_dtag).decode('UTF-8')
 
-    return spec_root + test_root
-    # TODO - do some magic diffing of spec_root vs test_root
+    diff = main.diff_texts(spec_xml, test_xml_rt)
+    assert diff == []
 
 
 class TestPc20EntryExt:
@@ -157,7 +165,9 @@ class TestPc20EntryExt:
                 }}
         ]
 
-        xml_simple_attr_test(fg, fe.pc20.transcript, "transcript", good_cases)
+        # xml_simple_attr_test(fg, fe.pc20.transcript, "transcript", good_cases)
+        xml_simple_multi_attr_test(
+            fg, fe.pc20.transcript, "transcript", good_cases)
 
 #    def test_chapters():
 #        assert False
