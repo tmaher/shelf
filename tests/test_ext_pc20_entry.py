@@ -49,6 +49,22 @@ def xml_simple_attr_test(fg, tag_func, tag_name, cases):
             assert spec_attr == test_attr
 
 
+def xml_simple_multi_attr_test(fg, tag_func, tag_name, cases):
+    open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
+    close_dtag = "</data>"
+
+    spec_xml = open_dtag + \
+        map(lambda x: x['spec'], cases) + close_dtag
+    spec_root = etree.fromstring(spec_xml)
+
+    tag_func(map(lambda x: x['test'], replace=True))
+    test_xml = fg.rss_str(pretty=True).decode('UTF-8')
+    test_root = etree.XML(test_xml.encode('UTF-8'))
+
+    return spec_root + test_root
+    # TODO - do some magic diffing of spec_root vs test_root
+
+
 class TestPc20EntryExt:
     @pytest.fixture
     def fg(self):
@@ -102,7 +118,7 @@ class TestPc20EntryExt:
             with pytest.raises(ValueError):
                 fe.pc20.transcript(bad_case['test'], replace=True)
 
-        cases = [
+        good_cases = [
             {'desc': 'html',
              'spec':
                 '''<podcast:transcript url="https://example.com/episode1/transcript.html" type="text/html" />''',
@@ -141,7 +157,7 @@ class TestPc20EntryExt:
                 }}
         ]
 
-        xml_simple_attr_test(fg, fe.pc20.transcript, "transcript", cases)
+        xml_simple_attr_test(fg, fe.pc20.transcript, "transcript", good_cases)
 
 #    def test_chapters():
 #        assert False
