@@ -88,3 +88,46 @@ class Pc20EntryExtension(Pc20BaseExtension):
             self._nodes['transcript'] = nodes
             self.__pc20_transcript = vals
         return self.__pc20_transcript
+
+    def chapters(self, *args, **kwargs):
+        '''Links to an external file (see example file) containing chapter
+        data for the episode. See
+        https://github.com/Podcastindex-org/podcast-namespace/blob/main/chapters/jsonChapters.md
+        for a description of the chapter file syntax. And, see
+        https://github.com/Podcastindex-org/podcast-namespace/blob/main/chapters/example.json
+        for a real world example.
+
+        Benefits with this approach are that chapters do not require
+        altering audio files, and the chapters can be edited after publishing,
+        since they are a separate file that can be requested on playback (or
+        cached with download). JSON chapter information also allows chapters
+        to be displayed by a wider range of playback tools, including web
+        browsers (which typically have no access to ID3 tags), thus greatly
+        simplifying chapter support; and images can be retrieved on playback,
+        rather than bloating the filesize of the audio. The data held is
+        compatible with normal ID3 tags, thus requiring no additional work
+        for the publisher.
+
+        :param url: *REQUIRED* The URL where the chapters file is located.
+        :param type: Mime type of file. If not specified, this library will
+        use assume 'application/json+chapters'.
+        :returns: the entry element
+        '''
+
+        if (args and len(args) > 1) or (args and kwargs):
+            raise ValueError("ONE ARG ONLY")
+        val = args[0] if (args and isinstance(args[0], dict)) else kwargs
+        if val != {}:
+            val = ensure_format(
+                val,
+                set(['url', 'type']),
+                set(['url']),
+                {},
+                {'type': 'application/json+chapters'}
+            )[0]
+            node = xml_elem('{%s}%s' % (PC20_NS, 'chapters'))
+            for k, v in val.items():
+                node.attrib[k] = v
+            self._nodes['chapters'] = node
+            self.__pc20_chapters = val
+        return self.__pc20_chapters

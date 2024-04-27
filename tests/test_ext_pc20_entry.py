@@ -24,7 +24,9 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
         spec_xml = open_dtag + case['spec'] + close_dtag
         spec_root = etree.fromstring(spec_xml)
 
-        tag_func(case['test'], replace=True)
+        tag_func(case['test'])
+        assert tag_func() == case['test']
+
         test_xml = fg.rss_str(pretty=True).decode('UTF-8')
         test_root = etree.XML(test_xml.encode('UTF-8'))
         # print("***********************************\n\n")
@@ -179,11 +181,15 @@ class TestPc20EntryExt:
 
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
-                fe.pc20.chapters(bad_case['test'], replace=True)
+                fe.pc20.chapters(bad_case['test'])
 
         good_cases = [
             {'desc': 'spec', 'spec':
-                '''<podcast:chapters url="https://example.com/episode1/chapters.json" type="application/json+chapters" />'''
+                '''<podcast:chapters url="https://example.com/episode1/chapters.json" type="application/json+chapters" />''',
+                'test': {
+                    'url': 'https://example.com/episode1/chapters.json',
+                    'type': 'application/json+chapters'
+                }
              }
         ]
         xml_simple_single_test(fg, fe.pc20.chapters, "chapters", good_cases)
