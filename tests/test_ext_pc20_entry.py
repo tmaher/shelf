@@ -2,6 +2,7 @@ import pytest
 import feedgen
 import feedgen.ext
 import pkgutil
+from lxml import etree
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
@@ -11,6 +12,8 @@ feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
+
+from feedgen.ext.pc20 import PC20_NS, pc20_extend_ns  # type: ignore # noqa: E402 E501
 
 
 class TestPc20EntryExt:
@@ -43,7 +46,7 @@ class TestPc20EntryExt:
         assert fe.title() == 'bob gets angry'
 
 # ### SIMPLE tags
-#    - only exist as children of item
+#    - parent is always <item>
 #    - no children
 
     def test_transcript(self, fg, fe):
@@ -92,26 +95,69 @@ class TestPc20EntryExt:
         with pytest.raises(ValueError):
             fe.pc20.transcript(bad_test_notype, replace=True)
 
-        xcase_html_xml = '''<podcast:transcript url="https://example.com/episode1 transcript.html" type="text/html" />'''
-        xcase_vtt_xml = '''<podcast:transcript url="https://example.com/episode1/transcript.vtt" type="text/vtt" />'''
-        xcase_json_xml = '''<podcast:transcript
+        cases = [
+            {'desc': 'html',
+             'spec':
+                '''<podcast:transcript url="https://example.com/episode1/transcript.html" type="text/html" />''',
+             'test': {
+                'url': 'https://example.com/episode1/transcript.html',
+                'type': 'text/html'
+                }},
+            {'desc': 'vtt',
+             'spec':
+                '''<podcast:transcript url="https://example.com/episode1/transcript.vtt" type="text/vtt" />''',
+             'test': {
+                'url': 'https://example.com/episode1/transcript.vtt',
+                'type': 'text/vtt'
+                }},
+            {'desc': 'json',
+             'spec':
+                '''<podcast:transcript
         url="https://example.com/episode1/transcript.json"
         type="application/json"
         language="es"
         rel="captions"
-/>'''
-        xcase_srt_xml = \
-            '''<podcast:transcript url="https://example.com/episode1/transcript.srt" type="application/x-subrip" rel="captions" />'''
+/>''',
+             'test': {
+                'url': 'https://example.com/episode1/transcript.json',
+                'type': 'application/json',
+                'language': 'es',
+                'rel': 'captions'
+                }},
+            {'desc': 'captions',
+             'spec':
+                '''<podcast:transcript url="https://example.com/episode1/transcript.srt" type="application/x-subrip" rel="captions" />''',
+             'test': {
+                'url': 'https://example.com/episode1/transcript.srt',
+                'type': 'application/x-subrip',
+                'rel': 'captions'
+                }}
+        ]
 
-        fe.pc20.transcript(
-            [tcase_html, tcase_vtt, tcase_json, tcase_srt],
-            replace=True)
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        print(fg_xml)
-        assert xcase_html_xml in fg_xml
-        # assert xcase_vtt_xml in fg_xml
-        # assert xcase_json_xml in fg_xml
-        # assert xcase_srt_xml in fg_xml
+        open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
+        close_dtag = "</data>"
+        for case in cases:
+            spec_xml = open_dtag + case['spec'] + close_dtag
+            spec_root = etree.fromstring(spec_xml)
+
+            fe.pc20.transcript(case['test'], replace=True)
+            test_xml = fg.rss_str(pretty=True).decode('UTF-8')
+            test_root = etree.XML(test_xml.encode('UTF-8'))
+            # print("***********************************\n\n")
+            # print(f"spec - {spec_xml}")
+            # print(f"test - {test_xml}")
+            # print("***********************************\n\n")
+
+            for attr in case['test'].keys():
+                test_attr = test_root.xpath(
+                    f"/rss/channel/item/podcast:transcript/@{attr}",
+                    namespaces=pc20_extend_ns()
+                )
+                spec_attr = spec_root.xpath(
+                    f"/data/podcast:transcript/@{attr}",
+                    namespaces=pc20_extend_ns()
+                )
+                assert spec_attr == test_attr
 
 #    def test_chapters():
 #        assert False

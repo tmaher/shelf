@@ -28,6 +28,10 @@ PC20_SERVICE_SLUGS = [
 ]
 
 
+def pc20_extend_ns():
+    return {'podcast': PC20_NS}
+
+
 def url2guid(url):
     s = urllib.parse.urlsplit(url)
     no_scheme_url = re.sub(
@@ -69,7 +73,7 @@ class Pc20BaseExtension(BaseExtension):
         self.__pc20_valueTimeSplit = None
 
     def extend_ns(self):
-        return {'podcast': PC20_NS}
+        return pc20_extend_ns()
 
     def _extend_xml(self, xml_element):
         '''Extend xml_element with set Podcasting 2.0 fields.
