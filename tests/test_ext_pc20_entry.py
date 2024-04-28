@@ -233,8 +233,54 @@ class TestPc20EntryExt:
 
         xml_simple_multi_test(fg, fe.pc20.soundbite, "soundbite", good_cases)
 
-#    def test_season():
-#        assert False
+    def test_season(self, fg, fe):
+        bad_cases = [
+            {'desc': 'no text',
+             'test': {
+                'name': 'some name'
+             }},
+            {'desc': 'bogus attrib',
+             'test': {
+                'text': "5",
+                'bogus': "bogus"
+             }}
+        ]
+
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fe.pc20.season(bad_case['test'])
+
+        good_cases = [
+            {'desc': 'season 5',
+             'spec':
+                '''<podcast:season>5</podcast:season>''',
+             'test': {
+                'text': "5"
+             }},
+            {'desc': 'whitehouse',
+             'spec':
+                '''<podcast:season name="Race for the Whitehouse 2020">3</podcast:season>''',
+             'test': {
+                'text': "3",
+                'name': "Race for the Whitehouse 2020"
+             }},
+            {'desc': 'egypt',
+             'spec':
+                '''<podcast:season name="Egyptology: The 19th Century">1</podcast:season>''',
+             'test': {
+                'text': "1",
+                'name': "Egyptology: The 19th Century"
+             }},
+            {'desc': 'yearling',
+             'spec':
+                '''<podcast:season name="The Yearling - Chapter 3">3</podcast:season>''',
+             'test': {
+                'text': "3",
+                'name': "The Yearling - Chapter 3"
+             }}
+        ]
+
+        xml_simple_multi_test(fg, fe.pc20.season, "season", good_cases)
 
 #    def test_episode():
 #        assert False
