@@ -2,7 +2,6 @@ import pytest
 import feedgen
 import feedgen.ext
 import pkgutil
-from lxml import etree
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
@@ -12,52 +11,9 @@ feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
-from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
-    PC20_NS, pc20_extend_ns, to_lower_camel_case
- )
-
-
-def xml_simple_single_test(fg, tag_func, tag_name, cases):
-    tag_name_camel = to_lower_camel_case(tag_name)
-    open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
-    close_dtag = "</data>"
-
-    for case in cases:
-        spec_xml = open_dtag + case['spec'] + close_dtag
-        spec_root = etree.fromstring(spec_xml)
-
-        tag_func(case['test'])
-        assert tag_func() == case['test']
-
-        test_xml = fg.rss_str().decode('UTF-8')
-        test_root = etree.XML(test_xml.encode('UTF-8'))
-
-        for attr in case['test'].keys():
-            attr_camel = to_lower_camel_case(attr)
-            xp_frag = "text()" if attr == tag_name else f"@{attr_camel}"
-
-            test_attr = test_root.xpath(
-                f"/rss/channel/podcast:{tag_name_camel}/{xp_frag}",
-                namespaces=pc20_extend_ns()
-            )
-            spec_attr = spec_root.xpath(
-                f"/data/podcast:{tag_name_camel}/{xp_frag}",
-                namespaces=pc20_extend_ns()
-            )
-            assert spec_attr == test_attr
-
-        test_kid = etree.XML(fg.rss_str())\
-            .xpath(
-                f"//podcast:{tag_name_camel}",
-                namespaces=pc20_extend_ns()
-            )[0]
-        test_dtag = etree.fromstring(open_dtag + close_dtag)
-        test_dtag.append(test_kid)
-        test_xml = etree.tostring(test_dtag).decode('UTF-8')
-
-        spec_xml_canon = etree.canonicalize(spec_xml)
-        test_xml_canon = etree.canonicalize(test_xml)
-        assert spec_xml_canon == test_xml_canon
+# from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
+#    PC20_NS, pc20_extend_ns, to_lower_camel_case
+# )
 
 
 class TestPc20Ext:
@@ -90,7 +46,7 @@ class TestPc20Ext:
     #    - only exist as children of channel
     #    - no children
 
-    def test_locked(self, fg):
+    def test_locked(self, helper, fg):
         bad_cases = [
             {'desc': 'bogus lock',
              'test': {
@@ -117,7 +73,7 @@ class TestPc20Ext:
                 'owner': 'email@example.com'
              }}
         ]
-        xml_simple_single_test(fg, fg.pc20.locked, "locked", good_cases)
+        helper.simple_single(fg, fg.pc20.locked, "locked", good_cases)
 
     def test_funding(self, fg):
         test_fundings = [

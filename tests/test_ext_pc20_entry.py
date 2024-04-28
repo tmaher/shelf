@@ -2,7 +2,6 @@ import pytest
 import feedgen
 import feedgen.ext
 import pkgutil
-from lxml import etree
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
@@ -12,92 +11,6 @@ feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
-
-from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
-    PC20_NS, pc20_extend_ns, to_lower_camel_case
- )
-
-
-def xml_simple_single_test(fg, tag_func, tag_name, cases):
-    tag_name_camel = to_lower_camel_case(tag_name)
-    open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
-    close_dtag = "</data>"
-
-    for case in cases:
-        spec_xml = open_dtag + case['spec'] + close_dtag
-        spec_root = etree.fromstring(spec_xml)
-
-        tag_func(case['test'])
-        assert tag_func() == case['test']
-
-        test_xml = fg.rss_str().decode('UTF-8')
-        test_root = etree.XML(test_xml.encode('UTF-8'))
-
-        for attr in case['test'].keys():
-            attr_camel = to_lower_camel_case(attr)
-            xp_frag = "text()" if attr == tag_name else f"@{attr_camel}"
-
-            test_attr = test_root.xpath(
-                f"/rss/channel/item/podcast:{tag_name_camel}/{xp_frag}",
-                namespaces=pc20_extend_ns()
-            )
-            spec_attr = spec_root.xpath(
-                f"/data/podcast:{tag_name_camel}/{xp_frag}",
-                namespaces=pc20_extend_ns()
-            )
-            assert spec_attr == test_attr
-
-        test_kid = etree.XML(fg.rss_str())\
-            .xpath(
-                f"//podcast:{tag_name_camel}",
-                namespaces=pc20_extend_ns()
-            )[0]
-        test_dtag = etree.fromstring(open_dtag + close_dtag)
-        test_dtag.append(test_kid)
-        test_xml = etree.tostring(test_dtag).decode('UTF-8')
-
-        spec_xml_canon = etree.canonicalize(spec_xml)
-        test_xml_canon = etree.canonicalize(test_xml)
-        assert spec_xml_canon == test_xml_canon
-
-
-def xml_simple_multi_test(fg, tag_func, tag_name, cases):
-    tag_name_camel = to_lower_camel_case(tag_name)
-    open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
-    close_dtag = "</data>"
-
-    spec_xml = open_dtag + \
-        "".join(map(lambda x: x['spec'], cases)) + close_dtag
-
-    test_cases = list(map(lambda x: x['test'], cases))
-
-    tag_func(**test_cases[0], replace=True)
-    assert tag_func() == [test_cases[0]]
-    for test_case in test_cases[1:]:
-        tag_func(**test_case, replace=False)
-    assert tag_func() == test_cases
-
-    tag_func(**test_cases[0], replace=True)
-    assert tag_func() == [test_cases[0]]
-    for test_case in test_cases[1:]:
-        tag_func(**test_case)
-    assert tag_func() == test_cases
-
-    tag_func(test_cases, replace=True)
-    assert tag_func() == test_cases
-    test_kids = etree.XML(fg.rss_str())\
-        .xpath(
-            f"//podcast:{tag_name_camel}",
-            namespaces=pc20_extend_ns()
-        )
-    test_dtag = etree.fromstring(open_dtag + close_dtag)
-    for kid in test_kids:
-        test_dtag.append(kid)
-    test_xml = etree.tostring(test_dtag).decode('UTF-8')
-
-    spec_xml_canon = etree.canonicalize(spec_xml)
-    test_xml_canon = etree.canonicalize(test_xml)
-    assert spec_xml_canon == test_xml_canon
 
 
 class TestPc20EntryExt:
@@ -133,7 +46,7 @@ class TestPc20EntryExt:
 #    - parent is always <item>
 #    - no children
 
-    def test_transcript(self, fg, fe):
+    def test_transcript(self, helper, fg, fe):
         bad_cases = [
             {'desc': 'no url',
              'test': {
@@ -192,10 +105,10 @@ class TestPc20EntryExt:
                 }}
         ]
 
-        xml_simple_multi_test(
+        helper.simple_multi(
             fg, fe.pc20.transcript, "transcript", good_cases)
 
-    def test_chapters(self, fg, fe):
+    def test_chapters(self, helper, fg, fe):
         bad_cases = [
             {'desc': 'no url',
              'test': {
@@ -217,9 +130,10 @@ class TestPc20EntryExt:
                 }
              }
         ]
-        xml_simple_single_test(fg, fe.pc20.chapters, "chapters", good_cases)
+        helper.simple_single(fg, fe.pc20.chapters, "chapters", good_cases,
+                             parent="channel/item")
 
-    def test_soundbite(self, fg, fe):
+    def test_soundbite(self, helper, fg, fe):
         bad_cases = [
             {'desc': 'no startTime',
              'test': {
@@ -253,9 +167,9 @@ class TestPc20EntryExt:
              }}
         ]
 
-        xml_simple_multi_test(fg, fe.pc20.soundbite, "soundbite", good_cases)
+        helper.simple_multi(fg, fe.pc20.soundbite, "soundbite", good_cases)
 
-    def test_season(self, fg, fe):
+    def test_season(self, helper, fg, fe):
         bad_cases = [
             {'desc': 'no text',
              'test': {
@@ -302,9 +216,10 @@ class TestPc20EntryExt:
              }}
         ]
 
-        xml_simple_single_test(fg, fe.pc20.season, "season", good_cases)
+        helper.simple_single(fg, fe.pc20.season, "season", good_cases,
+                             parent="channel/item")
 
-    def test_episode(self, fg, fe):
+    def test_episode(self, helper, fg, fe):
         bad_cases = [
             {'desc': 'no ep number',
              'test': {
@@ -351,9 +266,10 @@ class TestPc20EntryExt:
              }}
         ]
 
-        xml_simple_single_test(fg, fe.pc20.episode, "episode", good_cases)
+        helper.simple_single(fg, fe.pc20.episode, "episode", good_cases,
+                             parent="channel/item")
 
-    def test_social_interact(self, fg, fe):
+    def test_social_interact(self, helper, fg, fe):
         bad_cases = [
             {'desc': 'no protocol',
              'test': {
@@ -436,7 +352,7 @@ class TestPc20EntryExt:
              }}
         ]
 
-        xml_simple_multi_test(
+        helper.simple_multi(
             fg, fe.pc20.social_interact, "socialInteract", good_cases
         )
 
