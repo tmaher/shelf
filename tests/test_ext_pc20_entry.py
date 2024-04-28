@@ -13,7 +13,7 @@ feedgen.__path__ = \
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 
-from feedgen.ext.pc20 import PC20_NS, pc20_extend_ns  # type: ignore # noqa: E402 E501
+from feedgen.ext.pc20 import PC20_NS, pc20_extend_ns, to_lower_camel_case  # type: ignore # noqa: E402 E501
 
 
 def xml_simple_single_test(fg, tag_func, tag_name, cases):
@@ -50,6 +50,7 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
 
 def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     from xmldiff import main
+    tag_name_camel = to_lower_camel_case(tag_name)
 
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
     close_dtag = "</data>"
@@ -60,12 +61,12 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     test_cases = list(map(lambda x: x['test'], cases))
     tag_func(test_cases, replace=True)
     assert tag_func() == test_cases
-    # feed_test_xml = fg.rss_str(pretty=True)
+    # feed_test_xml = fg.rss_str(pretty=True).decode('UTF-8')
     # print(f"\nSPEC => {spec_xml}\n")
     # print(f"TEST => {feed_test_xml}\n")
     test_kids = etree.XML(fg.rss_str(pretty=True))\
         .xpath(
-            f"//podcast:{tag_name}",
+            f"//podcast:{tag_name_camel}",
             namespaces=pc20_extend_ns()
         )
     test_dtag = etree.fromstring(open_dtag + close_dtag)
@@ -74,6 +75,12 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     test_xml_rt = etree.tostring(test_dtag).decode('UTF-8')
 
     diff = main.diff_texts(spec_xml, test_xml_rt)
+    if diff != []:
+        print("\n\n******************\nDIFF FAILED\n")
+        print(f"tag   '{tag_name}'\ncamel '{tag_name_camel}'\n")
+        print(f"spec =>\n{spec_xml}\n")
+        print(f"test =>\n{test_xml_rt}\n")
+        assert False
     assert diff == []
 
 
@@ -380,7 +387,8 @@ class TestPc20EntryExt:
                 'uri': "https://podcastindex.social/web/@dave/108013847520053258",
                 'protocol': "activitypub",
                 'account_id': "@dave",
-                'account_url': "https://podcastindex.social/web/@dave"
+                'account_url': "https://podcastindex.social/web/@dave",
+                'priority': "1"
              }},
             {'desc': 'complex 2',
              'spec':
@@ -395,7 +403,9 @@ class TestPc20EntryExt:
                 'uri': "https://twitter.com/PodcastindexOrg/status/1507120226361647115",
                 'protocol': "twitter",
                 'account_id': "@podcastindexorg",
-                'account_url': "https://twitter.com/PodcastindexOrg"
+                'account_url': "https://twitter.com/PodcastindexOrg",
+                'priority': "2"
+
              }},
             {'desc': "disabled",
              'spec':

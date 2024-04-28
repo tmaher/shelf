@@ -1,11 +1,6 @@
 import sys  # noqa: F401
-from .pc20 import Pc20BaseExtension, PC20_NS
+from .pc20 import Pc20BaseExtension, PC20_NS, to_lower_camel_case
 from feedgen.util import ensure_format, xml_elem
-
-
-def to_lower_camel_case(snake_str):
-    cs = "".join(x.capitalize() for x in snake_str.lower().split("_"))
-    return snake_str[0].lower() + cs[1:]
 
 
 class Pc20EntryExtension(Pc20BaseExtension):
@@ -20,7 +15,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
         self.__pc20_soundbite = None
         self.__pc20_season = None
         self.__pc20_episode = None
-        self.__pc20_socialInteract = None
+        self.__pc20_social_interact = None
         self.__pc20_person = None
         self.__pc20_location = None
         self.__pc20_license = None
@@ -193,6 +188,17 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 self.simple_single_helper(ensures, args, kwargs)
         return self.__pc20_episode
 
+    def social_interact(self, *args, **kwargs):
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['uri', 'protocol', 'account_id',
+                            'account_url', 'priority'],
+                'required': ['protocol']
+            }
+            self.__pc20_social_interact = \
+                self.simple_multi_helper(ensures, args, kwargs)
+        return self.__pc20_social_interact
+
     def simple_single_helper(self, ensures, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]
@@ -224,6 +230,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
     def simple_multi_helper(self, ensures, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]
+        tag_name_camel = to_lower_camel_case(tag_name)
         attr_name = f"__pc20_{tag_name}"
         replace = kw_args.pop('replace', False)
 
@@ -246,7 +253,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
             nodes = self._nodes[attr_name]
             vals = getattr(self, attr_name)
         for val in new_vals:
-            node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
+            node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
             node.text = val.get(tag_name, None)
             for k, v in val.items():
                 if k == tag_name:

@@ -32,6 +32,14 @@ def pc20_extend_ns():
     return {'podcast': PC20_NS}
 
 
+def to_lower_camel_case(snake_str):
+    if "_" not in snake_str:
+        return snake_str  # fake snake!
+
+    cs = "".join(x.capitalize() for x in snake_str.lower().split("_"))
+    return snake_str[0].lower() + cs[1:]
+
+
 def url2guid(url):
     s = urllib.parse.urlsplit(url)
     no_scheme_url = re.sub(
