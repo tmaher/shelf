@@ -130,6 +130,32 @@ class Pc20BaseExtension(BaseExtension):
         return rss_feed
 
     def simple_helper(self, l_args, kw_args, ensures={}, multi=False):
+        '''Helper method to set values for "simple" tags, that is...
+            - tags that always have either <channel> or <item> as the parent
+            - tags that have no child tags under them
+
+        There is some slight magic happening here, as the tag name is not
+        passed as an explicit argument. Instead, it is inferred via
+        inspecting the call stack, and using the calling function's name.
+
+        *NOTE* is a ValueError to pass non-empty values to *BOTH* of
+        l_args and kw_args. Choose only one!
+
+        :param l_args: list argument. For tags with multiple count
+            (e.g. <podcast:socialInteract>), this accepts a list
+            of multiple dicts. This is to allow the same calls syntax
+            as the "author" tag in the base FeedGenerator class
+        :param kw_args:  dict of the attributes & text value
+            for the tag.
+        :param ensures: a dict with four keys, to be used for the
+            `feedgen.util.ensure_format()` method
+        :param multi: a bool indicating if this tag may occur more
+            than once
+            count=multiple (multi => True) or
+            count=single (multi => False). For example,
+            <podcast:chapters> is count=single, and
+            <podcast:socialInteract> is count=multiple
+        '''
         import inspect
         tag_name = inspect.stack()[1].function
         tag_name_camel = to_lower_camel_case(tag_name)
