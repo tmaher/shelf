@@ -2,6 +2,7 @@ import pytest
 import feedgen
 import feedgen.ext
 import pkgutil
+from lxml import etree
 from feedgen.feed import FeedGenerator
 import sys  # noqa: F401
 
@@ -11,6 +12,52 @@ feedgen.__path__ = \
     pkgutil.extend_path(feedgen.__path__, feedgen.__name__)
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
+from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
+    PC20_NS, pc20_extend_ns, to_lower_camel_case
+ )
+
+
+def xml_simple_single_test(fg, tag_func, tag_name, cases):
+    tag_name_camel = to_lower_camel_case(tag_name)
+    open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
+    close_dtag = "</data>"
+
+    for case in cases:
+        spec_xml = open_dtag + case['spec'] + close_dtag
+        spec_root = etree.fromstring(spec_xml)
+
+        tag_func(case['test'])
+        assert tag_func() == case['test']
+
+        test_xml = fg.rss_str().decode('UTF-8')
+        test_root = etree.XML(test_xml.encode('UTF-8'))
+
+        for attr in case['test'].keys():
+            attr_camel = to_lower_camel_case(attr)
+            xp_frag = "text()" if attr == tag_name else f"@{attr_camel}"
+
+            test_attr = test_root.xpath(
+                f"/rss/channel/podcast:{tag_name_camel}/{xp_frag}",
+                namespaces=pc20_extend_ns()
+            )
+            spec_attr = spec_root.xpath(
+                f"/data/podcast:{tag_name_camel}/{xp_frag}",
+                namespaces=pc20_extend_ns()
+            )
+            assert spec_attr == test_attr
+
+        test_kid = etree.XML(fg.rss_str())\
+            .xpath(
+                f"//podcast:{tag_name_camel}",
+                namespaces=pc20_extend_ns()
+            )[0]
+        test_dtag = etree.fromstring(open_dtag + close_dtag)
+        test_dtag.append(test_kid)
+        test_xml = etree.tostring(test_dtag).decode('UTF-8')
+
+        spec_xml_canon = etree.canonicalize(spec_xml)
+        test_xml_canon = etree.canonicalize(test_xml)
+        assert spec_xml_canon == test_xml_canon
 
 
 class TestPc20Ext:
@@ -18,7 +65,6 @@ class TestPc20Ext:
     def fg(self):
         fg = FeedGenerator()
         fg.load_extension('podcast', rss=True, atom=True)
-        # fg.load_extension('dc', rss=True, atom=True)
         fg.load_extension('pc20', rss=True, atom=True)
 
         fg.podcast.itunes_explicit('yes')
@@ -45,23 +91,33 @@ class TestPc20Ext:
     #    - no children
 
     def test_locked(self, fg):
-        fg.pc20.locked(locked='yes', owner='bob@angry.podcast')
-        assert fg.pc20.locked() == {
-            'locked': 'yes', 'owner': 'bob@angry.podcast'
-        }
-        with pytest.raises(ValueError):
-            fg.pc20.locked('bogus')
+        bad_cases = [
+            {'desc': 'bogus lock',
+             'test': {
+                 'locked': 'bogus'
+             }},
+        ]
 
-        fe = fg.add_entry()
-        fe.title('locked ep')
-        with pytest.raises(AttributeError):
-            fe.pc20.locked(locked='yes', owner='bob@angry.podcast')
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.locked(bad_case['test'])
 
-        xml_frag = \
-            '<podcast:locked owner="bob@angry.podcast">yes</podcast:locked>'
-
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        assert xml_frag in fg_xml
+        good_cases = [
+            {'desc': 'simple yes',
+             'spec':
+                '''<podcast:locked>yes</podcast:locked>''',
+             'test': {
+                'locked': 'yes'
+             }},
+            {'desc': 'with owner',
+             'spec':
+                '''<podcast:locked owner="email@example.com">no</podcast:locked>''',
+             'test': {
+                'locked': 'no',
+                'owner': 'email@example.com'
+             }}
+        ]
+        xml_simple_single_test(fg, fg.pc20.locked, "locked", good_cases)
 
     def test_funding(self, fg):
         test_fundings = [
