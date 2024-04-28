@@ -167,6 +167,32 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 self.simple_single_helper(ensures, args, kwargs)
         return self.__pc20_season
 
+    def episode(self, *args, **kwargs):
+        '''This element exists largely for compatibility with the season tag.
+        But, it also allows for a similar idea to what "name" functions as in
+        that element.
+
+        :param episode: (required) A decimal number. Numbering such as 100.5
+        is acceptable if there was a special mini-episode published between
+        two other episodes. In that scenario, the number would help with
+        proper chronological sorting, while the display attribute could
+        specify an alternate special "number" (a moniker) to display for the
+        episode in a podcast player app UI.
+        :param display (optional): If this attribute is present, podcast
+        apps and aggregators are encouraged to show its value instead of the
+        purely numerical node value. This attribute is a string. Please do
+        not exceed 32 characters
+        :return: dict with the current episode number & display
+        '''
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['episode', 'display'],
+                'required': ['episode']
+            }
+            self.__pc20_episode = \
+                self.simple_single_helper(ensures, args, kwargs)
+        return self.__pc20_episode
+
     def simple_single_helper(self, ensures, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]
