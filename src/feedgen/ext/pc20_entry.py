@@ -256,26 +256,19 @@ class Pc20EntryExtension(Pc20BaseExtension):
         else:
             nodes = self._nodes[tag_name]
             vals = getattr(self, attr_name)
-        if multi:
-            for val in new_vals:
-                node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
-                node.text = val.get(tag_name, None)
-                for k, v in val.items():
-                    if k == tag_name:
-                        continue
-                    node.attrib[to_lower_camel_case(k)] = v
-                nodes.append(node)
-                vals.append(val)
-        else:
-            val = new_vals[0]
+
+        for val in new_vals:
             node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
             node.text = val.get(tag_name, None)
             for k, v in val.items():
-                if k == 'text':
+                if k == tag_name:
                     continue
                 node.attrib[to_lower_camel_case(k)] = v
-            nodes = node
-            vals = val
+            nodes.append(node)
+            vals.append(val)
+        if not multi:
+            nodes = nodes[0]
+            vals = vals[0]
 
         self._nodes[tag_name] = nodes
         setattr(self, attr_name, vals)
