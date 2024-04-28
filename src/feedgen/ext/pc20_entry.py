@@ -294,7 +294,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
             nodes = []
             vals = []
         else:
-            nodes = self._nodes[attr_name]
+            nodes = self._nodes[tag_name]
             vals = getattr(self, attr_name)
         for val in new_vals:
             node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))

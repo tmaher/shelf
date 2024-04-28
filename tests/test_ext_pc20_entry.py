@@ -61,6 +61,13 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
         "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
     test_cases = list(map(lambda x: x['test'], cases))
+
+    tag_func(**test_cases[0], replace=True)
+    assert tag_func() == [test_cases[0]]
+    for test_case in test_cases[1:]:
+        tag_func(**test_case)
+    assert tag_func() == test_cases
+
     tag_func(test_cases, replace=True)
     assert tag_func() == test_cases
     test_kids = etree.XML(fg.rss_str())\
