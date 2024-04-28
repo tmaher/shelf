@@ -282,8 +282,54 @@ class TestPc20EntryExt:
 
         xml_simple_single_test(fg, fe.pc20.season, "season", good_cases)
 
-#    def test_episode():
-#        assert False
+    def test_episode(self, fg, fe):
+        bad_cases = [
+            {'desc': 'no ep number',
+             'test': {
+                 'display': "bogus display"
+             }},
+            {'desc': 'invalid key',
+             'test': {
+                 'episode': "101",
+                 'display': 'podcast 101',
+                 'bogus': 'why am I here?'
+             }}
+        ]
+
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fe.pc20.episode(bad_case['test'])
+
+        good_cases = [
+            {'desc': 'three',
+             'spec':
+                '''<podcast:episode>3</podcast:episode>''',
+             'test': {
+                'episode': "3",
+             }},
+            {'desc': 'three one five point five',
+             'spec':
+                '''<podcast:episode>315.5</podcast:episode>''',
+             'test': {
+                'episode': "315.5",
+             }},
+            {'desc': "chapter 3",
+             'spec':
+                '''<podcast:episode display="Ch.3">204</podcast:episode>''',
+             'test': {
+                'episode': "204",
+                'display': "Ch.3"
+             }},
+            {'desc': "day five",
+             'spec':
+                '''<podcast:episode display="Day 5">9</podcast:episode>''',
+             'test': {
+                'episode': "9",
+                'display': "Day 5"
+             }}
+        ]
+
+        xml_simple_single_test(fg, fe.pc20.episode, "episode", good_cases)
 
 #    def test_social_interact():
 #        assert False
