@@ -47,22 +47,18 @@ class Pc20EntryExtension(Pc20BaseExtension):
         Detailed file format information and example files are at
         https://github.com/Podcastindex-org/podcast-namespace/blob/main/transcripts/transcripts.md
 
-        Dict keys are as follows
-            - url (required): URL of the podcast transcript.
-            - type (required): Mime type of the file such as text/plain,
+        :param url: (REQUIRED) URL of the podcast transcript.
+        :param type: (REQUIRED) Mime type of the file such as text/plain,
             text/html, text/vtt, application/json, application/x-subrip
-            - language (optional): The language of the linked transcript.
+        :param language: (optional) The language of the linked transcript.
             If there is no language attribute given, the linked file is
-            assumed to be the same language that is specified by the
-            RSS <language> element.
-            - rel (optional): If the rel="captions" attribute is present,
+            assumed to be the same language that is specified by the RSS
+            <language> element.
+        :param rel: (optional)  If the rel="captions" attribute is present,
             the linked file is considered to be a closed captions file,
-            regardless of what the mime type is. In that scenario, time
-            codes are assumed to be present in the file in some capacity.
-
-        :param: dict or array of dicts as described above
-        :param replace: Add or replace old data. (default false)
-        :return: List of transcript tags as dictionaries
+            regardless of what the mime type is. In that scenario, time codes
+            are assumed to be present in the file in some capacity.
+        :returns: List of transcripts as dictionaries
         '''
         if (args or kwargs):
             ensures = {
@@ -92,10 +88,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
         compatible with normal ID3 tags, thus requiring no additional work
         for the publisher.
 
-        :param url: *REQUIRED* The URL where the chapters file is located.
-        :param type: Mime type of file. If not specified, this library will
-        use assume 'application/json+chapters'.
-        :returns: the entry element
+        :param url: (REQUIRED) The URL where the chapters file is located.
+        :param type: (optional) Mime type of file. If not specified,
+            default is 'application/json+chapters'.
+        :returns: Dictionary containing the chapters data
         '''
         if (args or kwargs):
             ensures = {
@@ -114,21 +110,18 @@ class Pc20EntryExtension(Pc20BaseExtension):
         audio/video source of the soundbite is the audio/video given in the
         item's <enclosure> element.
 
-        Dict keys are as follows
-            - soundbite (optional): This is a free form string from the
+        :param soundbite: (optional) This is a free form string from the
             podcast creator to specify a title for the soundbite. If the
             podcaster does not provide a value for the soundbite title, then
             leave the value blank, and podcast apps can decide to use the
             episode title or some other placeholder value in its place.
             Please do not exceed 128 characters for the node value or it may
             be truncated by aggregators.
-            - startTime (required): The time where the soundbite begins
-            - duration (required): How long is the soundbite (recommended
+        :param startTime: (REQUIRED): The time where the soundbite begins
+        :param duration: (REQUIRED): How long is the soundbite (recommended
             between 15 and 120 seconds)
-
-        :param: dict or array of dicts as described above
-        :param replace: Add or replace old data. (default false)
-        :return: List of transcript tags as dictionaries
+        :param replace: Add or replace old data. (default False)
+        :return: List of soundbites as dictionary
         '''
         if (args or kwargs):
             ensures = {
@@ -145,13 +138,13 @@ class Pc20EntryExtension(Pc20BaseExtension):
         attached.
 
         :param season: (required) The node value is an integer, and
-        represents the season "number". It is required.
+            represents the season "number". It is required.
         :param name: (optional) This is the "name" of the season. If this
-        attribute is present, applications are free to not show the season
-        number to the end user, and may use it simply for chronological
-        sorting and grouping purposes. Please do not exceed 128 characters
-        for the name attribute.
-        :return: dict with the current season & name
+            attribute is present, applications are free to not show the
+            season number to the end user, and may use it simply for
+            chronological sorting and grouping purposes. Please do not
+            exceed 128 characters for the name attribute.
+        :return: dictionary with the current season & name
         '''
         if (args or kwargs):
             ensures = {
@@ -167,17 +160,17 @@ class Pc20EntryExtension(Pc20BaseExtension):
         But, it also allows for a similar idea to what "name" functions as in
         that element.
 
-        :param episode: (required) A decimal number. Numbering such as 100.5
-        is acceptable if there was a special mini-episode published between
-        two other episodes. In that scenario, the number would help with
-        proper chronological sorting, while the display attribute could
-        specify an alternate special "number" (a moniker) to display for the
-        episode in a podcast player app UI.
-        :param display (optional): If this attribute is present, podcast
-        apps and aggregators are encouraged to show its value instead of the
-        purely numerical node value. This attribute is a string. Please do
-        not exceed 32 characters
-        :return: dict with the current episode number & display
+        :param episode: (REQUIRED) A decimal number. Numbering such as
+            100.5 is acceptable if there was a special mini-episode
+            published between two other episodes. In that scenario, the
+            number would help with proper chronological sorting, while the
+            display attribute could specify an alternate special "number"
+            (a moniker) to display for the episode in a podcast player app UI.
+        :param display: (optional) If this attribute is present, podcast
+            apps and aggregators are encouraged to show its value instead of
+            the purely numerical node value. This attribute is a string.
+            Please do not exceed 32 characters
+        :return: dictionary with the current episode number & display
         '''
         if (args or kwargs):
             ensures = {
@@ -215,19 +208,16 @@ class Pc20EntryExtension(Pc20BaseExtension):
         section also includes an example tag with 'protocol="disabled"'
         and no uri attribute.
 
-        Dict keys are as follows. Only "protocol" is required
-            - uri (optional): The uri/url of root post comment
-            - protocol (required): The protocol in use for interacting with
+        :param uri: (optional) The uri/url of root post comment
+        :param protocol: (REQUIRED) The protocol in use for interacting with
             the comment root post.
-            - account_id (optional): The account id (on the commenting
+        :param account_id: (optional) The account id (on the commenting
             platform) of the account that created this root post.
-            - account_url (optional): The public url (on the commenting
+        :param account_url: (optional): The public url (on the commenting
             platform) of the account that created this root post.
-            - priority (optional): When multiple socialInteract tags are
+        :param priority: (optional) When multiple socialInteract tags are
             present, this integer gives order of priority. A lower number
             means higher priority.
-
-        :param: dict or array of dicts as described above
         :param replace: Add or replace old data. (default false)
         :return: List of social_interact tags as dictionaries
         '''
