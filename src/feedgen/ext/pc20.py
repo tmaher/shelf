@@ -129,8 +129,8 @@ class Pc20BaseExtension(BaseExtension):
 
         return rss_feed
 
-    def simple_helper(self, l_args, kw_args, ensures={}, multi=False):
-        '''Helper method to set values for "simple" tags, that is...
+    def getset_simple(self, l_args, kw_args, ensures={}, multi=False):
+        '''Generic method to set values for "simple" tags, that is...
             - tags that always have either <channel> or <item> as the parent
             - tags that have no child tags under them
 
@@ -235,22 +235,8 @@ class Pc20Extension(Pc20BaseExtension):
                 'allowed_values': {'locked': ['yes', 'no']}
             }
             self.__pc20_locked = \
-                self.simple_helper(args, kwargs, ensures=ensures)
+                self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_locked
-#        if text is not None:
-#            if text not in ('yes', 'no'):
-#                raise ValueError("Locked may only be 'yes' or 'no'")
-#            val = {'text': text}
-#            node = xml_elem('{%s}%s' % (PC20_NS, 'locked'))
-#            node.text = text
-#            if owner:
-#                node.attrib['owner'] = owner
-#                val['owner'] = owner
-#
-#            self.__pc20_locked = val
-#            self._nodes['locked'] = node
-#
-#        return self.__pc20_locked
 
     def funding(self, fundings=[], replace=False):
         '''This tag lists possible donation/funding links for the podcast.

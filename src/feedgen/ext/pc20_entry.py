@@ -63,7 +63,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['url', 'type']
             }
             self.__pc20_transcript = \
-                self.simple_helper(args, kwargs, ensures=ensures, multi=True)
+                self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_transcript
 
     def chapters(self, *args, **kwargs):
@@ -97,7 +97,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'defaults': {'type': 'application/json+chapters'}
             }
             self.__pc20_chapters = \
-                self.simple_helper(args, kwargs, ensures=ensures)
+                self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_chapters
 
     def soundbite(self, *args, **kwargs):
@@ -126,7 +126,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['start_time', 'duration']
             }
             self.__pc20_soundbite = \
-                self.simple_helper(args, kwargs, ensures=ensures, multi=True)
+                self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_soundbite
 
     def season(self, *args, **kwargs):
@@ -149,7 +149,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['season']
             }
             self.__pc20_season = \
-                self.simple_helper(args, kwargs, ensures=ensures)
+                self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_season
 
     def episode(self, *args, **kwargs):
@@ -175,7 +175,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['episode']
             }
             self.__pc20_episode = \
-                self.simple_helper(args, kwargs, ensures=ensures)
+                self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_episode
 
     def social_interact(self, *args, **kwargs):
@@ -226,5 +226,5 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'allowed_values': {'protocol': PC20_SOCIAL_PROTOCOLS}
             }
             self.__pc20_social_interact = \
-                self.simple_helper(args, kwargs, ensures=ensures, multi=True)
+                self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_social_interact
