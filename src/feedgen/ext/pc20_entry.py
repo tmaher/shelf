@@ -70,13 +70,12 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :return: List of transcript tags as dictionaries
         '''
         if (args or kwargs):
-            helper_args = {'_ensure': {
+            ensures = {
                 'allowed': ['url', 'type', 'language', 'rel'],
                 'required': ['url', 'type']
-            }}
-            helper_args.update(kwargs)
+            }
             self.__pc20_transcript = \
-                self.simple_multi_helper(args, helper_args)
+                self.simple_multi_helper(ensures, args, kwargs)
         return self.__pc20_transcript
 
     def chapters(self, *args, **kwargs):
@@ -104,14 +103,13 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :returns: the entry element
         '''
         if (args or kwargs):
-            helper_args = {'_ensure': {
+            ensures = {
                 'allowed': ['url', 'type'],
                 'required': ['url'],
                 'defaults': {'type': 'application/json+chapters'}
-            }}
-            helper_args.update(kwargs)
+            }
             self.__pc20_chapters = \
-                self.simple_single_helper(args, helper_args)
+                self.simple_single_helper(ensures, args, kwargs)
         return self.__pc20_chapters
 
     def soundbite(self, *args, **kwargs):
@@ -138,13 +136,12 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :return: List of transcript tags as dictionaries
         '''
         if (args or kwargs):
-            helper_args = {'_ensure': {
+            ensures = {
                 'allowed': ['text', 'start_time', 'duration'],
                 'required': ['start_time', 'duration']
-            }}
-            helper_args.update(kwargs)
+            }
             self.__pc20_soundbite = \
-                self.simple_multi_helper(args, helper_args)
+                self.simple_multi_helper(ensures, args, kwargs)
         return self.__pc20_soundbite
 
     def season(self, *args, **kwargs):
@@ -162,20 +159,18 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :return: dict with the current season & name
         '''
         if (args or kwargs):
-            helper_args = {'_ensure': {
+            ensures = {
                 'allowed': ['season', 'name'],
                 'required': ['season']
-            }}
-            helper_args.update(kwargs)
+            }
             self.__pc20_season = \
-                self.simple_single_helper(args, helper_args)
+                self.simple_single_helper(ensures, args, kwargs)
         return self.__pc20_season
 
-    def simple_single_helper(self, l_args, kw_args):
+    def simple_single_helper(self, ensures, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]
         attr_name = f"__pc20_{tag_name}"
-        ensure = kw_args.pop('_ensure')
 
         if (l_args and (kw_args or len(l_args) > 1)):
             raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
@@ -183,10 +178,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         val = ensure_format(
             val,
-            set(ensure['allowed']),
-            set(ensure['required']),
-            ensure.get('allowed_values', None),
-            ensure.get('defaults', None)
+            set(ensures['allowed']),
+            set(ensures['required']),
+            ensures.get('allowed_values', None),
+            ensures.get('defaults', None)
         ).pop()
         node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
         node.text = val.get(tag_name, None)
@@ -200,11 +195,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         return getattr(self, attr_name)
 
-    def simple_multi_helper(self, l_args, kw_args):
+    def simple_multi_helper(self, ensures, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]
         attr_name = f"__pc20_{tag_name}"
-        ensure = kw_args.pop('_ensure')
         replace = kw_args.pop('replace', False)
 
         if (l_args and (kw_args or len(l_args) > 1)):
@@ -213,10 +207,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         new_vals = ensure_format(
             new_vals,
-            set(ensure['allowed']),
-            set(ensure['required']),
-            ensure.get('allowed_values', None),
-            ensure.get('defaults', None)
+            set(ensures['allowed']),
+            set(ensures['required']),
+            ensures.get('allowed_values', None),
+            ensures.get('defaults', None)
         )
         if replace or (not getattr(self, attr_name, None)):
             nodes = []
