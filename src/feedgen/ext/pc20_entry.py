@@ -69,12 +69,15 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :param replace: Add or replace old data. (default false)
         :return: List of transcript tags as dictionaries
         '''
-        helper_args = {'_ensure': {
-            'allowed': ['url', 'type', 'language', 'rel'],
-            'required': ['url', 'type']
-        }}
-        helper_args.update(kwargs)
-        self.simple_multi_helper(args, helper_args)
+        if (args or kwargs):
+            helper_args = {'_ensure': {
+                'allowed': ['url', 'type', 'language', 'rel'],
+                'required': ['url', 'type']
+            }}
+            helper_args.update(kwargs)
+            self.__pc20_transcript = \
+                self.simple_multi_helper(args, helper_args)
+        return self.__pc20_transcript
 
     def chapters(self, *args, **kwargs):
         '''Links to an external file (see example file) containing chapter
@@ -142,12 +145,15 @@ class Pc20EntryExtension(Pc20BaseExtension):
         :param replace: Add or replace old data. (default false)
         :return: List of transcript tags as dictionaries
         '''
-        helper_args = {'_ensure': {
-            'allowed': ['text', 'start_time', 'duration'],
-            'required': ['start_time', 'duration']
-        }}
-        helper_args.update(kwargs)
-        self.simple_multi_helper(args, helper_args)
+        if (args or kwargs):
+            helper_args = {'_ensure': {
+                'allowed': ['text', 'start_time', 'duration'],
+                'required': ['start_time', 'duration']
+            }}
+            helper_args.update(kwargs)
+            self.__pc20_soundbite = \
+                self.simple_multi_helper(args, helper_args)
+        return self.__pc20_soundbite
 
     def season(self, *args, **kwargs):
         '''This element allows for identifying which episodes in a podcast
@@ -163,13 +169,14 @@ class Pc20EntryExtension(Pc20BaseExtension):
         for the name attribute.
         :return: dict with the current season & name
         '''
-        helper_args = {'_ensure': {
-            'allowed': ['season', 'name'],
-            'required': ['season']
-        }}
-        helper_args.update(kwargs)
-        self.__pc20_season = self.simple_single_helper(args, helper_args)
-        # print(f"\n\nSEASON\n\nretval: {retval}\nattr {self.__pc20_season}")
+        if (args or kwargs):
+            helper_args = {'_ensure': {
+                'allowed': ['season', 'name'],
+                'required': ['season']
+            }}
+            helper_args.update(kwargs)
+            self.__pc20_season = \
+                self.simple_single_helper(args, helper_args)
         return self.__pc20_season
 
     def simple_single_helper(self, l_args, kw_args):
@@ -178,8 +185,6 @@ class Pc20EntryExtension(Pc20BaseExtension):
         attr_name = f"__pc20_{tag_name}"
         ensure = kw_args.pop('_ensure')
 
-        if not (l_args or kw_args):
-            return getattr(self, attr_name, None)
         if (l_args and (kw_args or len(l_args) > 1)):
             raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
         val = l_args[0] if l_args else kw_args
@@ -200,12 +205,6 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         self._nodes[tag_name] = node
         setattr(self, attr_name, val)
-        # print(f"\n\nCALLING setattr on attr {attr_name}\n")
-        # if attr_name == "__pc20_season":
-        #    attr_via_get = getattr(self, "__pc20_season")
-        #    attr_direct = self.__pc20_season
-        #    print(f"via {attr_via_get}\ndirect {attr_direct}")
-        #    print(f"\nself dict {self.__dict__}\n\n\n")
 
         return getattr(self, attr_name)
 
@@ -216,8 +215,6 @@ class Pc20EntryExtension(Pc20BaseExtension):
         ensure = kw_args.pop('_ensure')
         replace = kw_args.pop('replace', False)
 
-        if not (l_args or kw_args or replace):
-            return getattr(self, attr_name, None)
         if (l_args and (kw_args or len(l_args) > 1)):
             raise ValueError("Too Many Args!")
         new_vals = l_args[0] if l_args else kw_args

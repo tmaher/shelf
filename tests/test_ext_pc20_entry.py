@@ -57,7 +57,9 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     spec_xml = open_dtag + \
         "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
-    tag_func(list(map(lambda x: x['test'], cases)), replace=True)
+    test_cases = list(map(lambda x: x['test'], cases))
+    tag_func(test_cases, replace=True)
+    assert tag_func() == test_cases
     # feed_test_xml = fg.rss_str(pretty=True)
     # print(f"\nSPEC => {spec_xml}\n")
     # print(f"TEST => {feed_test_xml}\n")
