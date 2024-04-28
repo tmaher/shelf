@@ -70,7 +70,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['url', 'type']
             }
             self.__pc20_transcript = \
-                self.simple_multi_helper(ensures, args, kwargs)
+                self.simple_multi_helper(ensures, True, args, kwargs)
         return self.__pc20_transcript
 
     def chapters(self, *args, **kwargs):
@@ -136,7 +136,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['start_time', 'duration']
             }
             self.__pc20_soundbite = \
-                self.simple_multi_helper(ensures, args, kwargs)
+                self.simple_multi_helper(ensures, True, args, kwargs)
         return self.__pc20_soundbite
 
     def season(self, *args, **kwargs):
@@ -239,46 +239,47 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'allowed_values': {'protocol': PC20_SOCIAL_PROTOCOLS}
             }
             self.__pc20_social_interact = \
-                self.simple_multi_helper(ensures, args, kwargs)
+                self.simple_multi_helper(ensures, True, args, kwargs)
         return self.__pc20_social_interact
 
     def simple_single_helper(self, ensures, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1].function
+        tag_name_camel = to_lower_camel_case(tag_name)
         attr_name = f"__pc20_{tag_name}"
 
         if (l_args and (kw_args or len(l_args) > 1)):
             raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
-        val = l_args[0] if l_args else kw_args
+        new_vals = l_args[0] if l_args else kw_args
 
-        val = ensure_format(
-            val,
+        new_vals = ensure_format(
+            new_vals,
             set(ensures['allowed']),
             set(ensures['required']),
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         ).pop()
 
-        node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
-        node.text = val.get(tag_name, None)
-        for k, v in val.items():
+        node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
+        node.text = new_vals.get(tag_name, None)
+        for k, v in new_vals.items():
             if k == 'text':
                 continue
             node.attrib[to_lower_camel_case(k)] = v
 
         self._nodes[tag_name] = node
-        setattr(self, attr_name, val)
+        setattr(self, attr_name, new_vals)
         return getattr(self, attr_name)
 
-    def simple_multi_helper(self, ensures, l_args, kw_args):
+    def simple_multi_helper(self, ensures, multi, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1].function
         tag_name_camel = to_lower_camel_case(tag_name)
         attr_name = f"__pc20_{tag_name}"
-        replace = kw_args.pop('replace', False)
+        replace = kw_args.pop('replace', False) if multi else True
 
         if (l_args and (kw_args or len(l_args) > 1)):
-            raise ValueError("Too Many Args!")
+            raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
         new_vals = l_args[0] if l_args else kw_args
 
         new_vals = ensure_format(
