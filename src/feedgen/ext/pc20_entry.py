@@ -149,6 +149,66 @@ class Pc20EntryExtension(Pc20BaseExtension):
         helper_args.update(kwargs)
         self.simple_multi_helper(args, helper_args)
 
+    def season(self, *args, **kwargs):
+        '''This element allows for identifying which episodes in a podcast
+        are part of a particular "season", with an optional season name
+        attached.
+
+        :param season: (required) The node value is an integer, and
+        represents the season "number". It is required.
+        :param name: (optional) This is the "name" of the season. If this
+        attribute is present, applications are free to not show the season
+        number to the end user, and may use it simply for chronological
+        sorting and grouping purposes. Please do not exceed 128 characters
+        for the name attribute.
+        :return: dict with the current season & name
+        '''
+        helper_args = {'_ensure': {
+            'allowed': ['season', 'name'],
+            'required': ['season']
+        }}
+        helper_args.update(kwargs)
+        self.__pc20_season = self.simple_single_helper(args, helper_args)
+        # print(f"\n\nSEASON\n\nretval: {retval}\nattr {self.__pc20_season}")
+        return self.__pc20_season
+
+    def simple_single_helper(self, l_args, kw_args):
+        import inspect
+        tag_name = inspect.stack()[1][3]
+        attr_name = f"__pc20_{tag_name}"
+        ensure = kw_args.pop('_ensure')
+
+        if not (l_args or kw_args):
+            return getattr(self, attr_name, None)
+        if (l_args and (kw_args or len(l_args) > 1)):
+            raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
+        val = l_args[0] if l_args else kw_args
+
+        val = ensure_format(
+            val,
+            set(ensure['allowed']),
+            set(ensure['required']),
+            ensure.get('allowed_values', None),
+            ensure.get('defaults', None)
+        ).pop()
+        node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
+        node.text = val.get(tag_name, None)
+        for k, v in val.items():
+            if k == 'text':
+                continue
+            node.attrib[to_lower_camel_case(k)] = v
+
+        self._nodes[tag_name] = node
+        setattr(self, attr_name, val)
+        # print(f"\n\nCALLING setattr on attr {attr_name}\n")
+        # if attr_name == "__pc20_season":
+        #    attr_via_get = getattr(self, "__pc20_season")
+        #    attr_direct = self.__pc20_season
+        #    print(f"via {attr_via_get}\ndirect {attr_direct}")
+        #    print(f"\nself dict {self.__dict__}\n\n\n")
+
+        return getattr(self, attr_name)
+
     def simple_multi_helper(self, l_args, kw_args):
         import inspect
         tag_name = inspect.stack()[1][3]

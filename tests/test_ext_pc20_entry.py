@@ -35,10 +35,7 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
         # print("***********************************\n\n")
 
         for attr in case['test'].keys():
-            if attr == "text":
-                xp_frag = "text()"
-            else:
-                xp_frag = f"@{attr}"
+            xp_frag = "text()" if attr == tag_name else f"@{attr}"
 
             test_attr = test_root.xpath(
                 f"/rss/channel/item/podcast:{tag_name}/{xp_frag}",
@@ -61,9 +58,9 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
         "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
     tag_func(list(map(lambda x: x['test'], cases)), replace=True)
-    feed_test_xml = fg.rss_str(pretty=True)
-    print(f"\nSPEC => {spec_xml}\n")
-    print(f"TEST => {feed_test_xml}\n")
+    # feed_test_xml = fg.rss_str(pretty=True)
+    # print(f"\nSPEC => {spec_xml}\n")
+    # print(f"TEST => {feed_test_xml}\n")
     test_kids = etree.XML(fg.rss_str(pretty=True))\
         .xpath(
             f"//podcast:{tag_name}",
@@ -187,9 +184,10 @@ class TestPc20EntryExt:
                 fe.pc20.chapters(bad_case['test'])
 
         good_cases = [
-            {'desc': 'spec', 'spec':
+            {'desc': 'spec',
+             'spec':
                 '''<podcast:chapters url="https://example.com/episode1/chapters.json" type="application/json+chapters" />''',
-                'test': {
+             'test': {
                     'url': 'https://example.com/episode1/chapters.json',
                     'type': 'application/json+chapters'
                 }
@@ -241,7 +239,7 @@ class TestPc20EntryExt:
              }},
             {'desc': 'bogus attrib',
              'test': {
-                'text': "5",
+                'season': "5",
                 'bogus': "bogus"
              }}
         ]
@@ -255,32 +253,32 @@ class TestPc20EntryExt:
              'spec':
                 '''<podcast:season>5</podcast:season>''',
              'test': {
-                'text': "5"
+                'season': "5"
              }},
             {'desc': 'whitehouse',
              'spec':
                 '''<podcast:season name="Race for the Whitehouse 2020">3</podcast:season>''',
              'test': {
-                'text': "3",
+                'season': "3",
                 'name': "Race for the Whitehouse 2020"
              }},
             {'desc': 'egypt',
              'spec':
                 '''<podcast:season name="Egyptology: The 19th Century">1</podcast:season>''',
              'test': {
-                'text': "1",
+                'season': "1",
                 'name': "Egyptology: The 19th Century"
              }},
             {'desc': 'yearling',
              'spec':
                 '''<podcast:season name="The Yearling - Chapter 3">3</podcast:season>''',
              'test': {
-                'text': "3",
+                'season': "3",
                 'name': "The Yearling - Chapter 3"
              }}
         ]
 
-        xml_simple_multi_test(fg, fe.pc20.season, "season", good_cases)
+        xml_simple_single_test(fg, fe.pc20.season, "season", good_cases)
 
 #    def test_episode():
 #        assert False
