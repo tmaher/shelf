@@ -92,7 +92,6 @@ class Pc20BaseExtension(BaseExtension):
         self.__pc20_liveItem = None  # parent => channel; has children
         self.__pc20_contentLink = None  # parent => podcast:liveItem
 
-
     def extend_ns(self):
         return pc20_extend_ns()
 
