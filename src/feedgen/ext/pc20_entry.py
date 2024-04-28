@@ -250,13 +250,13 @@ class Pc20EntryExtension(Pc20BaseExtension):
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         )
+        if replace or (not getattr(self, attr_name, None)):
+            nodes = []
+            vals = []
+        else:
+            nodes = self._nodes[tag_name]
+            vals = getattr(self, attr_name)
         if multi:
-            if replace or (not getattr(self, attr_name, None)):
-                nodes = []
-                vals = []
-            else:
-                nodes = self._nodes[tag_name]
-                vals = getattr(self, attr_name)
             for val in new_vals:
                 node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
                 node.text = val.get(tag_name, None)
