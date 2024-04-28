@@ -16,11 +16,6 @@ class Pc20EntryExtension(Pc20BaseExtension):
         self.__pc20_season = None
         self.__pc20_episode = None
         self.__pc20_social_interact = None
-        self.__pc20_person = None
-        self.__pc20_location = None
-        self.__pc20_license = None
-        self.__pc20_images = None
-        self.__pc20_txt = None
 
     def extend_atom(self, entry):
         '''Add podcasting 2.0 elements to an atom item. Alters the item itself.
@@ -189,6 +184,48 @@ class Pc20EntryExtension(Pc20BaseExtension):
         return self.__pc20_episode
 
     def social_interact(self, *args, **kwargs):
+        '''The socialInteract tag allows a podcaster to attach the url of a
+        "root post" of a comment thread to an episode.
+
+        This "root post" is treated as the canonical location of where the
+        comments and discussion around this episode will take place. This
+        can be thought of as the "official" social media comment space for
+        this episode. If a protocol such as "activitypub" is used, or some
+        other protocol that allows programmatic API access, these comments
+        can be directly pulled into the app, and replies can be posted back
+        to the thread from the app itself.
+
+        If multiple socialInteract tags are given for an <item>, the priority
+        attribute is strongly recommended to give the app an indication as to
+        which comments to display first.
+
+        This tag can also be used as a signal to platforms and apps that the
+        podcaster does not want public comments shown alongside this episode.
+        For this purpose a protocol value of "disabled" can be specified,
+        with no other attributes or node value present.
+
+        **NOTE** Due to an inconsistency in the spec, this library does not
+        enforce requiring a uri attribute. While the spec's Attributes
+        sectin does explicitly describe uri as required, the spec's Examples
+        section also includes an example tag with 'protocol="disabled"'
+        and no uri attribute.
+
+        Dict keys are as follows. Only "protocol" is required
+            - uri (optional): The uri/url of root post comment
+            - protocol (required): The protocol in use for interacting with
+            the comment root post.
+            - account_id (optional): The account id (on the commenting
+            platform) of the account that created this root post.
+            - account_url (optional): The public url (on the commenting
+            platform) of the account that created this root post.
+            - priority (optional): When multiple socialInteract tags are
+            present, this integer gives order of priority. A lower number
+            means higher priority.
+
+        :param: dict or array of dicts as described above
+        :param replace: Add or replace old data. (default false)
+        :return: List of social_interact tags as dictionaries
+        '''
         if (args or kwargs):
             ensures = {
                 'allowed': ['uri', 'protocol', 'account_id',
