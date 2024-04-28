@@ -19,6 +19,7 @@ from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
 
 
 def xml_simple_single_test(fg, tag_func, tag_name, cases):
+    tag_name_camel = to_lower_camel_case(tag_name)
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
     close_dtag = "</data>"
 
@@ -29,22 +30,19 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
         tag_func(case['test'])
         assert tag_func() == case['test']
 
-        test_xml = fg.rss_str(pretty=True).decode('UTF-8')
+        test_xml = fg.rss_str().decode('UTF-8')
         test_root = etree.XML(test_xml.encode('UTF-8'))
-        # print("***********************************\n\n")
-        # print(f"spec - {spec_xml}")
-        # print(f"test - {test_xml}")
-        # print("***********************************\n\n")
 
         for attr in case['test'].keys():
-            xp_frag = "text()" if attr == tag_name else f"@{attr}"
+            attr_camel = to_lower_camel_case(attr)
+            xp_frag = "text()" if attr == tag_name else f"@{attr_camel}"
 
             test_attr = test_root.xpath(
-                f"/rss/channel/item/podcast:{tag_name}/{xp_frag}",
+                f"/rss/channel/item/podcast:{tag_name_camel}/{xp_frag}",
                 namespaces=pc20_extend_ns()
             )
             spec_attr = spec_root.xpath(
-                f"/data/podcast:{tag_name}/{xp_frag}",
+                f"/data/podcast:{tag_name_camel}/{xp_frag}",
                 namespaces=pc20_extend_ns()
             )
             assert spec_attr == test_attr
@@ -53,7 +51,6 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
 def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     # from xmldiff import main
     tag_name_camel = to_lower_camel_case(tag_name)
-
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
     close_dtag = "</data>"
 
@@ -61,6 +58,12 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
         "".join(map(lambda x: x['spec'], cases)) + close_dtag
 
     test_cases = list(map(lambda x: x['test'], cases))
+
+    tag_func(**test_cases[0], replace=True)
+    assert tag_func() == [test_cases[0]]
+    for test_case in test_cases[1:]:
+        tag_func(**test_case, replace=False)
+    assert tag_func() == test_cases
 
     tag_func(**test_cases[0], replace=True)
     assert tag_func() == [test_cases[0]]
