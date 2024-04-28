@@ -1,10 +1,11 @@
-import sys  # noqa: F401
-from .pc20 import \
-    Pc20BaseExtension, \
-    PC20_NS, \
-    PC20_SOCIAL_PROTOCOLS, \
-    to_lower_camel_case
 from feedgen.util import ensure_format, xml_elem
+import sys  # noqa: F401
+from .pc20 import (
+    Pc20BaseExtension,
+    PC20_NS,
+    PC20_SOCIAL_PROTOCOLS,
+    to_lower_camel_case
+)
 
 
 class Pc20EntryExtension(Pc20BaseExtension):
@@ -20,6 +21,9 @@ class Pc20EntryExtension(Pc20BaseExtension):
         self.__pc20_season = None
         self.__pc20_episode = None
         self.__pc20_social_interact = None
+        self.__pc20_alternateEnclosure = None
+        self.__pc20_source = None
+        self.__pc20_integrity = None
 
     def extend_atom(self, entry):
         '''Add podcasting 2.0 elements to an atom item. Alters the item itself.

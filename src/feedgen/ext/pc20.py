@@ -65,25 +65,33 @@ class Pc20BaseExtension(BaseExtension):
 
     def __init__(self):
         self._nodes = {}
-        self.__pc20_podroll = None
+
+        # shared tags (channel & item)
         self.__pc20_person = None
         self.__pc20_location = None
         self.__pc20_license = None
-        self.__pc20_alternateEnclosure = None
-        self.__pc20_source = None
-        self.__pc20_integrity = None
-        self.__pc20_value = None
-        self.__pc20_valueRecipient = None
-        self.__pc20_medium = None
         self.__pc20_images = None
-        self.__pc20_liveItem = None
-        self.__pc20_contentLink = None
-        self.__pc20_block = None
         self.__pc20_txt = None
-        self.__pc20_remoteItem = None
-        self.__pc20_updateFrequency = None
-        self.__pc20_podping = None
-        self.__pc20_valueTimeSplit = None
+
+        # complex tags
+        # they may have their own children
+        # *OR* have a parent other than channel or item
+
+        self.__pc20_alternateEnclosure = None  # parent => item or liveItem; has children
+        self.__pc20_source = None     # parent => alternateEnclosure
+        self.__pc20_integrity = None  # parent => alternateEnclosure
+
+        self.__pc20_podroll = None  # parent => channel; has children
+        self.__pc20_remoteItem = None  # parent => channel or podcast:podroll or podcast:valueTimeSplit
+        self.__pc20_value = None  # parent => channel or item; has children
+        self.__pc20_valueRecipient = None  # parent => podcast:value or valueTimeSplit
+        self.__pc20_valueTimeSplit = None  # parent => podcast:value; has children
+
+        # NOTE - liveItem appears to be un-implemented anywhere beyond
+        # the spec, so defer for now
+        self.__pc20_liveItem = None  # parent => channel; has children
+        self.__pc20_contentLink = None  # parent => podcast:liveItem
+
 
     def extend_ns(self):
         return pc20_extend_ns()
@@ -130,27 +138,14 @@ class Pc20Extension(Pc20BaseExtension):
     '''
     def __init__(self):
         super().__init__()
-
-        # Canonical list of service slugs is at...
-        # https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
-        self.SERVICE_SLUGS = [
-            'acast', 'amazon', 'anchor', 'apple', 'audible', 'audioboom',
-            'backtracks', 'bitcoin', 'blubrry', 'buzzsprout', 'captivate',
-            'castos', 'castopod', 'facebook', 'fireside', 'fyyd', 'google',
-            'gpodder', 'hypercatcher', 'kasts', 'libsyn', 'mastodon',
-            'megafono', 'megaphone', 'omnystudio', 'overcast', 'paypal',
-            'pinecast', 'podbean', 'podcastaddict', 'podcastguru',
-            'podcastindex', 'podcasts', 'podchaser', 'podcloud',
-            'podfriend', 'podiant', 'podigee', 'podnews', 'podomatic',
-            'podserve', 'podverse', 'redcircle', 'relay',
-            'resonaterecordings', 'rss', 'shoutengine', 'simplecast',
-            'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
-            'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
-        ]
-        self.__pc20_locked = None
+        self.__pc20_block = None
         self.__pc20_funding = None
-        self.__pc20_trailer = None
         self.__pc20_guid = None
+        self.__pc20_locked = None
+        self.__pc20_medium = None
+        self.__pc20_podping = None
+        self.__pc20_trailer = None
+        self.__pc20_updateFrequency = None
 
     def locked(self, text=None, owner=None):
         '''This tag may be set to yes or no. The purpose is to tell other

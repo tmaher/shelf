@@ -13,7 +13,9 @@ feedgen.__path__ = \
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 
-from feedgen.ext.pc20 import PC20_NS, pc20_extend_ns, to_lower_camel_case  # type: ignore # noqa: E402 E501
+from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
+    PC20_NS, pc20_extend_ns, to_lower_camel_case
+ )
 
 
 def xml_simple_single_test(fg, tag_func, tag_name, cases):
