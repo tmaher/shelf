@@ -103,23 +103,15 @@ class Pc20EntryExtension(Pc20BaseExtension):
         use assume 'application/json+chapters'.
         :returns: the entry element
         '''
-
-        if (args and len(args) > 1) or (args and kwargs):
-            raise ValueError("ONE ARG ONLY")
-        val = args[0] if (args and isinstance(args[0], dict)) else kwargs
-        if val != {}:
-            val = ensure_format(
-                val,
-                set(['url', 'type']),
-                set(['url']),
-                {},
-                {'type': 'application/json+chapters'}
-            )[0]
-            node = xml_elem('{%s}%s' % (PC20_NS, 'chapters'))
-            for k, v in val.items():
-                node.attrib[k] = v
-            self._nodes['chapters'] = node
-            self.__pc20_chapters = val
+        if (args or kwargs):
+            helper_args = {'_ensure': {
+                'allowed': ['url', 'type'],
+                'required': ['url'],
+                'defaults': {'type': 'application/json+chapters'}
+            }}
+            helper_args.update(kwargs)
+            self.__pc20_chapters = \
+                self.simple_single_helper(args, helper_args)
         return self.__pc20_chapters
 
     def soundbite(self, *args, **kwargs):
