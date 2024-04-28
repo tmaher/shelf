@@ -330,8 +330,84 @@ class TestPc20EntryExt:
 
         xml_simple_single_test(fg, fe.pc20.episode, "episode", good_cases)
 
-#    def test_social_interact():
-#        assert False
+    def test_social_interact(self, fg, fe):
+        bad_cases = [
+            {'desc': 'no protocol',
+             'test': {
+                 'uri': 'https://angry.podcast/456',
+                 'account_id': 'bogus234',
+                 'account_url': 'https://noproto.invalid/',
+                 'priority': '1'
+             }},
+            {'desc': 'bogus attr',
+             'test': {
+                 'uri': 'https://angry.podcast/789',
+                 'protocol': 'bluesky',
+                 'account_id': 'zbogon567',
+                 'account_url': 'https://bogusattr.invalid/',
+                 'priority': '2',
+                 'bogus': 'I should not exist'
+             }}
+        ]
+
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fe.pc20.episode(bad_case['test'])
+
+        good_cases = [
+            {'desc': 'simple',
+             'spec':
+                '''<podcast:socialInteract
+        uri="https://podcastindex.social/web/@dave/108013847520053258"
+        protocol="activitypub"
+        accountId="@dave"
+/>''',
+             'test': {
+                'uri': "https://podcastindex.social/web/@dave/108013847520053258",
+                'protocol': "activitypub",
+                'account_id': "@dave"
+             }},
+            {'desc': 'complex 1',
+             'spec':
+                '''<podcast:socialInteract
+        priority="1"
+        uri="https://podcastindex.social/web/@dave/108013847520053258"
+        protocol="activitypub"
+        accountId="@dave"
+        accountUrl="https://podcastindex.social/web/@dave"
+/>''',
+             'test': {
+                'uri': "https://podcastindex.social/web/@dave/108013847520053258",
+                'protocol': "activitypub",
+                'account_id': "@dave",
+                'account_url': "https://podcastindex.social/web/@dave"
+             }},
+            {'desc': 'complex 2',
+             'spec':
+                '''<podcast:socialInteract
+        priority="2"
+        uri="https://twitter.com/PodcastindexOrg/status/1507120226361647115"
+        protocol="twitter"
+        accountId="@podcastindexorg"
+        accountUrl="https://twitter.com/PodcastindexOrg"
+/>''',
+             'test': {
+                'uri': "https://twitter.com/PodcastindexOrg/status/1507120226361647115",
+                'protocol': "twitter",
+                'account_id': "@podcastindexorg",
+                'account_url': "https://twitter.com/PodcastindexOrg"
+             }},
+            {'desc': "disabled",
+             'spec':
+                '''<podcast:socialInteract protocol="disabled" />''',
+             'test': {
+                'protocol': "disabled",
+             }}
+        ]
+
+        xml_simple_multi_test(
+            fg, fe.pc20.social_interact, "socialInteract", good_cases
+        )
 
 
 # #### DUAL-USE: these tags
