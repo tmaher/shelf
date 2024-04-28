@@ -1,10 +1,7 @@
-from feedgen.util import ensure_format, xml_elem
 import sys  # noqa: F401
 from .pc20 import (
     Pc20BaseExtension,
-    PC20_NS,
     PC20_SOCIAL_PROTOCOLS,
-    to_lower_camel_case
 )
 
 
@@ -231,45 +228,3 @@ class Pc20EntryExtension(Pc20BaseExtension):
             self.__pc20_social_interact = \
                 self.simple_helper(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_social_interact
-
-    def simple_helper(self, l_args, kw_args, ensures={}, multi=False):
-        import inspect
-        tag_name = inspect.stack()[1].function
-        tag_name_camel = to_lower_camel_case(tag_name)
-        attr_name = f"__pc20_{tag_name}"
-        replace = kw_args.pop('replace', False) if multi else True
-
-        if (l_args and (kw_args or len(l_args) > 1)):
-            raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
-        new_vals = l_args[0] if l_args else kw_args
-
-        new_vals = ensure_format(
-            new_vals,
-            set(ensures['allowed']),
-            set(ensures['required']),
-            ensures.get('allowed_values', None),
-            ensures.get('defaults', None)
-        )
-        if replace or (not getattr(self, attr_name, None)):
-            nodes = []
-            vals = []
-        else:
-            nodes = self._nodes[tag_name]
-            vals = getattr(self, attr_name)
-
-        for val in new_vals:
-            node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
-            node.text = val.get(tag_name, None)
-            for k, v in val.items():
-                if k == tag_name:
-                    continue
-                node.attrib[to_lower_camel_case(k)] = v
-            nodes.append(node)
-            vals.append(val)
-        if not multi:
-            nodes = nodes[0]
-            vals = vals[0]
-
-        self._nodes[tag_name] = nodes
-        setattr(self, attr_name, vals)
-        return getattr(self, attr_name)
