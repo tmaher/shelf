@@ -120,13 +120,13 @@ class Pc20EntryExtension(Pc20BaseExtension):
         item's <enclosure> element.
 
         Dict keys are as follows
-            - text (optional): This is a free form string from the podcast
-            creator to specify a title for the soundbite. If the podcaster
-            does not provide a value for the soundbite title, then leave the
-            value blank, and podcast apps can decide to use the episode title
-            or some other placeholder value in its place. Please do not
-            exceed 128 characters for the node value or it may be truncated
-            by aggregators.
+            - soundbite (optional): This is a free form string from the
+            podcast creator to specify a title for the soundbite. If the
+            podcaster does not provide a value for the soundbite title, then
+            leave the value blank, and podcast apps can decide to use the
+            episode title or some other placeholder value in its place.
+            Please do not exceed 128 characters for the node value or it may
+            be truncated by aggregators.
             - startTime (required): The time where the soundbite begins
             - duration (required): How long is the soundbite (recommended
             between 15 and 120 seconds)
@@ -137,7 +137,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['text', 'start_time', 'duration'],
+                'allowed': ['soundbite', 'start_time', 'duration'],
                 'required': ['start_time', 'duration']
             }
             self.__pc20_soundbite = \
@@ -183,6 +183,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         ).pop()
+
         node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
         node.text = val.get(tag_name, None)
         for k, v in val.items():
@@ -192,7 +193,6 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
         self._nodes[tag_name] = node
         setattr(self, attr_name, val)
-
         return getattr(self, attr_name)
 
     def simple_multi_helper(self, ensures, l_args, kw_args):
@@ -212,6 +212,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         )
+
         if replace or (not getattr(self, attr_name, None)):
             nodes = []
             vals = []
@@ -220,12 +221,14 @@ class Pc20EntryExtension(Pc20BaseExtension):
             vals = getattr(self, attr_name)
         for val in new_vals:
             node = xml_elem('{%s}%s' % (PC20_NS, tag_name))
-            node.text = val.pop('text', None)
+            node.text = val.get(tag_name, None)
             for k, v in val.items():
+                if k == tag_name:
+                    continue
                 node.attrib[to_lower_camel_case(k)] = v
             nodes.append(node)
             vals.append(val)
+
         self._nodes[tag_name] = nodes
         setattr(self, attr_name, vals)
-
         return getattr(self, attr_name)

@@ -221,13 +221,13 @@ class TestPc20EntryExt:
                 'start_time': '73.0',
                 'duration': '60.0'
                 }},
-            {'desc': ' with text',
+            {'desc': 'with soundbite text',
              'spec':
                 '''<podcast:soundbite startTime="1234.5" duration="42.25">Why the Podcast Namespace Matters</podcast:soundbite>''',
              'test': {
                 'start_time': '1234.5',
                 'duration': '42.25',
-                'text': 'Why the Podcast Namespace Matters'
+                'soundbite': 'Why the Podcast Namespace Matters'
              }}
         ]
 
