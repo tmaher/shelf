@@ -66,7 +66,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['url', 'type']
             }
             self.__pc20_transcript = \
-                self.simple_multi_helper(ensures, True, args, kwargs)
+                self.simple_helper(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_transcript
 
     def chapters(self, *args, **kwargs):
@@ -100,7 +100,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'defaults': {'type': 'application/json+chapters'}
             }
             self.__pc20_chapters = \
-                self.simple_single_helper(ensures, args, kwargs)
+                self.simple_helper(args, kwargs, ensures=ensures)
         return self.__pc20_chapters
 
     def soundbite(self, *args, **kwargs):
@@ -129,7 +129,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['start_time', 'duration']
             }
             self.__pc20_soundbite = \
-                self.simple_multi_helper(ensures, True, args, kwargs)
+                self.simple_helper(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_soundbite
 
     def season(self, *args, **kwargs):
@@ -152,7 +152,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['season']
             }
             self.__pc20_season = \
-                self.simple_single_helper(ensures, args, kwargs)
+                self.simple_helper(args, kwargs, ensures=ensures)
         return self.__pc20_season
 
     def episode(self, *args, **kwargs):
@@ -178,7 +178,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'required': ['episode']
             }
             self.__pc20_episode = \
-                self.simple_single_helper(ensures, args, kwargs)
+                self.simple_helper(args, kwargs, ensures=ensures)
         return self.__pc20_episode
 
     def social_interact(self, *args, **kwargs):
@@ -229,39 +229,10 @@ class Pc20EntryExtension(Pc20BaseExtension):
                 'allowed_values': {'protocol': PC20_SOCIAL_PROTOCOLS}
             }
             self.__pc20_social_interact = \
-                self.simple_multi_helper(ensures, True, args, kwargs)
+                self.simple_helper(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_social_interact
 
-    def simple_single_helper(self, ensures, l_args, kw_args):
-        import inspect
-        tag_name = inspect.stack()[1].function
-        tag_name_camel = to_lower_camel_case(tag_name)
-        attr_name = f"__pc20_{tag_name}"
-
-        if (l_args and (kw_args or len(l_args) > 1)):
-            raise ValueError(f"Too Many Args!\nl: {l_args}\nkw: {kw_args}\n")
-        new_vals = l_args[0] if l_args else kw_args
-
-        new_vals = ensure_format(
-            new_vals,
-            set(ensures['allowed']),
-            set(ensures['required']),
-            ensures.get('allowed_values', None),
-            ensures.get('defaults', None)
-        ).pop()
-
-        node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
-        node.text = new_vals.get(tag_name, None)
-        for k, v in new_vals.items():
-            if k == 'text':
-                continue
-            node.attrib[to_lower_camel_case(k)] = v
-
-        self._nodes[tag_name] = node
-        setattr(self, attr_name, new_vals)
-        return getattr(self, attr_name)
-
-    def simple_multi_helper(self, ensures, multi, l_args, kw_args):
+    def simple_helper(self, l_args, kw_args, ensures={}, multi=False):
         import inspect
         tag_name = inspect.stack()[1].function
         tag_name_camel = to_lower_camel_case(tag_name)
@@ -279,22 +250,32 @@ class Pc20EntryExtension(Pc20BaseExtension):
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         )
-
-        if replace or (not getattr(self, attr_name, None)):
-            nodes = []
-            vals = []
+        if multi:
+            if replace or (not getattr(self, attr_name, None)):
+                nodes = []
+                vals = []
+            else:
+                nodes = self._nodes[tag_name]
+                vals = getattr(self, attr_name)
+            for val in new_vals:
+                node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
+                node.text = val.get(tag_name, None)
+                for k, v in val.items():
+                    if k == tag_name:
+                        continue
+                    node.attrib[to_lower_camel_case(k)] = v
+                nodes.append(node)
+                vals.append(val)
         else:
-            nodes = self._nodes[tag_name]
-            vals = getattr(self, attr_name)
-        for val in new_vals:
+            val = new_vals[0]
             node = xml_elem('{%s}%s' % (PC20_NS, tag_name_camel))
             node.text = val.get(tag_name, None)
             for k, v in val.items():
-                if k == tag_name:
+                if k == 'text':
                     continue
                 node.attrib[to_lower_camel_case(k)] = v
-            nodes.append(node)
-            vals.append(val)
+            nodes = node
+            vals = val
 
         self._nodes[tag_name] = nodes
         setattr(self, attr_name, vals)
