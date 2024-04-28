@@ -21,9 +21,6 @@ class Pc20EntryExtension(Pc20BaseExtension):
         self.__pc20_season = None
         self.__pc20_episode = None
         self.__pc20_social_interact = None
-        self.__pc20_alternateEnclosure = None
-        self.__pc20_source = None
-        self.__pc20_integrity = None
 
     def extend_atom(self, entry):
         '''Add podcasting 2.0 elements to an atom item. Alters the item itself.
@@ -247,7 +244,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
     def simple_single_helper(self, ensures, l_args, kw_args):
         import inspect
-        tag_name = inspect.stack()[1][3]
+        tag_name = inspect.stack()[1].function
         attr_name = f"__pc20_{tag_name}"
 
         if (l_args and (kw_args or len(l_args) > 1)):
@@ -275,7 +272,7 @@ class Pc20EntryExtension(Pc20BaseExtension):
 
     def simple_multi_helper(self, ensures, l_args, kw_args):
         import inspect
-        tag_name = inspect.stack()[1][3]
+        tag_name = inspect.stack()[1].function
         tag_name_camel = to_lower_camel_case(tag_name)
         attr_name = f"__pc20_{tag_name}"
         replace = kw_args.pop('replace', False)
