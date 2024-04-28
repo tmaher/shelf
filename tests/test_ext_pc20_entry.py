@@ -169,7 +169,6 @@ class TestPc20EntryExt:
                 }}
         ]
 
-        # xml_simple_single_test(fg, fe.pc20.transcript, "transcript", good_cases)
         xml_simple_multi_test(
             fg, fe.pc20.transcript, "transcript", good_cases)
 
