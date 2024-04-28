@@ -47,9 +47,21 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
             )
             assert spec_attr == test_attr
 
+        test_kid = etree.XML(fg.rss_str())\
+            .xpath(
+                f"//podcast:{tag_name_camel}",
+                namespaces=pc20_extend_ns()
+            )[0]
+        test_dtag = etree.fromstring(open_dtag + close_dtag)
+        test_dtag.append(test_kid)
+        test_xml = etree.tostring(test_dtag).decode('UTF-8')
+
+        spec_xml_canon = etree.canonicalize(spec_xml)
+        test_xml_canon = etree.canonicalize(test_xml)
+        assert spec_xml_canon == test_xml_canon
+
 
 def xml_simple_multi_test(fg, tag_func, tag_name, cases):
-    # from xmldiff import main
     tag_name_camel = to_lower_camel_case(tag_name)
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
     close_dtag = "</data>"
@@ -86,14 +98,6 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     spec_xml_canon = etree.canonicalize(spec_xml)
     test_xml_canon = etree.canonicalize(test_xml)
     assert spec_xml_canon == test_xml_canon
-
-    # diff = main.diff_texts(spec_xml, test_xml_rt)
-    # if diff != []:
-    #     # we don't do simple "assert diff == []" because xmldiff's
-    #     # output is not super helpful on its own.
-    #     assert spec_xml == test_xml_rt
-    # else:
-    #    assert diff == []
 
 
 class TestPc20EntryExt:
