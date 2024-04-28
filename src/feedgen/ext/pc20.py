@@ -26,6 +26,11 @@ PC20_SERVICE_SLUGS = [
     'slack', 'soundcloud', 'spotify', 'spreaker', 'tiktok',
     'transistor', 'twitter', 'whooshkaa', 'youtube', 'zencast'
 ]
+# Canonical list of social protocols is at...
+# https://github.com/Podcastindex-org/podcast-namespace/blob/main/socialprotocols.txt
+PC20_SOCIAL_PROTOCOLS = [
+    'disabled', 'activitypub', 'twitter', 'lightning', 'bluesky'
+]
 
 
 def pc20_extend_ns():

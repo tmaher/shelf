@@ -1,5 +1,9 @@
 import sys  # noqa: F401
-from .pc20 import Pc20BaseExtension, PC20_NS, to_lower_camel_case
+from .pc20 import \
+    Pc20BaseExtension, \
+    PC20_NS, \
+    PC20_SOCIAL_PROTOCOLS, \
+    to_lower_camel_case
 from feedgen.util import ensure_format, xml_elem
 
 
@@ -230,7 +234,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
             ensures = {
                 'allowed': ['uri', 'protocol', 'account_id',
                             'account_url', 'priority'],
-                'required': ['protocol']
+                'required': ['protocol'],
+                'allowed_values': {'protocol': PC20_SOCIAL_PROTOCOLS}
             }
             self.__pc20_social_interact = \
                 self.simple_multi_helper(ensures, args, kwargs)

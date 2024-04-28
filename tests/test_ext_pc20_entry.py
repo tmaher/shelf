@@ -49,7 +49,7 @@ def xml_simple_single_test(fg, tag_func, tag_name, cases):
 
 
 def xml_simple_multi_test(fg, tag_func, tag_name, cases):
-    from xmldiff import main
+    # from xmldiff import main
     tag_name_camel = to_lower_camel_case(tag_name)
 
     open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
@@ -61,10 +61,7 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     test_cases = list(map(lambda x: x['test'], cases))
     tag_func(test_cases, replace=True)
     assert tag_func() == test_cases
-    # feed_test_xml = fg.rss_str(pretty=True).decode('UTF-8')
-    # print(f"\nSPEC => {spec_xml}\n")
-    # print(f"TEST => {feed_test_xml}\n")
-    test_kids = etree.XML(fg.rss_str(pretty=True))\
+    test_kids = etree.XML(fg.rss_str())\
         .xpath(
             f"//podcast:{tag_name_camel}",
             namespaces=pc20_extend_ns()
@@ -72,16 +69,19 @@ def xml_simple_multi_test(fg, tag_func, tag_name, cases):
     test_dtag = etree.fromstring(open_dtag + close_dtag)
     for kid in test_kids:
         test_dtag.append(kid)
-    test_xml_rt = etree.tostring(test_dtag).decode('UTF-8')
+    test_xml = etree.tostring(test_dtag).decode('UTF-8')
 
-    diff = main.diff_texts(spec_xml, test_xml_rt)
-    if diff != []:
-        print("\n\n******************\nDIFF FAILED\n")
-        print(f"tag   '{tag_name}'\ncamel '{tag_name_camel}'\n")
-        print(f"spec =>\n{spec_xml}\n")
-        print(f"test =>\n{test_xml_rt}\n")
-        assert False
-    assert diff == []
+    spec_xml_canon = etree.canonicalize(spec_xml)
+    test_xml_canon = etree.canonicalize(test_xml)
+    assert spec_xml_canon == test_xml_canon
+
+    # diff = main.diff_texts(spec_xml, test_xml_rt)
+    # if diff != []:
+    #     # we don't do simple "assert diff == []" because xmldiff's
+    #     # output is not super helpful on its own.
+    #     assert spec_xml == test_xml_rt
+    # else:
+    #    assert diff == []
 
 
 class TestPc20EntryExt:
@@ -354,12 +354,17 @@ class TestPc20EntryExt:
                  'account_url': 'https://bogusattr.invalid/',
                  'priority': '2',
                  'bogus': 'I should not exist'
+             }},
+            {'desc': 'bogus proto',
+             'test': {
+                 'protocol': 'bogusproto',
+                 'uri': 'https://angry.podcast/0ab'
              }}
         ]
 
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
-                fe.pc20.episode(bad_case['test'])
+                fe.pc20.social_interact(bad_case['test'])
 
         good_cases = [
             {'desc': 'simple',
