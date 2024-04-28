@@ -214,34 +214,43 @@ class Pc20Extension(Pc20BaseExtension):
         self.__pc20_trailer = None
         self.__pc20_updateFrequency = None
 
-    def locked(self, text=None, owner=None):
+    def locked(self, *args, **kwargs):
         '''This tag may be set to yes or no. The purpose is to tell other
         podcast hosting platforms whether they are allowed to import this feed.
         A value of yes means that any attempt to import this feed into a new
         platform should be rejected.
 
-        :param text: must be "yes" or "no"
+        :param locked: must be "yes" or "no"
         :param owner: (optional) The owner attribute is an email address that
-        can be used to verify ownership of this feed during move and import
-        operations. This could be a public email or a virtual email address
-        at the hosting provider that redirects to the owner's true email
-        address.
+            can be used to verify ownership of this feed during move and
+            import operations. This could be a public email or a virtual email
+            address at the hosting provider that redirects to the owner's true
+            email address.
         :returns: dict of locked & owner email
         '''
-        if text is not None:
-            if text not in ('yes', 'no'):
-                raise ValueError("Locked may only be 'yes' or 'no'")
-            val = {'text': text}
-            node = xml_elem('{%s}%s' % (PC20_NS, 'locked'))
-            node.text = text
-            if owner:
-                node.attrib['owner'] = owner
-                val['owner'] = owner
-
-            self.__pc20_locked = val
-            self._nodes['locked'] = node
-
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['locked', 'owner'],
+                'required': ['locked'],
+                'allowed_values': {'locked': ['yes', 'no']}
+            }
+            self.__pc20_locked = \
+                self.simple_helper(args, kwargs, ensures=ensures)
         return self.__pc20_locked
+#        if text is not None:
+#            if text not in ('yes', 'no'):
+#                raise ValueError("Locked may only be 'yes' or 'no'")
+#            val = {'text': text}
+#            node = xml_elem('{%s}%s' % (PC20_NS, 'locked'))
+#            node.text = text
+#            if owner:
+#                node.attrib['owner'] = owner
+#                val['owner'] = owner
+#
+#            self.__pc20_locked = val
+#            self._nodes['locked'] = node
+#
+#        return self.__pc20_locked
 
     def funding(self, fundings=[], replace=False):
         '''This tag lists possible donation/funding links for the podcast.

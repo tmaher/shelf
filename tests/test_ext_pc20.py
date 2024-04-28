@@ -45,9 +45,9 @@ class TestPc20Ext:
     #    - no children
 
     def test_locked(self, fg):
-        fg.pc20.locked('yes', owner='bob@angry.podcast')
+        fg.pc20.locked(locked='yes', owner='bob@angry.podcast')
         assert fg.pc20.locked() == {
-            'text': 'yes', 'owner': 'bob@angry.podcast'
+            'locked': 'yes', 'owner': 'bob@angry.podcast'
         }
         with pytest.raises(ValueError):
             fg.pc20.locked('bogus')
@@ -55,7 +55,7 @@ class TestPc20Ext:
         fe = fg.add_entry()
         fe.title('locked ep')
         with pytest.raises(AttributeError):
-            fe.pc20.locked('yes', owner='bob@angry.podcast')
+            fe.pc20.locked(locked='yes', owner='bob@angry.podcast')
 
         xml_frag = \
             '<podcast:locked owner="bob@angry.podcast">yes</podcast:locked>'
