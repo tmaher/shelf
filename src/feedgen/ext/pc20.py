@@ -238,43 +238,26 @@ class Pc20Extension(Pc20BaseExtension):
                 self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_locked
 
-    def funding(self, fundings=[], replace=False):
+    def funding(self, *args, **kwargs):
         '''This tag lists possible donation/funding links for the podcast.
         The content of the tag is the recommended string to be used with
         the link.
 
-        Funding dicts have two fields, both are required
-            - 'text' is a free form string supplied by the creator which they
-            expect to be displayed in the app next to the link. Please do not
-            exceed 128 characters for the node value or it may be truncated by
-            aggregators.
-            - 'url' is the URL to be followed to fund the podcast.
-
-        :param fundings: Dicitonary or list of dictionaries with text and url
-        :param replace: Add or replace old data. (default false)
+        :param url: (REQUIRED) The URL to be followed to fund the podcast.
+        :param funding: (optional) This is a free form string supplied by the
+        creator which they expect to be displayed in the app next to the link.
+        Please do not exceed 128 characters for the node value or it may be
+        truncated by aggregators.
+        :param replace: (optional) Add or replace old data. (default false)
         :returns List of funding tags as dictionaries
         '''
-        if fundings != []:
-            fundings = ensure_format(
-                fundings,
-                set(['text', 'url']),
-                set(['text', 'url'])
-            )
-            if replace or (not self._nodes.get('funding')):
-                funding_nodes = []
-                vals = []
-            else:
-                funding_nodes = self._nodes['funding']
-                vals = self.__pc20_funding
-            for fund in fundings:
-                val = fund
-                vals.append(val)
-                node = xml_elem('{%s}%s' % (PC20_NS, 'funding'))
-                node.text = val['text']
-                node.attrib['url'] = val['url']
-                funding_nodes.append(node)
-            self._nodes['funding'] = funding_nodes
-            self.__pc20_funding = vals
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['url', 'funding'],
+                'required': ['url']
+            }
+            self.__pc20_funding = \
+                self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_funding
 
     def trailer(self, trailers=[], replace=False):

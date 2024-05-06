@@ -75,41 +75,40 @@ class TestPc20Ext:
         ]
         helper.simple_single(fg, fg.pc20.locked, "locked", good_cases)
 
-    def test_funding(self, fg):
-        test_fundings = [
-            {'text': "mo' money",
-                'url': 'https://funding2.angry.podcast/'},
-            {'text': 'show me the money',
-                'url': 'https://funding1.angry.podcast/'}
+    def test_funding(self, helper, fg):
+        bad_cases = [
+            {'desc': 'bogus param',
+             'test': {
+                'bogustag': 'true'
+             }},
+            {'desc': 'funding no url',
+             'test': {
+                'funding': 'what is my url?'
+             }}
         ]
-        with pytest.raises(ValueError):
-            fg.pc20.funding('bogus')
-        with pytest.raises(ValueError):
-            fg.pc20.funding(['bogus'])
-        with pytest.raises(ValueError):
-            fg.pc20.funding([{'text': '1', 'url': '2', 'bogus': '3'}])
 
-        fg.pc20.funding(test_fundings[0])
-        assert fg.pc20.funding() == [test_fundings[0]]
-        fg.pc20.funding(test_fundings, replace=True)
-        assert fg.pc20.funding() == test_fundings
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.funding(bad_case['test'], replace=True)
 
-        fe = fg.add_entry()
-        fe.title('funded ep')
-        with pytest.raises(AttributeError):
-            fe.pc20.funding(test_fundings)
+        good_cases = [
+            {'desc': 'support the show',
+             'spec':
+                '''<podcast:funding url="https://www.example.com/donations">Support the show!</podcast:funding>''',
+             'test': {
+                'url': 'https://www.example.com/donations',
+                'funding': 'Support the show!'
+                }},
+            {'desc': 'become a member',
+             'spec':
+                '''<podcast:funding url="https://www.example.com/members">Become a member!</podcast:funding>''',
+             'test': {
+               'url': 'https://www.example.com/members',
+               'funding': 'Become a member!'
+             }}
+        ]
 
-        xml_frag_0 = \
-            '<podcast:funding url="https://funding1.angry.podcast/">'\
-            'show me the money</podcast:funding>'
-        xml_frag_1 = \
-            '<podcast:funding url="https://funding2.angry.podcast/">'\
-            "mo' money</podcast:funding>"
-
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_0 in fg_xml
-        assert xml_frag_1 in fg_xml
+        helper.simple_multi(fg, fg.pc20.funding, "funding", good_cases)
 
     def test_trailer(self, fg):
         test_trailers = [
