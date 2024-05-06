@@ -110,7 +110,66 @@ class TestPc20Ext:
 
         helper.simple_multi(fg, fg.pc20.funding, "funding", good_cases)
 
-    def test_trailer(self, fg):
+    def test_trailer(self, helper, fg):
+        bad_cases = [
+            {'desc': 'url only',
+             'test': {
+                'url': 'https://nodate.somedomain/'
+             }},
+            {'desc': 'bad date',
+             'test': {
+                'url': 'https://baddate.somedomain/',
+                'pubdate': 0
+             }},
+            {'desc': 'bad param',
+             'test': {
+                'url': 'https://badparam.somedomain/',
+                'pubdate': 'Thu, 01 Apr 2021 08:00:00 EST',
+                'bogus': 'i am a bogon param'
+             }}
+        ]
+
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.trailer(bad_case['test'], replace=True)
+
+        good_cases = [
+            {'desc': 'april 1',
+             'spec':
+             '''<podcast:trailer
+        pubdate="Thu, 01 Apr 2021 08:00:00 EST"
+        url="https://example.org/trailers/teaser"
+        length="12345678"
+        type="audio/mp3
+">Coming April 1st, 2021</podcast:trailer>''',
+             'test': {
+                'pubdate': "Thu, 01 Apr 2021 08:00:00 EST",
+                'url': 'https://example.org/trailers/teaser',
+                'length': '12345678',
+                'type': 'audio/mp3',
+                'trailer': 'Coming April 1st, 2021'
+             }},
+            {'desc': 'white HOUSE',
+             'spec':
+             '''<podcast:trailer
+        pubdate="Thu, 01 Apr 2021 08:00:00 EST"
+        url="https://example.org/trailers/season4teaser"
+        length="12345678"
+        type="video/mp4"
+        season="4"
+>Season 4: Race for the Whitehouse</podcast:trailer>''',
+             'test': {
+                'pubdate': 'Thu, 01 Apr 2021 08:00:00 EST',
+                'url': 'https://example.org/trailers/season4teaser',
+                'length': '12345678',
+                'type': 'video/mp4',
+                'season': '4'
+             }}
+        ]
+
+        helper.simple_multi(fg, fg.pc20.trailer, "trailer", good_cases)
+
+    def old_test_trailers(self, fg):
         test_trailers = [
             {'url': 'https://trailer420.angry.podcast/',
              'pubdate': 'Sun, 20 Apr 1969 16:20:00 GMT',
