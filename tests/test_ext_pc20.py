@@ -261,28 +261,49 @@ class TestPc20Ext:
         ]
         helper.simple_single(fg, fg.pc20.guid, "guid", good_cases)
 
-    def test_medium(self, fg):
-        with pytest.raises(ValueError):
-            fg.pc20.medium('bogus')
+    def test_medium(self, helper, fg):
+        bad_cases = [
+            {'desc': 'bogus key',
+             'test': {
+                'bogus': 'bogus'
+             }},
+            {'desc': 'rant is bogus',
+             'test': {
+                 'medium': 'rant'
+             }},
+            {'desc': 'good medium, bogus key',
+             'test': {
+                 'medium': 'musicL',
+                 'bogus': 'bogus'
+             }}
+        ]
 
-        assert fg.pc20.medium('podcast') == 'podcast'
-        assert fg.pc20.medium('music') == 'music'
-        assert fg.pc20.medium('audiobookL') == 'audiobookL'
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.medium(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
-        fe = fg.add_entry()
-        fe.title('medium ep')
-        with pytest.raises(AttributeError):
-            fe.pc20.guid('music')
-
-        xml_frag_0 = \
-            "<podcast:medium>videoL</podcast:medium>"
-        xml_frag_1 = \
-            "<podcast:medium>film</podcast:medium>"
-        fg.pc20.medium('film')
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_1 in fg_xml
-        assert xml_frag_0 not in fg_xml
+        good_cases = [
+            {'desc': 'podcast',
+             'spec':
+                '''<podcast:medium>podcast</podcast:medium>''',
+             'test': {
+                'medium': 'podcast'
+             }},
+            {'desc': 'music',
+             'spec':
+                '''<podcast:medium>music</podcast:medium>''',
+             'test': {
+                'medium': 'music'
+             }},
+            {'desc': 'musicL',
+             'spec':
+                '''<podcast:medium>musicL</podcast:medium>''',
+             'test': {
+                'medium': 'musicL'
+             }},
+        ]
+        helper.simple_single(fg, fg.pc20.medium, "medium", good_cases)
 
     def test_block_multi(self, fg):
         bad_test_blocks = [

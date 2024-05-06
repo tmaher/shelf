@@ -366,7 +366,7 @@ class Pc20Extension(Pc20BaseExtension):
                 self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_guid
 
-    def medium(self, medium=None):
+    def medium(self, *args, **kwargs):
         '''The medium tag tells an application what the content contained
         within the feed IS, as opposed to what the content is ABOUT in the
         case of a category. This allows a podcast app to modify it's behavior
@@ -421,10 +421,10 @@ class Pc20Extension(Pc20BaseExtension):
         :param medium: the medium, as described above
         :returns the medium string
         '''
-        if medium:
-            ensure_format(
-                {'medium': medium}, set(['medium']), set(['medium']),
-                {'medium': [
+        if (args or kwargs):
+            ensures = {
+                'required': ['medium'],
+                'allowed_values': {'medium': [
                     'podcast', 'podcastL',
                     'music', 'musicL',
                     'video', 'videoL',
@@ -434,11 +434,9 @@ class Pc20Extension(Pc20BaseExtension):
                     'blog', 'blogL',
                     'mixed'
                 ]}
-            )
-            node = xml_elem('{%s}%s' % (PC20_NS, 'medium'))
-            node.text = medium
-            self._nodes['medium'] = node
-            self.__pc20_medium = medium
+            }
+            self.__pc20_medium = \
+                self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_medium
 
     def block(self, blocks=None, slug_override=False, replace=False):
