@@ -271,8 +271,8 @@ class Pc20Extension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['locked', 'owner'],
                 'required': ['locked'],
+                'allowed': ['owner'],
                 'allowed_values': {'locked': ['yes', 'no']}
             }
             self.__pc20_locked = \
@@ -294,8 +294,8 @@ class Pc20Extension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['url', 'funding'],
-                'required': ['url']
+                'required': ['url'],
+                'allowed': ['funding']
             }
             self.__pc20_funding = \
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
@@ -333,9 +333,8 @@ class Pc20Extension(Pc20BaseExtension):
 
         if (args or kwargs):
             ensures = {
-                'allowed': ['url', 'pubdate', 'length', 'type', 'season',
-                            'trailer'],
                 'required': ['url', 'pubdate'],
+                'allowed': ['length', 'type', 'season', 'trailer'],
                 'validators': {'pubdate': date_to_rfc2822}
             }
             self.__pc20_trailer = \
@@ -360,7 +359,6 @@ class Pc20Extension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['guid'],
                 'required': ['guid'],
                 'validators': {'guid': validate_guid}
             }
@@ -586,7 +584,6 @@ class Pc20Extension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['uses_podping'],
                 'required': ['uses_podping'],
                 'allowed_values': {'uses_podping': ['true', 'false']}
             }

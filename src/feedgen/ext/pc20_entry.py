@@ -59,8 +59,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['url', 'type', 'language', 'rel'],
-                'required': ['url', 'type']
+                'required': ['url', 'type'],
+                'allowed': ['language', 'rel']
             }
             self.__pc20_transcript = \
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
@@ -92,8 +92,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['url', 'type'],
                 'required': ['url'],
+                'allowed': ['type'],
                 'defaults': {'type': 'application/json+chapters'}
             }
             self.__pc20_chapters = \
@@ -122,8 +122,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['soundbite', 'start_time', 'duration'],
-                'required': ['start_time', 'duration']
+                'required': ['start_time', 'duration'],
+                'allowed': ['soundbite']
             }
             self.__pc20_soundbite = \
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
@@ -145,8 +145,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['season', 'name'],
-                'required': ['season']
+                'required': ['season'],
+                'allowed': ['name']
             }
             self.__pc20_season = \
                 self.getset_simple(args, kwargs, ensures=ensures)
@@ -171,8 +171,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['episode', 'display'],
-                'required': ['episode']
+                'required': ['episode'],
+                'allowed': ['display']
             }
             self.__pc20_episode = \
                 self.getset_simple(args, kwargs, ensures=ensures)
@@ -220,9 +220,8 @@ class Pc20EntryExtension(Pc20BaseExtension):
         '''
         if (args or kwargs):
             ensures = {
-                'allowed': ['uri', 'protocol', 'account_id',
-                            'account_url', 'priority'],
                 'required': ['protocol'],
+                'allowed': ['uri', 'account_id', 'account_url', 'priority'],
                 'allowed_values': {'protocol': PC20_SOCIAL_PROTOCOLS}
             }
             self.__pc20_social_interact = \
