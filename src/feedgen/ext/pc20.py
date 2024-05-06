@@ -597,27 +597,3 @@ class Pc20Extension(Pc20BaseExtension):
             self.__pc20_podping = \
                 self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_podping
-
-    def old_podping(self, uses_podping=None, replace=False):
-        '''This element allows feed owners to signal to aggregators that the
-        feed sends out Podping notifications when changes are made to it,
-        reducing the need for frequent speculative feed polling.
-
-        :param uses_podping: str - either "true" or "false"
-        :param replace: Add or replace old data. (default false)
-        '''
-
-        if replace:
-            self.__pc20_podping = None
-            self._nodes.pop('podping', None)
-        if uses_podping is not None:
-            if uses_podping not in ['true', 'false']:
-                raise ValueError(
-                    "uses_podping must be either 'true' or ''false'")
-            val = {'uses_podping': uses_podping}
-            node = xml_elem('{%s}%s' % (PC20_NS, 'podping'))
-            node.attrib['usesPodping'] = val['uses_podping']
-            self._nodes['podping'] = node
-            self.__pc20_podping = val
-
-        return self.__pc20_podping
