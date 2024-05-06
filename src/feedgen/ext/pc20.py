@@ -64,6 +64,24 @@ class Pc20BaseExtension(BaseExtension):
     Tags shared <channel> and <item> go here.
     '''
 
+    @classmethod
+    def date_to_rfc2822(cls, ts):
+        if isinstance(ts, datetime):
+            return email.utils.format_datetime(ts)
+        elif (isinstance(ts, int) or isinstance(ts, float)):
+            return email.utils.formatdate(ts)
+        elif isinstance(ts, str):
+            try:
+                email.utils.parsedate_to_datetime(ts)
+            except ValueError:
+                return email.utils.format_datetime(
+                    datetime.fromisoformat(re.sub(r"Z\Z", "+00:00", ts))
+                )
+        else:
+            raise ValueError("need datetime, unix timestamp, or string")
+
+        return ts
+
     def __init__(self):
         self._nodes = {}
 
@@ -266,24 +284,6 @@ class Pc20Extension(Pc20BaseExtension):
             self.__pc20_funding = \
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_funding
-
-    @classmethod
-    def date_to_rfc2822(cls, ts):
-        if isinstance(ts, datetime):
-            return email.utils.format_datetime(ts)
-        elif (isinstance(ts, int) or isinstance(ts, float)):
-            return email.utils.formatdate(ts)
-        elif isinstance(ts, str):
-            try:
-                email.utils.parsedate_to_datetime(ts)
-            except ValueError:
-                return email.utils.format_datetime(
-                    datetime.fromisoformat(re.sub(r"Z\Z", "+00:00", ts))
-                )
-        else:
-            raise ValueError("need datetime, unix timestamp, or string")
-
-        return ts
 
     def trailer(self, *args, **kwargs):
         '''This element is used to define the location of an audio or video
