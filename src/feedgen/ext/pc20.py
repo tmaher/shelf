@@ -55,6 +55,24 @@ def url2guid(url):
     return str(uuid.uuid5(PC20_NS_GUID_UUID, no_scheme_url))
 
 
+def date_to_rfc2822(ts):
+    if isinstance(ts, datetime):
+        return email.utils.format_datetime(ts)
+    elif (isinstance(ts, int) or isinstance(ts, float)):
+        return email.utils.formatdate(ts)
+    elif isinstance(ts, str):
+        try:
+            email.utils.parsedate_to_datetime(ts)
+        except ValueError:
+            return email.utils.format_datetime(
+                datetime.fromisoformat(re.sub(r"Z\Z", "+00:00", ts))
+            )
+    else:
+        raise ValueError("need datetime, unix timestamp, or string")
+
+    return ts
+
+
 class Pc20BaseExtension(BaseExtension):
     '''Podcasting 2.0 extension. See the following for specs:
 
@@ -63,25 +81,6 @@ class Pc20BaseExtension(BaseExtension):
 
     Tags shared <channel> and <item> go here.
     '''
-
-    @classmethod
-    def date_to_rfc2822(cls, ts):
-        if isinstance(ts, datetime):
-            return email.utils.format_datetime(ts)
-        elif (isinstance(ts, int) or isinstance(ts, float)):
-            return email.utils.formatdate(ts)
-        elif isinstance(ts, str):
-            try:
-                email.utils.parsedate_to_datetime(ts)
-            except ValueError:
-                return email.utils.format_datetime(
-                    datetime.fromisoformat(re.sub(r"Z\Z", "+00:00", ts))
-                )
-        else:
-            raise ValueError("need datetime, unix timestamp, or string")
-
-        return ts
-
     def __init__(self):
         self._nodes = {}
 
@@ -320,7 +319,7 @@ class Pc20Extension(Pc20BaseExtension):
                 'allowed': ['url', 'pubdate', 'length', 'type', 'season',
                             'trailer'],
                 'required': ['url', 'pubdate'],
-                'validators': {'pubdate': self.date_to_rfc2822}
+                'validators': {'pubdate': date_to_rfc2822}
             }
             self.__pc20_trailer = \
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
