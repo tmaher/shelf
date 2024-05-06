@@ -5,6 +5,7 @@ import uuid
 import urllib
 import re
 from datetime import datetime, timezone
+import email
 import icalendar
 import sys  # noqa: F401
 
@@ -173,6 +174,12 @@ class Pc20BaseExtension(BaseExtension):
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         )
+        if ensures.get('validators', None):
+            for val in new_vals:
+                for attr, vfunc in ensures['validators'].items():
+                    if val.get(attr, None):
+                        val[attr] = vfunc(val[attr])
+
         if replace or (not getattr(self, attr_name, None)):
             nodes = []
             vals = []
@@ -260,56 +267,63 @@ class Pc20Extension(Pc20BaseExtension):
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_funding
 
-    def trailer(self, trailers=[], replace=False):
+    @classmethod
+    def date_to_rfc2822(cls, ts):
+        if isinstance(ts, datetime):
+            return email.utils.format_datetime(ts)
+        elif (isinstance(ts, int) or isinstance(ts, float)):
+            return email.utils.formatdate(ts)
+        elif isinstance(ts, str):
+            try:
+                email.utils.parsedate_to_datetime(ts)
+            except ValueError:
+                return email.utils.format_datetime(
+                    datetime.fromisoformat(re.sub(r"Z\Z", "+00:00", ts))
+                )
+        else:
+            raise ValueError("need datetime, unix timestamp, or string")
+
+        return ts
+
+    def trailer(self, *args, **kwargs):
         '''This element is used to define the location of an audio or video
         file to be used as a trailer for the entire podcast or a specific
         season. There can be more than one trailer present in the channel
         of the feed. This element is basically just like an <enclosure> with
         the extra pubdate and season attributes added.
 
-        Dict keys are as follows. text, url, and pubdate are all required.
-            - text (required): title of the trailer. It is required.
-            Please do not exceed 128 characters for the node value or
-            it may be truncated by aggregators.
-            - url (required): This is a url that points to the audio or video
-            file to be played. This attribute is a string.
-            - pubdate (required): The date the trailer was published.
-            This attribute is an RFC2822 formatted date string.
-            - length (recommended): The length of the file in bytes.
-            This attribute is a number.
-            - type (recommended): The mime type of the file.
-            This attribute is a string.
-            - season: If this attribute is present it specifies that this
-            trailer is for a particular season number.
-            This attribute is a number.
+        If there is more than one trailer tag present in the channel, the
+        most recent one (according to its pubdate) should be chosen as the
+        preview by default within podcast apps.
 
-        :param trailers: dict or array of dicts as described above
+        :param url: (REQUIRED) This is a url that points to the audio or
+            video file to be played. This attribute is a string.
+        :param pubdate: (REQUIRED) The date the trailer was published.
+            This attribute is an RFC2822 formatted date string.
+            **IMPLEMENTATION NOTE**: this library will additionally accept
+            DateTime objects, ISO8601 format strings, and Unix timestamps.
+            Those formats will be converted to RFC2822 format date strings,
+            defaulting to UTC unless otherwise specified.
+        :param length: (optional) The length of the file in bytes. This
+            attribute is a number.
+        :param type: (optional) The mime type of the file. This attribute
+            is a string.
+        :param season: (optional) If this attribute is present it specifies
+            that this trailer is for a particular season number. This
+            attribute is a number.
         :param replace: Add or replace old data. (default false)
-        :returns List of funding tags as dictionaries
+        :returns: List of trailer tags as dictionaries
         '''
-        if trailers != []:
-            trailers = ensure_format(
-                trailers,
-                set(['text', 'url', 'pubdate', 'length', 'type', 'season']),
-                set(['text', 'url', 'pubdate'])
-            )
-            if replace or (not self._nodes.get('trailer')):
-                trailer_nodes = []
-                vals = []
-            else:
-                trailer_nodes = self._nodes['trailer']
-                vals = self.__pc20_trailer
-            for trail in trailers:
-                val = trail
-                node = xml_elem('{%s}%s' % (PC20_NS, 'trailer'))
-                node.text = val['text']
-                for attr in ['url', 'pubdate', 'length', 'type', 'season']:
-                    if val.get(attr):
-                        node.attrib[attr] = val[attr]
-                trailer_nodes.append(node)
-                vals.append(val)
-            self._nodes['trailer'] = trailer_nodes
-            self.__pc20_trailer = vals
+
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['url', 'pubdate', 'length', 'type', 'season',
+                            'trailer'],
+                'required': ['url', 'pubdate'],
+                'validators': {'pubdate': self.date_to_rfc2822}
+            }
+            self.__pc20_trailer = \
+                self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_trailer
 
     def guid(self, guid=None, url=None):

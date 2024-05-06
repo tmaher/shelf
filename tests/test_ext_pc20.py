@@ -57,6 +57,7 @@ class TestPc20Ext:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fg.pc20.locked(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'simple yes',
@@ -90,6 +91,7 @@ class TestPc20Ext:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fg.pc20.funding(bad_case['test'], replace=True)
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'support the show',
@@ -119,7 +121,7 @@ class TestPc20Ext:
             {'desc': 'bad date',
              'test': {
                 'url': 'https://baddate.somedomain/',
-                'pubdate': 0
+                'pubdate': '-1'
              }},
             {'desc': 'bad param',
              'test': {
@@ -132,6 +134,7 @@ class TestPc20Ext:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fg.pc20.trailer(bad_case['test'], replace=True)
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'april 1',
@@ -140,8 +143,8 @@ class TestPc20Ext:
         pubdate="Thu, 01 Apr 2021 08:00:00 EST"
         url="https://example.org/trailers/teaser"
         length="12345678"
-        type="audio/mp3
-">Coming April 1st, 2021</podcast:trailer>''',
+        type="audio/mp3"
+>Coming April 1st, 2021</podcast:trailer>''',
              'test': {
                 'pubdate': "Thu, 01 Apr 2021 08:00:00 EST",
                 'url': 'https://example.org/trailers/teaser',
@@ -163,11 +166,30 @@ class TestPc20Ext:
                 'url': 'https://example.org/trailers/season4teaser',
                 'length': '12345678',
                 'type': 'video/mp4',
-                'season': '4'
+                'season': '4',
+                'trailer': 'Season 4: Race for the Whitehouse'
+             }},
+            {'desc': 'whitehouse with iso time',
+             'spec':
+                '''<podcast:trailer
+        pubdate="Thu, 01 Apr 2021 08:00:00 -0500"
+        url="https://example.org/trailers/season4teaser"
+        length="12345678"
+        type="video/mp4"
+        season="4"
+>Season 4: Race for the Whitehouse</podcast:trailer>''',
+             'test': {
+                'pubdate': '2021-04-01T08:00:00.000-05:00',
+                'url': 'https://example.org/trailers/season4teaser',
+                'length': '12345678',
+                'type': 'video/mp4',
+                'season': '4',
+                'trailer': 'Season 4: Race for the Whitehouse'
              }}
         ]
 
-        helper.simple_multi(fg, fg.pc20.trailer, "trailer", good_cases)
+        helper.simple_multi(fg, fg.pc20.trailer, "trailer", good_cases,
+                            skip_modified=['pubdate'])
 
     def old_test_trailers(self, fg):
         test_trailers = [
@@ -438,6 +460,7 @@ class TestPc20Ext:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fg.pc20.podping(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'simple true',

@@ -2,6 +2,7 @@ import pytest
 import feedgen
 import feedgen.ext
 import pkgutil
+from copy import deepcopy
 from lxml import etree
 
 # FIXME: feedgen is not a namespaced package, hence the path manipulation
@@ -60,7 +61,7 @@ class Helpers:
             assert spec_xml_canon == test_xml_canon
 
     @staticmethod
-    def simple_multi(fg, tag_func, tag_name, cases):
+    def simple_multi(fg, tag_func, tag_name, cases, skip_modified=[]):
         tag_name_camel = to_lower_camel_case(tag_name)
         open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
         close_dtag = "</data>"
@@ -70,20 +71,47 @@ class Helpers:
 
         test_cases = list(map(lambda x: x['test'], cases))
 
+        test_cases_skip_modified = deepcopy(test_cases)
+        for modified in skip_modified:
+            for case in test_cases_skip_modified:
+                case.pop(modified, None)
+
         tag_func(**test_cases[0], replace=True)
-        assert tag_func() == [test_cases[0]]
+        tag_func_skip_modified = deepcopy(tag_func())
+        for modified in skip_modified:
+            for case in tag_func_skip_modified:
+                case.pop(modified, None)
+        assert tag_func_skip_modified == [test_cases_skip_modified[0]]
+
         for test_case in test_cases[1:]:
             tag_func(**test_case, replace=False)
-        assert tag_func() == test_cases
+        tag_func_skip_modified = deepcopy(tag_func())
+        for modified in skip_modified:
+            for case in tag_func_skip_modified:
+                case.pop(modified, None)
+        assert tag_func_skip_modified == test_cases_skip_modified
 
         tag_func(**test_cases[0], replace=True)
-        assert tag_func() == [test_cases[0]]
+        tag_func_skip_modified = deepcopy(tag_func())
+        for modified in skip_modified:
+            for case in tag_func_skip_modified:
+                case.pop(modified, None)
+        assert tag_func_skip_modified == [test_cases_skip_modified[0]]
+
         for test_case in test_cases[1:]:
             tag_func(**test_case)
-        assert tag_func() == test_cases
+        tag_func_skip_modified = deepcopy(tag_func())
+        for modified in skip_modified:
+            for case in tag_func_skip_modified:
+                case.pop(modified, None)
+        assert tag_func_skip_modified == test_cases_skip_modified
 
         tag_func(test_cases, replace=True)
-        assert tag_func() == test_cases
+        tag_func_skip_modified = deepcopy(tag_func())
+        for modified in skip_modified:
+            for case in tag_func_skip_modified:
+                case.pop(modified, None)
+        assert tag_func_skip_modified == test_cases_skip_modified
         test_kids = etree.XML(fg.rss_str())\
             .xpath(
                 f"//podcast:{tag_name_camel}",

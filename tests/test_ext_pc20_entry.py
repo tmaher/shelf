@@ -65,6 +65,7 @@ class TestPc20EntryExt:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fe.pc20.transcript(bad_case['test'], replace=True)
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'html',
@@ -119,6 +120,7 @@ class TestPc20EntryExt:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fe.pc20.chapters(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'spec',
@@ -148,6 +150,7 @@ class TestPc20EntryExt:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fe.pc20.soundbite(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'no text',
@@ -185,6 +188,7 @@ class TestPc20EntryExt:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fe.pc20.season(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'season 5',
@@ -236,6 +240,7 @@ class TestPc20EntryExt:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fe.pc20.episode(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'three',
@@ -297,6 +302,7 @@ class TestPc20EntryExt:
         for bad_case in bad_cases:
             with pytest.raises(ValueError):
                 fe.pc20.social_interact(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'simple',
