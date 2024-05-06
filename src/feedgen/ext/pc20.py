@@ -46,7 +46,16 @@ def to_lower_camel_case(snake_str):
     return snake_str[0].lower() + cs[1:]
 
 
-def url2guid(url):
+def url_to_guid(url):
+    '''Generate a Podcasting 2.0-compliant GUID from an URL.
+
+    :param url: (REQUIRED) The podcast feed URL. It is OK to include
+        the protocol (e.g. "https://" or "http://"). Protocol and any
+        trailing slashes will be stripped off before computing v5 UUID.
+        For example, "https://podnews.net/rss", "podews.net/rss/", and
+        "podnews.net/rss" will all result in the same GUID.
+    :returns: a UUIDv5 GUID, computed using the Podcasting 2.0 namespace
+    '''
     s = urllib.parse.urlsplit(url)
     no_scheme_url = re.sub(
         r'/+\Z', '',
@@ -360,7 +369,7 @@ class Pc20Extension(Pc20BaseExtension):
                 # if it isn't, this will raise ValueError
                 guid = str(uuid.UUID(guid))
             elif url:
-                guid = url2guid(url)
+                guid = url_to_guid(url)
             node = xml_elem('{%s}%s' % (PC20_NS, 'guid'))
             node.text = guid
             self._nodes['guid'] = node

@@ -235,19 +235,42 @@ class TestPc20Ext:
         assert xml_frag_0 in fg_xml
         assert xml_frag_1 in fg_xml
 
-    def test_url2guid(self, fg):
-        from feedgen.ext.pc20 import url2guid  # type: ignore
-        test_data = [
-            {'url': 'https://mp3s.nashownotes.com/pc20rss.xml',
-             'guid': '917393e3-1b1e-5cef-ace4-edaa54e1f810'},
-            {'url': 'podnews.net/rss////',
-             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'},
-            {'url': 'podnews.net/rss/',
-             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'}
+    def test_url_to_guid(self, fg):
+        from feedgen.ext.pc20 import url_to_guid  # type: ignore
+        good_cases = [
+            {'desc': 'nashownotes',
+             'spec': '917393e3-1b1e-5cef-ace4-edaa54e1f810',
+             'test': {
+                'url': 'mp3s.nashownotes.com/pc20rss.xml'
+             }},
+            {'desc': 'podnews',
+             'spec': '9b024349-ccf0-5f69-a609-6b82873eab3c',
+             'test': {
+                'url': 'podnews.net/rss'
+             }},
+            {'desc': 'podnews with scheme',
+             'spec': '9b024349-ccf0-5f69-a609-6b82873eab3c',
+             'test': {
+                'url': 'podnews.net/rss'
+             }},
+            {'desc': 'podnews trailing slash',
+             'spec': '9b024349-ccf0-5f69-a609-6b82873eab3c',
+             'test': {
+                'url': 'podnews.net/rss/'
+             }},
+            {'desc': 'podnews scheme plus trailing slash',
+             'spec': '9b024349-ccf0-5f69-a609-6b82873eab3c',
+             'test': {
+                'url': 'ftp://podnews.net/rss/'
+             }},
         ]
 
-        assert url2guid(test_data[0]['url']) == test_data[0]['guid']
-        assert url2guid(test_data[1]['url']) == test_data[1]['guid']
+        for case in good_cases:
+            test_guid = url_to_guid(**case['test'])
+            if case['spec'] != test_guid:
+                pytest.fail(f"url {case['test']['url']}\n"
+                            f"EXPECTED {case['spec']}\n"
+                            f"BUT  GOT {test_guid}\n")
 
     def test_guid(self, fg):
         test_data = [
