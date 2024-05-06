@@ -305,91 +305,70 @@ class TestPc20Ext:
         ]
         helper.simple_single(fg, fg.pc20.medium, "medium", good_cases)
 
-    def test_block_multi(self, fg):
-        bad_test_blocks = [
-            {'block': 'bogus'},
-            {'id': 'rss'},
-            {'block': 'yes', 'id': '_bogus'},
+    def test_block(self, helper, fg):
+        bad_cases = [
+            {'desc': 'bogus block',
+             'test': {
+                'block': 'bogus'
+             }},
+            {'desc': 'block value unspecified',
+             'test': {
+                'id': 'rss'
+             }},
+            {'desc': 'bogus id',
+             'test': {
+                'block': 'yes',
+                'id': '_bogus'
+             }},
         ]
-        with pytest.raises(ValueError):
-            fg.pc20.block(bad_test_blocks)
-        with pytest.raises(ValueError):
-            fg.pc20.block(bad_test_blocks[0], replace=True)
-        with pytest.raises(ValueError):
-            fg.pc20.block(bad_test_blocks[1], replace=True)
-        with pytest.raises(ValueError):
-            fg.pc20.block(bad_test_blocks[2], replace=True)
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.block(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
-        test_blocks = [
-            {'block': 'yes', 'id': 'rss'},
-            {'block': 'no', 'id': 'podcastindex'}
+        good_cases = [
+            {'desc': 'simple yes',
+             'spec':
+                '''<podcast:block>yes</podcast:block>''',
+             'test': {
+                 'block': 'yes'
+             }},
+            {'desc': 'simple no',
+             'spec':
+                '''<podcast:block>no</podcast:block>''',
+             'test': {
+                 'block': 'no'
+             }},
+            {'desc': 'block google yes',
+             'spec':
+                '''<podcast:block id="google">yes</podcast:block>''',
+             'test': {
+                 'block': 'yes',
+                 'id': 'google'
+             }},
+            {'desc': 'block amazon yes',
+             'spec':
+                '''<podcast:block id="amazon">yes</podcast:block>''',
+             'test': {
+                 'block': 'yes',
+                 'id': 'amazon'
+             }},
+            {'desc': 'block google no',
+             'spec':
+                '''<podcast:block id="google">no</podcast:block>''',
+             'test': {
+                 'block': 'no',
+                 'id': 'google'
+             }},
+            {'desc': 'block amazon no',
+             'spec':
+                '''<podcast:block id="amazon">no</podcast:block>''',
+             'test': {
+                 'block': 'no',
+                 'id': 'amazon'
+             }},
         ]
-        fg.pc20.block(test_blocks[1])
-        assert fg.pc20.block() == [test_blocks[1]]
-        fg.pc20.block(test_blocks, replace=True)
-        assert fg.pc20.block() == test_blocks
-
-        override_test_blocks = [
-            {'block': 'no', 'id': '_bogus'},
-            {'block': 'yes', 'id': '_double_bogus'}
-        ]
-        fg.pc20.block(
-            override_test_blocks,
-            slug_override=True,
-            replace=True
-        )
-        assert fg.pc20.block() == override_test_blocks
-        fg.pc20.block(
-            override_test_blocks[0],
-            slug_override=True,
-            replace=True
-        )
-        assert fg.pc20.block() == [override_test_blocks[0]]
-        fg.pc20.block(
-            override_test_blocks[1],
-            slug_override=True,
-            replace=True
-        )
-        assert fg.pc20.block() == [override_test_blocks[1]]
-
-        with pytest.raises(ValueError):
-            fg.pc20.block(override_test_blocks, replace=True)
-
-        with pytest.raises(ValueError):
-            fg.pc20.block(override_test_blocks[0], replace=True)
-        with pytest.raises(ValueError):
-            fg.pc20.block(override_test_blocks[1], replace=True)
-
-        fe = fg.add_entry()
-        fe.title('block ep')
-        with pytest.raises(AttributeError):
-            fe.pc20.blocked(test_blocks)
-
-        xml_frag_0 = \
-            '<podcast:block id="rss">yes</podcast:block>'
-        xml_frag_1 = \
-            '<podcast:block id="podcastindex">no</podcast:block>'
-        fg.pc20.block(test_blocks, replace=True)
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_0 in fg_xml
-        assert xml_frag_1 in fg_xml
-
-    def test_block_single(self, fg):
-        test_blocks = [
-            {'block': 'yes', 'id': 'rss'},
-            {'block': 'no', 'id': 'podcastindex'}
-        ]
-        xml_frag_0 = \
-            '<podcast:block id="rss">yes</podcast:block>'
-        xml_frag_1 = \
-            '<podcast:block id="podcastindex">no</podcast:block>'
-        fg.pc20.block(test_blocks)
-        fg.pc20.block(test_blocks[1], replace=True)
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_0 not in fg_xml
-        assert xml_frag_1 in fg_xml
+        helper.simple_multi(fg, fg.pc20.block, "block", good_cases)
 
     def test_updateFrequency(self, fg):
         tcase = [

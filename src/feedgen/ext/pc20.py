@@ -439,7 +439,7 @@ class Pc20Extension(Pc20BaseExtension):
                 self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_medium
 
-    def block(self, blocks=None, slug_override=False, replace=False):
+    def block(self, *args, **kwargs):
         '''This element allows a podcaster to express which platforms are
         allowed to publicly display this feed and its contents. In its basic
         form, it is a direct drop-in replacement for the <itunes:block> tag,
@@ -462,47 +462,24 @@ class Pc20Extension(Pc20BaseExtension):
         - Does <podcast:block>yes</podcast:block> exist in this feed? Do not
         ingest.
 
-        dict keys are as follows. block is required
-            - block (required): text value of node, must be yes or no
-            - id (optional): A single entry from the service slug list, see
+        :param block: (REQUIRED) must be "yes" or "no"
+        :param id: (optional) A single entry from the service slug list
+            see feedgen.ext.pc20.PC20_SERVICE_SLUGS or
             https://github.com/Podcastindex-org/podcast-namespace/blob/main/serviceslugs.txt
-
-        :param blocks: dict or array of dicts as described above
-        :param slug_override: (optional, default False) normally id is
-            checked against the list of service slugs, and if you use
-            an id not on the list, you get a ValueError, to catch typos.
-            If you want to ignore the list (e.g. new service hasn't been
-            added yet, or a private service), set slug_override=True and
-            then you can use anything for id
         :param replace: Add or replace old data. (default false)
         :returns: list of dicts of block and (optionally) id
         '''
-        if blocks != []:
-            valid_values = {'block': ['yes', 'no']}
-            if not slug_override:
-                valid_values['id'] = PC20_SERVICE_SLUGS
-            blocks = ensure_format(
-                blocks,
-                set(['block', 'id']),
-                set(['block']),
-                valid_values
-            )
-            if replace or (not self._nodes.get('block')):
-                block_nodes = []
-                vals = []
-            else:
-                block_nodes = self._nodes['block']
-                vals = self.__pc20_block
-            for block in blocks:
-                val = block
-                node = xml_elem('{%s}%s' % (PC20_NS, 'block'))
-                node.text = val['block']
-                if val['id']:
-                    node.attrib['id'] = val['id']
-                block_nodes.append(node)
-                vals.append(val)
-            self._nodes['block'] = block_nodes
-            self.__pc20_block = vals
+        if (args or kwargs):
+            ensures = {
+                'required': ['block'],
+                'allowed': ['id'],
+                'allowed_values': {
+                    'block': ['yes', 'no'],
+                    'id': PC20_SERVICE_SLUGS
+                }
+            }
+            self.__pc20_block = \
+                self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_block
 
     def update_frequency(self, uf=None):
