@@ -204,16 +204,15 @@ class Pc20BaseExtension(BaseExtension):
 
         new_vals = ensure_format(
             new_vals,
-            set(ensures['allowed']),
+            set(ensures.get('allowed', []) + ensures['required']),
             set(ensures['required']),
             ensures.get('allowed_values', None),
             ensures.get('defaults', None)
         )
-        if ensures.get('validators', None):
+        for attr, vfunc in ensures.get('validators', {}).items():
             for val in new_vals:
-                for attr, vfunc in ensures['validators'].items():
-                    if val.get(attr, None):
-                        val[attr] = vfunc(val[attr])
+                if val.get(attr, None):
+                    val[attr] = vfunc(val[attr])
 
         if replace or (not getattr(self, attr_name, None)):
             nodes = []
