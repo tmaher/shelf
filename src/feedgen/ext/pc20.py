@@ -5,6 +5,7 @@ from feedgen.util import xml_elem, ensure_format
 import uuid
 import urllib
 import re
+from copy import deepcopy
 from datetime import datetime, timezone
 import email
 import icalendar
@@ -81,6 +82,30 @@ def date_to_rfc2822(ts):
         raise ValueError("need datetime, unix timestamp, or string")
 
     return ts
+
+
+def date_to_iso8601(ts):
+    if isinstance(ts, datetime):
+        ts_dt = deepcopy(ts)
+    elif (isinstance(ts, int) or isinstance(ts, float)):
+        ts_dt = datetime.fromtimestamp(ts, timezone.utc)
+    elif (isinstance(ts, str)):
+        try:
+            ts_dt = datetime.fromisoformat(re.sub(r"Z\Z", "+00:00", ts))
+        except ValueError:
+            ts_dt = email.utils.parsedate_to_datetime(ts)
+    else:
+        raise ValueError("need datetime, unix timestamp, or string")
+
+    # The podcasting 2.0 spec specifically notes that they use the restricted
+    # JavaScript subset of ISO 8601 (always miliseconds, always UTC),
+    # so forcibly convert to that
+    ts_dt.astimezone(timezone.utc)
+    # if .isoformat() throws an exception here about timespec,
+    # upgrade to python 3.6 or later. python 3.5 is EOL
+    ts_str = ts_dt.isoformat(timespec='milliseconds')
+    # "Z" as timezone was only added in python 3.11 :(
+    return re.sub(r"\+00:00\Z", "Z", ts_str)
 
 
 def validate_guid(guid):
