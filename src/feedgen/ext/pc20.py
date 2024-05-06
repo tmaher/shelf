@@ -580,7 +580,25 @@ class Pc20Extension(Pc20BaseExtension):
 
         return self.__pc20_updateFrequency
 
-    def podping(self, uses_podping=None, replace=False):
+    def podping(self, *args, **kwargs):
+        '''This element allows feed owners to signal to aggregators that the
+        feed sends out Podping notifications when changes are made to it,
+        reducing the need for frequent speculative feed polling.
+
+        :param uses_podping: str - either "true" or "false"
+        :param replace: Add or replace old data. (default false)
+        '''
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['uses_podping'],
+                'required': ['uses_podping'],
+                'allowed_values': {'uses_podping': ['true', 'false']}
+            }
+            self.__pc20_podping = \
+                self.getset_simple(args, kwargs, ensures=ensures)
+        return self.__pc20_podping
+
+    def old_podping(self, uses_podping=None, replace=False):
         '''This element allows feed owners to signal to aggregators that the
         feed sends out Podping notifications when changes are made to it,
         reducing the need for frequent speculative feed polling.

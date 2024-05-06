@@ -369,33 +369,34 @@ class TestPc20Ext:
         assert xml_frag_0 not in fg_xml
         assert xml_frag_1 in fg_xml
 
-    def test_podping(self, fg):
-        tcase = [
-            {'uses_podping': 'false'},
-            {'uses_podping': 'true'},
-            {'replace': True}
+    def test_podping(self, helper, fg):
+        bad_cases = [
+            {'desc': 'bogus ping',
+             'test': {
+                 'uses_podping': 'bogus'
+             }},
         ]
 
-        fg.pc20.podping(**tcase[0])
-        assert fg.pc20.podping() == tcase[0]
-        fg.pc20.podping(**tcase[1])
-        assert fg.pc20.podping() == tcase[1]
-        fg.pc20.podping(**tcase[2])
-        assert fg.pc20.podping() is None
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.podping(bad_case['test'])
 
-        with pytest.raises(ValueError):
-            fg.pc20.podping(uses_podping='bogus')
+        good_cases = [
+            {'desc': 'simple true',
+             'spec':
+                '''<podcast:podping usesPodping="true"/>''',
+             'test': {
+                'uses_podping': 'true'
+             }},
+            {'desc': 'simple false',
+             'spec':
+                '''<podcast:podping usesPodping="false"/>''',
+             'test': {
+                'uses_podping': 'false'
+             }}
+        ]
+        helper.simple_single(fg, fg.pc20.podping, "podping", good_cases)
 
-        xml_frag_0 = \
-            '<podcast:podping usesPodping="false"/>'
-        xml_frag_1 = \
-            '<podcast:podping usesPodping="true"/>'
-        fg.pc20.podping(**tcase[0])
-        fg.pc20.podping(**tcase[1])
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_0 not in fg_xml
-        assert xml_frag_1 in fg_xml
 
 # #### DUAL-USE: these tags
 #    - may be children of item **OR** channel, but...
