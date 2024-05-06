@@ -191,50 +191,6 @@ class TestPc20Ext:
         helper.simple_multi(fg, fg.pc20.trailer, "trailer", good_cases,
                             skip_modified=['pubdate'])
 
-    def old_test_trailers(self, fg):
-        test_trailers = [
-            {'url': 'https://trailer420.angry.podcast/',
-             'pubdate': 'Sun, 20 Apr 1969 16:20:00 GMT',
-             'text': 'a real smoking trailer'},
-            {'url': 'https://trailer0.angry.podcast/',
-             'pubdate': 'Thu, 01 Jan 1970 00:00:00 GMT',
-             'text': 'this trailer is epoch!'}
-        ]
-        with pytest.raises(ValueError):
-            fg.pc20.trailer('bogus')
-        with pytest.raises(ValueError):
-            fg.pc20.trailer(['bogus'])
-        with pytest.raises(ValueError):
-            fg.pc20.trailer({'url': 'http://bogus/'})
-        with pytest.raises(ValueError):
-            fg.pc20.trailer({'url': 'http://bogus/', 'pubdate': 0})
-        with pytest.raises(ValueError):
-            fg.pc20.trailer(
-                {'url': 'http://bogus/', 'pubdate': 0, 'text': 'fake', 'x': 1})
-
-        fg.pc20.trailer(test_trailers[0])
-        assert fg.pc20.trailer() == [test_trailers[0]]
-        fg.pc20.trailer(test_trailers, replace=True)
-        assert fg.pc20.trailer() == test_trailers
-
-        fe = fg.add_entry()
-        fe.title('trailer ep')
-        with pytest.raises(AttributeError):
-            fe.pc20.trailer(test_trailers)
-
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        xml_frag_0 = \
-            f"<podcast:trailer url=\"{test_trailers[0]['url']}\""\
-            f" pubdate=\"{test_trailers[0]['pubdate']}\">"\
-            f"{test_trailers[0]['text']}</podcast:trailer>"
-        xml_frag_1 = \
-            f"<podcast:trailer url=\"{test_trailers[1]['url']}\""\
-            f" pubdate=\"{test_trailers[1]['pubdate']}\">"\
-            f"{test_trailers[1]['text']}</podcast:trailer>"
-        # print(fg_xml)
-        assert xml_frag_0 in fg_xml
-        assert xml_frag_1 in fg_xml
-
     def test_url_to_guid(self, fg):
         from feedgen.ext.pc20 import url_to_guid  # type: ignore
         good_cases = [
@@ -272,48 +228,38 @@ class TestPc20Ext:
                             f"EXPECTED {case['spec']}\n"
                             f"BUT  GOT {test_guid}\n")
 
-    def test_guid(self, fg):
-        test_data = [
-            {'url': 'https://mp3s.nashownotes.com/pc20rss.xml',
-             'guid': '917393e3-1b1e-5cef-ace4-edaa54e1f810'},
-            {'url': 'podnews.net/rss////',
-             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'},
-            {'url': 'podnews.net/rss/',
-             'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'}
+    def test_guid(self, helper, fg):
+        bad_cases = [
+            {'desc': 'bad param',
+             'test': {
+                 'bogus': 'bogus'
+             }},
+            {'desc': 'bad guid',
+             'test': {
+                 'guid': 'bogus'
+             }}
         ]
 
-        with pytest.raises(ValueError):
-            fg.pc20.guid(guid='bogus')
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.guid(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
-        with pytest.raises(ValueError):
-            fg.pc20.guid(
-                guid=test_data[0]['guid'],
-                url=test_data[0]['url']
-            )
-
-        assert fg.pc20.guid(url=test_data[0]['url']) == \
-            test_data[0]['guid']
-        assert fg.pc20.guid(url=test_data[1]['url']) == \
-            test_data[1]['guid']
-        assert fg.pc20.guid(url=test_data[2]['url']) == \
-            test_data[2]['guid']
-        assert fg.pc20.guid(guid=test_data[0]['guid']) == \
-            test_data[0]['guid']
-
-        fe = fg.add_entry()
-        fe.title('guid ep')
-        with pytest.raises(AttributeError):
-            fe.pc20.guid(guid=test_data[0]['guid'])
-
-        xml_frag_0 = \
-            f"<podcast:guid>{test_data[0]['guid']}</podcast:guid>"
-        xml_frag_1 = \
-            f"<podcast:guid>{test_data[1]['guid']}</podcast:guid>"
-        fg.pc20.guid(guid=test_data[1]['guid'])
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_1 in fg_xml
-        assert xml_frag_0 not in fg_xml
+        good_cases = [
+            {'desc': 'nashownotes',
+             'spec':
+             '''<podcast:guid>917393e3-1b1e-5cef-ace4-edaa54e1f810</podcast:guid>''',
+             'test': {
+                'guid': '917393e3-1b1e-5cef-ace4-edaa54e1f810'
+             }},
+            {'desc': 'podnews',
+             'spec':
+             '''<podcast:guid>9b024349-ccf0-5f69-a609-6b82873eab3c</podcast:guid>''',
+             'test': {
+                'guid': '9b024349-ccf0-5f69-a609-6b82873eab3c'
+             }}
+        ]
+        helper.simple_single(fg, fg.pc20.guid, "guid", good_cases)
 
     def test_medium(self, fg):
         with pytest.raises(ValueError):

@@ -1,3 +1,4 @@
+import lxml.etree  # noqa: F401
 from feedgen.ext.base import BaseExtension
 from feedgen.util import xml_elem, ensure_format
 
@@ -80,6 +81,14 @@ def date_to_rfc2822(ts):
         raise ValueError("need datetime, unix timestamp, or string")
 
     return ts
+
+
+def validate_guid(guid):
+    try:
+        guid == str(uuid.UUID(guid))
+    except Exception as e:
+        raise ValueError(f"GUID {guid} invalid - {type(e).__name__}: {e}")
+    return guid
 
 
 class Pc20BaseExtension(BaseExtension):
@@ -334,47 +343,30 @@ class Pc20Extension(Pc20BaseExtension):
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_trailer
 
-    def guid(self, guid=None, url=None):
+    def guid(self, *args, **kwargs):
         '''This element is used to declare a unique, global identifier for a
         podcast. The value is a UUIDv5, and is easily generated from the RSS
-        feed url, with the protocol scheme and trailing slashes stripped off,
-        combined with a unique "podcast" namespace which has a UUID of
-        ead4c236-bf58-58c6-a2c6-a6b28d128cb6.
+        feed url, using helper feedgen.ext.pc20.url_to_guid()
 
-        *NOTE*: A podcast gets assigned a podcast:guid once in its lifetime
-        using its current feed url (at the time of assignment) as the seed
-        value. That GUID is then meant to follow the podcast from then on,
-        for the duration of its life, even if the feed url changes. This
-        means that when a podcast moves from one hosting platform to another,
-        its podcast:guid should be discovered by the new host and imported
-        into the new platform for inclusion into the feed.
+        A podcast gets assigned a podcast:guid once in its lifetime using its
+        current feed url (at the time of assignment) as the seed value. That
+        GUID is then meant to follow the podcast from then on, for the
+        duration of its life, even if the feed url changes. This means that
+        when a podcast moves from one hosting platform to another, *YOU* are
+        responsible for using the old GUID.
 
-        This method accepts *EITHER* a caller-provided GUID *OR* a feed
-        URL. If you pass both guid & url, it will raise ValueError.
-
-        :param guid: a UUIDv5 string to use as GUID. This will be used
-            unmodified in the resulting XML.
-        :param url: the feed URL, which will be used to compute the UUIDv5
-            GUID. It is ok to include the protocol scheme and trailing
-            slashes. They will be stripped off per the podcasting 2.0 spec.
-            For example: https://podnews.net/rss , https://podnews.net/rss/ ,
-            and podnews.net/rss will all result in the same GUID.
-        :returns: the GUID string
+        :param guid: a UUIDv5 string, prefereably computed using
+            feedgen.ext.pc20.url_to_guid()
+        :returns: dictionary containing the GUID string
         '''
-        if guid and url:
-            raise ValueError("use either guid or url, NOT BOTH")
-        if guid or url:
-            if guid:
-                # validate guid is well-formated by parsing
-                # if it isn't, this will raise ValueError
-                guid = str(uuid.UUID(guid))
-            elif url:
-                guid = url_to_guid(url)
-            node = xml_elem('{%s}%s' % (PC20_NS, 'guid'))
-            node.text = guid
-            self._nodes['guid'] = node
-            self.__pc20_guid = guid
-
+        if (args or kwargs):
+            ensures = {
+                'allowed': ['guid'],
+                'required': ['guid'],
+                'validators': {'guid': validate_guid}
+            }
+            self.__pc20_guid = \
+                self.getset_simple(args, kwargs, ensures=ensures)
         return self.__pc20_guid
 
     def medium(self, medium=None):
