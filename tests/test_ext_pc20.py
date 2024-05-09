@@ -12,7 +12,7 @@ feedgen.__path__ = \
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 # from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
-#    PC20_NS, pc20_extend_ns, to_lower_camel_case
+#    PC20_NS, pc20_extend_ns, snake_to_camel_case
 # )
 
 

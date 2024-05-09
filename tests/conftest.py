@@ -12,14 +12,14 @@ feedgen.__path__ = \
 feedgen.ext.__path__ = \
     pkgutil.extend_path(feedgen.ext.__path__, feedgen.ext.__name__)
 from feedgen.ext.pc20 import (  # type: ignore # noqa: E402
-    PC20_NS, pc20_extend_ns, to_lower_camel_case
+    PC20_NS, pc20_extend_ns, snake_to_camel_case
  )
 
 
 class Helpers:
     @staticmethod
     def simple_single(fg, tag_func, tag_name, cases, parent="channel"):
-        tag_name_camel = to_lower_camel_case(tag_name)
+        tag_name_camel = snake_to_camel_case(tag_name)
         open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
         close_dtag = "</data>"
 
@@ -34,7 +34,7 @@ class Helpers:
             test_root = etree.XML(test_xml.encode('UTF-8'))
 
             for attr in case['test'].keys():
-                attr_camel = to_lower_camel_case(attr)
+                attr_camel = snake_to_camel_case(attr)
                 xp_frag = "text()" if attr == tag_name else f"@{attr_camel}"
 
                 test_attr = test_root.xpath(
@@ -62,7 +62,7 @@ class Helpers:
 
     @staticmethod
     def simple_multi(fg, tag_func, tag_name, cases, skip_modified=[]):
-        tag_name_camel = to_lower_camel_case(tag_name)
+        tag_name_camel = snake_to_camel_case(tag_name)
         open_dtag = f"<data xmlns:podcast=\"{PC20_NS}\">"
         close_dtag = "</data>"
 

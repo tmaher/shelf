@@ -40,7 +40,7 @@ def pc20_extend_ns():
     return {'podcast': PC20_NS}
 
 
-def to_lower_camel_case(snake_str):
+def snake_to_camel_case(snake_str):
     if "_" not in snake_str:
         return snake_str  # fake snake!
 
@@ -219,7 +219,7 @@ class Pc20BaseExtension(BaseExtension):
         '''
         import inspect
         tag_name = inspect.stack()[1].function
-        tag_name_camel = to_lower_camel_case(tag_name)
+        tag_name_camel = snake_to_camel_case(tag_name)
         attr_name = f"__pc20_{tag_name}"
         replace = kw_args.pop('replace', False) if multi else True
 
@@ -252,7 +252,7 @@ class Pc20BaseExtension(BaseExtension):
             for k, v in val.items():
                 if k == tag_name:
                     continue
-                node.attrib[to_lower_camel_case(k)] = v
+                node.attrib[snake_to_camel_case(k)] = v
             nodes.append(node)
             vals.append(val)
         if not multi:
