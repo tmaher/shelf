@@ -394,10 +394,10 @@ class TestPc20Ext:
              }}
         ]
 
-        # for bad_case in bad_cases:
-        #    with pytest.raises(ValueError):
-        #        fg.pc20.update_frequency(bad_case['test'])
-        #        pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
+        for bad_case in bad_cases:
+            with pytest.raises(ValueError):
+                fg.pc20.update_frequency(bad_case['test'])
+                pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
 
         good_cases = [
             {'desc': 'daily',
@@ -511,54 +511,6 @@ class TestPc20Ext:
         ]
         helper.simple_single(fg, fg.pc20.update_frequency,
                              "update_frequency", good_cases)
-
-    def old_test_updateFrequency(self, fg):
-        tcase = [
-            {'text': 'fortnightly', 'rrule': 'FREQ=WEEKLY;INTERVAL=2'},
-            {'text': 'Every Monday and Wednesday',
-             'rrule': 'FREQ=WEEKLY;BYDAY=MO,WE'},
-            {'text': 'US turkey day',
-             'rrule': 'FREQ=YEARLY;BYDAY=+4TH;BYMONTH=11'},
-            {'text': 'Alt Mondays for 10 episodes starting on Aug 28, 2023',
-             'rrule': 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO;COUNT=10',
-             'dtstart': '2023-08-28T00:00:00.000Z'
-             },
-            {'text': "That’s all folks!", 'complete': 'true'}
-        ]
-        fg.pc20.update_frequency(tcase[0])
-        assert fg.pc20.update_frequency() == tcase[0]
-        fg.pc20.update_frequency(tcase[1])
-        assert fg.pc20.update_frequency() == tcase[1]
-        fg.pc20.update_frequency(tcase[2])
-        assert fg.pc20.update_frequency() == tcase[2]
-        fg.pc20.update_frequency(tcase[3])
-        assert fg.pc20.update_frequency() == tcase[3]
-        fg.pc20.update_frequency(tcase[4])
-        assert fg.pc20.update_frequency() == tcase[4]
-
-        badcase_rrule = {'text': 'rr bogus text', 'rrule': 'freq=bogus'}
-        badcase_dtstart = {'text': 'dt bogus text', 'dtstart': 'bogus dt'}
-        badcase_complete = {'text': 'comp bogus text',
-                            'complete': 'bogocomp'}
-        with pytest.raises(ValueError):
-            fg.pc20.update_frequency(badcase_rrule)
-        with pytest.raises(ValueError):
-            fg.pc20.update_frequency(badcase_dtstart)
-        with pytest.raises(ValueError):
-            fg.pc20.update_frequency(badcase_complete)
-
-        xml_frag_0 = \
-            '<podcast:updateFrequency rrule="FREQ=WEEKLY;INTERVAL=2">'\
-            'fortnightly</podcast:updateFrequency>'
-        xml_frag_1 = \
-            '<podcast:updateFrequency rrule="FREQ=WEEKLY;BYDAY=MO,WE">'\
-            'Every Monday and Wednesday</podcast:updateFrequency>'
-        fg.pc20.update_frequency(tcase[0])
-        fg.pc20.update_frequency(tcase[1])
-        fg_xml = fg.rss_str(pretty=True).decode('UTF-8')
-        # print(fg_xml)
-        assert xml_frag_0 not in fg_xml
-        assert xml_frag_1 in fg_xml
 
     def test_podping(self, helper, fg):
         bad_cases = [

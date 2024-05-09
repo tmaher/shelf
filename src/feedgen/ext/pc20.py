@@ -117,6 +117,36 @@ def validate_guid(guid):
 
 
 def validate_rrule(rrule):
+    # If the rrule is malformated, this should throw a ValueError
+    # Not perfect, but does some basic validation. Ideally we'd
+    # use icalendar.prop.vRecur(), but that requires the recurrence rule
+    # be pre-parsed into a dictionary. To simplify the call, we wrap
+    # the rrule in a VTODO event and get the validation indirectly.
+
+    # this is complicated due to some ambiguity in the podcasting 2.0
+    # spec. The updateFrequency tag's "rrule" attribute is listed as
+    # defined in RFC 5545 sec 3.3.10, which specifies that the UNTIL
+    # part is in RFC 5545's "DATE" or "DATE-TIME" format. This is
+    # different from ISO 8601 dates, in that RFC 5545 DATE/DATE-TIME
+    # omit the "-" between year month day and the ":" between hour
+    # minute second. The inconsistency is that the podcasting spec's
+    # includes an example of an UNTIL in iso 8601 format, that is,
+    # UNTIL=2023-12-31T00:00:00.000Z (iso 8601) and *NOT*
+    # UNTIL=20231231T000000Z (rfc 5545). To get around this for now,
+    # we're using a naughty regular expression to fudge the rrule
+    # into RFC 5545 format to get through the icalendar parser, but
+    # not modifying value of rrule passed in
+
+    rrule_fixed = re.sub(
+        r"UNTIL=(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d+|)(Z|)",
+        r"UNTIL=\1\2\3T\4\5\6\8",
+        rrule
+    )
+
+    icalendar.Event.from_ical(
+        'BEGIN:VTODO\nDTSTART:19700101T000000Z\n'
+        f"RRULE:{rrule_fixed}\nEND:VTODO\n"
+    )
     return rrule
 
 
@@ -541,7 +571,10 @@ class Pc20Extension(Pc20BaseExtension):
             ensures = {
                 'required': ['update_frequency'],
                 'allowed': ['complete', 'dtstart', 'rrule'],
-                'allowed_values': {'complete': ['true', 'false']}
+                'allowed_values': {'complete': ['true', 'false']},
+                'validators': {'dtstart': date_to_iso8601,
+                               'rrule': validate_rrule}
+
             }
             self.__pc20_update_frequency = \
                 self.getset_simple(args, kwargs, ensures=ensures)
