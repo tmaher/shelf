@@ -56,8 +56,8 @@ class Helpers:
             test_dtag.append(test_kid)
             test_xml = etree.tostring(test_dtag).decode('UTF-8')
 
-            spec_xml_canon = etree.canonicalize(spec_xml)
-            test_xml_canon = etree.canonicalize(test_xml)
+            spec_xml_canon = etree.canonicalize(spec_xml, strip_text=True)
+            test_xml_canon = etree.canonicalize(test_xml, strip_text=True)
             assert spec_xml_canon == test_xml_canon
 
     @staticmethod

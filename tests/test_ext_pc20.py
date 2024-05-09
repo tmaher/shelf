@@ -370,7 +370,149 @@ class TestPc20Ext:
         ]
         helper.simple_multi(fg, fg.pc20.block, "block", good_cases)
 
-    def test_updateFrequency(self, fg):
+    def test_update_frequency(self, helper, fg):
+        bad_cases = [
+            {'desc': 'bogus rrule',
+             'test': {
+                 'update_frequency': 'rr is bogus',
+                 'rrule': 'freq=bogus'
+             }},
+            {'desc': 'bogus dtstart',
+             'test': {
+                 'update_frequency': 'dt is bogus',
+                 'dtstart': 'bogus dt'
+             }},
+            {'desc': 'bogus complete',
+             'test': {
+                 'update_frequency': 'complete is bogus',
+                 'complete': 'bogocomp'
+             }},
+            {'desc': 'invalid key',
+             'test': {
+                 'update_frequency': 'there is no dog',
+                 'dog': 'bogus'
+             }}
+        ]
+
+        # for bad_case in bad_cases:
+        #    with pytest.raises(ValueError):
+        #        fg.pc20.update_frequency(bad_case['test'])
+        #        pytest.fail(f"BAD CASE PASS\n{bad_case}\n")
+
+        good_cases = [
+            {'desc': 'daily',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=DAILY">Daily</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Daily',
+                'rrule': 'FREQ=DAILY'
+             }},
+            {'desc': 'weekly',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=WEEKLY">Weekly</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Weekly',
+                'rrule': 'FREQ=WEEKLY'
+             }},
+            {'desc': 'fortnightly',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=WEEKLY;INTERVAL=2">Biweekly</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Biweekly',
+                'rrule': 'FREQ=WEEKLY;INTERVAL=2'
+             }},
+            {'desc': 'monthly',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=MONTHLY">Monthly</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Monthly',
+                'rrule': 'FREQ=MONTHLY'
+             }},
+            {'desc': 'every other month',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=MONTHLY;INTERVAL=2">Bimonthly</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Bimonthly',
+                'rrule': 'FREQ=MONTHLY;INTERVAL=2'
+             }},
+            {'desc': 'annually',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=YEARLY">Yearly</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Yearly',
+                'rrule': 'FREQ=YEARLY'
+             }},
+            {'desc': 'every week-day',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=DAILY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR">Every weekday</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Every weekday',
+                'rrule': 'FREQ=DAILY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR'
+             }},
+            {'desc': 'mon and wed',
+             'spec':
+                '''<podcast:updateFrequency rrule="FREQ=WEEKLY;BYDAY=MO,WE">Every Monday and Wednesday</podcast:updateFrequency>''',
+             'test': {
+                'update_frequency': 'Every Monday and Wednesday',
+                'rrule': 'FREQ=WEEKLY;BYDAY=MO,WE'
+             }},
+            {'desc': 'friday the 13th part 90210',
+             'spec': '''<podcast:updateFrequency
+                rrule="FREQ=WEEKLY;BYDAY=FR;BYMONTHDAY=13">Every friday the 13th</podcast:updateFrequency>
+                ''',
+             'test': {
+                'update_frequency': 'Every friday the 13th',
+                'rrule': 'FREQ=WEEKLY;BYDAY=FR;BYMONTHDAY=13'
+             }},
+            {'desc': 'turkey day USA',
+             'spec': '''<podcast:updateFrequency
+                rrule="FREQ=YEARLY;BYDAY=+4TH;BYMONTH=11">Every year on American Thanksgiving</podcast:updateFrequency>
+                ''',
+             'test': {
+                'update_frequency': 'Every year on American Thanksgiving',
+                'rrule': 'FREQ=YEARLY;BYDAY=+4TH;BYMONTH=11'
+             }},
+            {'desc': 'mondays starting aug 2023',
+             'spec': '''<podcast:updateFrequency
+                rrule="FREQ=WEEKLY;INTERVAL=2;BYDAY=MO;COUNT=10"
+                dtstart="2023-08-28T00:00:00.000Z">Every other Monday for 10 episodes starting on Aug 28, 2023</podcast:updateFrequency>
+                ''',
+             'test': {
+                'update_frequency': 'Every other Monday for 10 episodes starting on Aug 28, 2023',
+                'rrule': 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO;COUNT=10',
+                'dtstart': '2023-08-28T00:00:00.000Z'
+             }},
+            {'desc': 'mondays till dec 2023',
+             'spec': '''<podcast:updateFrequency
+                rrule="FREQ=WEEKLY;UNTIL=2023-12-31T00:00:00.000Z;BYDAY=MO">Every Monday until Dec 31, 2023</podcast:updateFrequency>
+                ''',
+             'test': {
+                'update_frequency': 'Every Monday until Dec 31, 2023',
+                'rrule': 'FREQ=WEEKLY;UNTIL=2023-12-31T00:00:00.000Z;BYDAY=MO'
+             }},
+            {'desc': 'we were on a break!',
+             'spec': '''<podcast:updateFrequency
+                dtstart="2025-01-01T00:00:00.000Z"
+                rrule="FREQ=WEEKLY">Weekly, starting in 2025</podcast:updateFrequency>
+                ''',
+             'test': {
+                'update_frequency': 'Weekly, starting in 2025',
+                'rrule': 'FREQ=WEEKLY',
+                'dtstart': '2025-01-01T00:00:00.000Z'
+             }},
+            {'desc': 'Porky says...',
+             'spec': '''<podcast:updateFrequency
+                complete="true">That’s all folks!</podcast:updateFrequency>
+                ''',
+             'test': {
+                'update_frequency': "That’s all folks!",
+                'complete': 'true'
+             }},
+        ]
+        helper.simple_single(fg, fg.pc20.update_frequency,
+                             "update_frequency", good_cases)
+
+    def old_test_updateFrequency(self, fg):
         tcase = [
             {'text': 'fortnightly', 'rrule': 'FREQ=WEEKLY;INTERVAL=2'},
             {'text': 'Every Monday and Wednesday',

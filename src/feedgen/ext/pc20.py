@@ -116,6 +116,10 @@ def validate_guid(guid):
     return guid
 
 
+def validate_rrule(rrule):
+    return rrule
+
+
 class Pc20BaseExtension(BaseExtension):
     '''Podcasting 2.0 extension. See the following for specs:
 
@@ -278,7 +282,7 @@ class Pc20Extension(Pc20BaseExtension):
         self.__pc20_medium = None
         self.__pc20_podping = None
         self.__pc20_trailer = None
-        self.__pc20_updateFrequency = None
+        self.__pc20_update_frequency = None
 
     def locked(self, *args, **kwargs):
         '''This tag may be set to yes or no. The purpose is to tell other
@@ -507,7 +511,7 @@ class Pc20Extension(Pc20BaseExtension):
                 self.getset_simple(args, kwargs, ensures=ensures, multi=True)
         return self.__pc20_block
 
-    def update_frequency(self, uf=None):
+    def update_frequency(self, *args, **kwargs):
         ''' This element allows a podcaster to express their intended release
         schedule as structured data and text.
 
@@ -533,6 +537,17 @@ class Pc20Extension(Pc20BaseExtension):
         :param uf: dict as described above
         :returns: the previously set dict
         '''
+        if (args or kwargs):
+            ensures = {
+                'required': ['update_frequency'],
+                'allowed': ['complete', 'dtstart', 'rrule'],
+                'allowed_values': {'complete': ['true', 'false']}
+            }
+            self.__pc20_update_frequency = \
+                self.getset_simple(args, kwargs, ensures=ensures)
+        return self.__pc20_update_frequency
+
+        uf = False
         if uf:
             if (not isinstance(uf, dict)):
                 raise ValueError("only single dictionary allowed")
